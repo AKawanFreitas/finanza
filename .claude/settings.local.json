@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"require\\('./node_modules/lucide-react/dist/cjs/lucide-react.js'\\)\")"
+    ]
+  }
+}
