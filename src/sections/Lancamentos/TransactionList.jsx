@@ -1,9 +1,9 @@
-import { Trash2, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { Pencil, Trash2, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { fmt, getCatColor, catIcon } from '../../utils/formatters';
 
 export default function TransactionList() {
-  const { transactions, categorias, delTransaction } = useFinance();
+  const { transactions, categorias, delTransaction, editing, setEditing } = useFinance();
   const sorted = [...transactions].sort((a, b) => b.id - a.id);
 
   return (
@@ -28,7 +28,7 @@ export default function TransactionList() {
         const color   = getCatColor(categorias, t.cat);
         const isIn    = t.tipo === 'entrada';
         return (
-          <div key={t.id} className="hist-row">
+          <div key={t.id} className={`hist-row ${editing?.id === t.id ? 'editing' : ''}`}>
             <div className="hist-desc-wrap">
               <div className="hist-mini-icon" style={{ background: color + '18', color }}>
                 <CatIcon size={13} strokeWidth={2} />
@@ -49,7 +49,10 @@ export default function TransactionList() {
                 {isIn ? '+' : '-'}{fmt(t.valor)}
               </span>
             </div>
-            <div>
+            <div className="hist-actions">
+              <button className="del-btn" onClick={() => { setEditing(t); window.scrollTo({ top: 0, behavior: 'smooth' }); }} title="Editar">
+                <Pencil size={13} strokeWidth={2} />
+              </button>
               <button className="del-btn" onClick={() => delTransaction(t.id)} title="Excluir">
                 <Trash2 size={13} strokeWidth={2} />
               </button>
