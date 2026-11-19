@@ -1,6 +1,6 @@
 # Finanza
 
-Controle financeiro pessoal: lançamentos de entradas e saídas, gastos recorrentes, categorias e um dashboard mensal.
+Controle financeiro pessoal em formato SaaS: cada pessoa tem a sua conta, com lançamentos, gastos recorrentes, categorias e um resumo mensal. Um super admin administra as contas.
 
 - **Front:** React 18 + Vite
 - **Back:** Express + SQLite (`better-sqlite3`)
@@ -22,6 +22,17 @@ npm run dev
 
 Abra http://localhost:5173. O Vite encaminha as chamadas `/api` para o backend.
 
+### Primeiro acesso
+
+Qualquer pessoa pode criar a própria conta pela tela de entrada. O super admin, porém, só é criado pelo terminal:
+
+```bash
+cd backend
+npm run create-admin -- --email voce@exemplo.com --nome "Seu Nome"
+```
+
+Sem `--senha`, o comando mostra uma senha provisória e pede a troca no primeiro acesso. Se o banco já tinha lançamentos de antes das contas, eles passam para esse administrador.
+
 ### Variáveis de ambiente
 
 | Variável   | Onde    | Padrão                  | Para que serve                          |
@@ -29,6 +40,8 @@ Abra http://localhost:5173. O Vite encaminha as chamadas `/api` para o backend.
 | `PORT`     | backend | `3001`                  | Porta da API                            |
 | `DB_PATH`  | backend | `backend/financeiro.db` | Arquivo do banco SQLite                 |
 | `API_PORT` | front   | `3001`                  | Porta da API para onde o Vite encaminha |
+| `NODE_ENV` | backend | —                       | Com `production`, o cookie de sessão exige HTTPS |
+| `CORS_ORIGIN` | backend | —                    | Origens liberadas quando o front não passa pelo proxy |
 
 Se a porta 3001 já estiver ocupada na sua máquina:
 
@@ -50,13 +63,16 @@ Na raiz:
 | `npm run preview` | Serve o build localmente         |
 | `npm run lint`    | ESLint (o `backend/` é ignorado) |
 
-No `backend/`: `npm start` e `npm run dev` (reinicia ao salvar).
+No `backend/`: `npm start`, `npm run dev` (reinicia ao salvar), `npm run create-admin` e `npm run seed` (carga de demonstração em `backend/demo.db`; use `-- --email alguem@exemplo.com` para escolher a conta).
 
 ## O que o app faz
 
 - **Resumo:** indicadores do mês (saldo, receitas, gastos e contas fixas, com variação em relação ao mês anterior), gastos por dia, divisão por categoria, últimas movimentações, comprometimento da renda e histórico dos últimos 6 meses. O mês é trocado pelas setas no topo da página.
 - **Lançamentos:** criar, editar e excluir entradas e saídas. A lista filtra por texto, tipo, categoria e mês e mostra o saldo do que está filtrado.
 - **Recorrentes:** cadastro de despesas mensais (fixas ou variáveis). Cada uma pode ser lançada como gasto do mês atual, uma a uma ou todas as pendentes, sem duplicar.
+- **Contas:** criar conta com e-mail e senha, entrar e sair. A sessão fica num cookie `httpOnly` e vale 30 dias. Cada conta vê apenas os próprios dados.
+- **Configurações:** alterar nome, e-mail e senha, e excluir a conta com tudo o que há nela.
+- **Administração (super admin):** listar e buscar contas, suspender e reativar, redefinir senha com uma provisória de uso único e excluir contas, além dos números de uso do sistema.
 - **Categorias:** criar, editar (nome e cor) e excluir. Renomear atualiza também os lançamentos e recorrentes da categoria. Categoria em uso não pode ser excluída.
 
 ## API
@@ -65,6 +81,8 @@ Base: `/api`. Erros de validação voltam como `{ "error": "mensagem" }` com sta
 
 | Recurso             | Rotas                                    |
 | ------------------- | ---------------------------------------- |
+| `/api/auth`         | `POST /registrar`, `POST /login`, `POST /logout`, `GET /eu`, `PATCH /perfil`, `POST /senha`, `DELETE /conta` |
+| `/api/admin`        | `GET /usuarios`, `GET /metricas`, `PATCH /usuarios/:id/status`, `POST /usuarios/:id/senha`, `DELETE /usuarios/:id` |
 | `/api/transactions` | `GET`, `POST`, `PUT /:id`, `DELETE /:id` |
 | `/api/recorrentes`  | `GET`, `POST`, `PUT /:id`, `DELETE /:id` |
 | `/api/categorias`   | `GET`, `POST`, `PUT /:id`, `DELETE /:id` |
@@ -75,17 +93,19 @@ Formatos:
 - **recorrentes:** `{ nome, valor, tipo: "fixo" | "recorrente", cat, dia: 1–31, obs? }`
 - **categorias:** `{ nome, cor: "#RRGGBB" }`
 
-Lançamentos e recorrentes guardam a categoria pelo nome, não por id.
+Lançamentos e recorrentes guardam a categoria pelo nome, não por id, e pertencem a um usuário (`user_id`). Fora `/api/auth`, todas as rotas exigem sessão; as de `/api/admin` exigem papel de super admin. As senhas são guardadas como hash scrypt com sal.
 
 ## Estrutura
 
 ```
 backend/
-  server.js, db.js       Servidor Express e criação das tabelas
-  routes/                transactions, recorrentes, categorias
+  server.js, db.js       Servidor Express, tabelas e migrações
+  lib/auth.js            Senhas, sessões e controle de acesso
+  routes/                auth, admin, transactions, recorrentes, categorias
+  scripts/create-admin   Cria ou promove o super admin
 src/
-  context/               Estado global e chamadas à API
-  sections/              Dashboard, Lancamentos, Recorrentes, Categorias
+  context/               Sessão (AuthContext) e dados financeiros (FinanceContext)
+  sections/              Auth, Dashboard, Lancamentos, Recorrentes, Categorias, Configuracoes, Admin
   components/            Sidebar, MonthStepper, Select, Toast
   utils/                 Formatadores e funções de período
   index.css              Estilos
