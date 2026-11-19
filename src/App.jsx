@@ -6,12 +6,9 @@ import Dashboard from './sections/Dashboard/Dashboard';
 import Lancamentos from './sections/Lancamentos/Lancamentos';
 import Recorrentes from './sections/Recorrentes/Recorrentes';
 import Categorias from './sections/Categorias/Categorias';
+import { ymToPeriod, currentYM } from './utils/period';
 
-const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-                     'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-
-const now = new Date();
-const CURRENT_PERIOD = `${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`;
+const CURRENT_PERIOD = ymToPeriod(currentYM());
 
 export default function App() {
   const [section, setSection] = useState('dashboard');
