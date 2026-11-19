@@ -1,94 +1,90 @@
-@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap');
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 
 :root {
-  /* Papel frio e tinta azul-marinho; o verde só aparece onde há dinheiro entrando */
-  --bg:        #f4f6f5;
-  --surface:   #ffffff;
-  --surface2:  #f4f6f5;
-  --surface3:  #e8ecea;
-  --surface4:  #d9dfdc;
+  --paper:   #f6f7f5;
+  --surface: #ffffff;
+  --tint:    #eceee9;
+  --ink:     #0f1b2d;
+  --muted:   #596475;
+  --faint:   #8a94a3;
+  --line:    #dde2de;
+  --line2:   #c3cbc5;
 
-  --sidebar-bg:      #0e1726;
-  --sidebar-bg2:     #162133;
-  --sidebar-border:  rgba(255,255,255,0.08);
-  --sidebar-text:    #dde3ec;
-  --sidebar-text2:   #8592a6;
+  --green:    #1a8f43;
+  --green-bg: #e1f1e6;
+  --red:      #c63a3a;
+  --red-bg:   #f8e4e2;
 
-  --text:  #0e1726;
-  --text2: #475266;
-  --text3: #6f7a8c;
+  --serif: 'Newsreader', Georgia, serif;
+  --sans:  'Hanken Grotesk', system-ui, sans-serif;
 
-  --border:  #dfe4e1;
-  --border2: #c6cec9;
-
-  --green:       #1d8f3e;
-  --green-light: #25a64a;
-  --green-bg:    #e3f2e7;
-
-  --red:      #c8344a;
-  --red-bg:   #f8e5e8;
-  --blue:     #2858c4;
-  --blue-bg:  #e4ebf8;
-  --amber:    #a8620a;
-  --amber-bg: #f5ead8;
-  --purple:   #6a3fc0;
-
-  --font-display: 'Schibsted Grotesk', system-ui, sans-serif;
-  --font-body:    'Schibsted Grotesk', system-ui, sans-serif;
-
-  --radius:    6px;
-  --radius-sm: 4px;
-  --radius-lg: 6px;
-  --sidebar:   236px;
-  --ease:      0.12s ease-out;
+  --measure: 1080px;
+  --gutter:  clamp(16px, 4vw, 40px);
+  --ease:    0.12s ease-out;
 }
 
 html, body {
-  height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 14px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
 
-#root { min-height: 100vh }
+button { font-family: inherit }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 
-:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px }
-
-.layout { display: flex; min-height: 100vh }
-
-/* ── Sidebar ───────────────────────────── */
-.sidebar {
-  width: var(--sidebar);
-  flex-shrink: 0;
-  background: var(--sidebar-bg);
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 0; left: 0;
-  height: 100vh;
-  z-index: 100;
+/* ── Navegação superior ────────────────── */
+.topnav {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
 }
 
-.sidebar-logo { padding: 1.6rem 1.5rem 1.4rem }
-
-.logo-img {
-  width: 100%; max-width: 132px;
-  height: auto; object-fit: contain; display: block;
-  filter: brightness(0) invert(1);
+.topnav-inner {
+  max-width: var(--measure); margin: 0 auto;
+  padding: 0 var(--gutter);
+  display: flex; align-items: center; gap: 32px;
+  min-height: 64px;
 }
 
-.logo-icon-img { width: 32px; height: 32px; object-fit: contain; display: none }
+.topnav-logo { background: none; border: none; cursor: pointer; display: flex; padding: 0 }
+.topnav-logo img { height: 34px; width: auto; display: block }
 
-.sidebar-section-label {
-  font-size: 12px; font-weight: 500;
-  color: var(--sidebar-text2);
-  padding: 0.5rem 1.5rem 0.4rem;
+.topnav-links { display: flex; gap: 4px; flex: 1; min-width: 0 }
+
+.topnav-link {
+  background: none; border: none; cursor: pointer;
+  padding: 21px 12px 19px;
+  font-size: 15px; font-weight: 500; color: var(--muted);
+  border-bottom: 2px solid transparent;
+  transition: color var(--ease);
+  white-space: nowrap;
+}
+.topnav-link:hover { color: var(--ink) }
+.topnav-link.active { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink) }
+
+.month-stepper {
+  display: flex; align-items: center; gap: 2px;
+  border: 1px solid var(--line2); border-radius: 999px;
+  padding: 3px;
+  background: var(--surface);
+}
+.month-stepper button {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: none; background: none; color: var(--ink); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.month-stepper button:hover:not(:disabled) { background: var(--tint) }
+.month-stepper button:disabled { color: var(--line2); cursor: default }
+.month-stepper-label { min-width: 118px; text-align: center; font-size: 14px; font-weight: 600 }
+
+/* ── Página ────────────────────────────── */
+.page {
+  max-width: var(--measure); margin: 0 auto;
+  padding: clamp(28px, 5vw, 56px) var(--gutter) 96px;
 }
 
 .nav-item {
