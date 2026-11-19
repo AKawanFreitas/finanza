@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
-import { Tag, Palette, Plus } from 'lucide-react';
+import { Tag, Palette, Plus, Check, X } from 'lucide-react';
 
 const PRESET_COLORS = [
   '#22a84a', '#2563eb', '#e84057', '#d97706',
@@ -8,26 +8,35 @@ const PRESET_COLORS = [
 ];
 
 export default function CategoriaForm() {
-  const { addCategoria } = useFinance();
+  const { addCategoria, updateCategoria, editingCat, setEditingCat } = useFinance();
   const [nome, setNome] = useState('');
   const [cor, setCor]   = useState('#22a84a');
   const colorRef        = useRef(null);
 
+  useEffect(() => {
+    setNome(editingCat?.nome ?? '');
+    setCor(editingCat?.cor ?? '#22a84a');
+  }, [editingCat]);
+
   async function handleSubmit() {
     if (!nome.trim()) return;
-    const ok = await addCategoria({ nome: nome.trim(), cor });
-    if (ok) setNome('');
+    const data = { nome: nome.trim(), cor };
+    const ok = editingCat ? await updateCategoria(editingCat.id, data) : await addCategoria(data);
+    if (!ok) return;
+    if (editingCat) setEditingCat(null);
+    else setNome('');
   }
 
   return (
     <div className="form-wrap">
       <div className="form-header">
-        <div className="form-header-icon">
-          <Tag size={18} strokeWidth={2} />
-        </div>
         <div className="form-header-text">
-          <div className="form-header-title">Nova categoria</div>
-          <div className="form-header-sub">Crie categorias personalizadas para organizar seus gastos</div>
+          <div className="form-header-title">{editingCat ? 'Editar categoria' : 'Nova categoria'}</div>
+          <div className="form-header-sub">
+            {editingCat
+              ? 'Renomear atualiza também os lançamentos e recorrentes dessa categoria'
+              : 'Crie categorias personalizadas para organizar seus gastos'}
+          </div>
         </div>
       </div>
 
@@ -77,9 +86,15 @@ export default function CategoriaForm() {
 
       <div className="form-actions" style={{ marginTop: '1.1rem' }}>
         <button className="btn btn-primary btn-full" onClick={handleSubmit}>
-          <Plus size={15} strokeWidth={2.5} />
-          Criar categoria
+          {editingCat ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
+          {editingCat ? 'Salvar alterações' : 'Criar categoria'}
         </button>
+        {editingCat && (
+          <button className="btn btn-ghost" onClick={() => setEditingCat(null)}>
+            <X size={14} strokeWidth={2} />
+            Cancelar
+          </button>
+        )}
       </div>
     </div>
   );

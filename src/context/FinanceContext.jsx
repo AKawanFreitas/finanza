@@ -10,6 +10,7 @@ export function FinanceProvider({ children }) {
   const [loading, setLoading]           = useState(true);
   const [editing, setEditing]           = useState(null);
   const [editingRec, setEditingRec]     = useState(null);
+  const [editingCat, setEditingCat]     = useState(null);
 
   const [toast, setToast] = useState({ msg: '', type: 'ok', visible: false });
   const toastTimer = useRef(null);
@@ -101,6 +102,20 @@ export function FinanceProvider({ children }) {
     return true;
   }
 
+  async function updateCategoria(id, data) {
+    const updated = await sendJson(`${API}/categorias/${id}`, 'PUT', data);
+    if (!updated) return false;
+    const antigo = categorias.find(c => c.id === id)?.nome;
+    setCategorias(prev => prev.map(c => (c.id === id ? updated : c)));
+    if (antigo && antigo !== updated.nome) {
+      const rename = x => (x.cat === antigo ? { ...x, cat: updated.nome } : x);
+      setTransactions(prev => prev.map(rename));
+      setRecorrentes(prev => prev.map(rename));
+    }
+    showToast('Categoria atualizada ✓');
+    return true;
+  }
+
   async function delCategoria(id) {
     const res = await fetch(`${API}/categorias/${id}`, { method: 'DELETE' });
     if (!res.ok) {
@@ -109,6 +124,7 @@ export function FinanceProvider({ children }) {
       return;
     }
     setCategorias(prev => prev.filter(c => c.id !== id));
+    setEditingCat(e => (e?.id === id ? null : e));
     showToast('Categoria removida', 'err');
   }
 
@@ -127,7 +143,8 @@ export function FinanceProvider({ children }) {
       addTransaction, updateTransaction, delTransaction,
       editingRec, setEditingRec,
       addRecorrente, updateRecorrente, delRecorrente,
-      addCategoria, delCategoria,
+      editingCat, setEditingCat,
+      addCategoria, updateCategoria, delCategoria,
     }}>
       {children}
     </FinanceContext.Provider>
