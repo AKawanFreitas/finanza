@@ -1,6 +1,6 @@
 import { Pencil, Trash2, CalendarClock, CalendarPlus, Check } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
-import { fmt, fmtDate, dueDate, catIcon, getCatColor } from '../../utils/formatters';
+import { fmt, fmtDate, dueDate, getCatColor } from '../../utils/formatters';
 
 export default function RecorrenteList() {
   const {
@@ -58,14 +58,11 @@ export default function RecorrenteList() {
         {recorrentes.length === 0 ? (
           <div className="empty">Nenhum recorrente cadastrado.</div>
         ) : recorrentes.map(r => {
-          const CatIcon = catIcon(r.cat);
           const color   = getCatColor(categorias, r.cat);
           return (
             <div key={r.id} className={`rec-card ${editingRec?.id === r.id ? 'editing' : ''}`}>
               <div className="rec-left">
-                <div className="rec-icon" style={{ background: color + '18', color }}>
-                  <CatIcon size={16} strokeWidth={2} />
-                </div>
+                <span className="dot" style={{ background: color }} />
                 <div>
                   <div className="rec-name-text">{r.nome}</div>
                   <div className="rec-detail-text" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
