@@ -87,48 +87,116 @@ button { font-family: inherit }
   padding: clamp(28px, 5vw, 56px) var(--gutter) 96px;
 }
 
-.nav-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 0.55rem 1.5rem;
-  margin: 0;
-  cursor: pointer;
-  color: var(--sidebar-text2);
-  font-size: 14px; font-weight: 500;
-  border: none;
-  border-left: 3px solid transparent;
-  background: none;
-  width: 100%;
-  text-align: left;
-  transition: color var(--ease), background var(--ease);
+/* ── Resumo ────────────────────────────── */
+.hero {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(28px, 4.4vw, 46px);
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  max-width: 22em;
+  font-feature-settings: 'lnum';
+  text-wrap: balance;
+}
+.hero .num { font-weight: 600; white-space: nowrap }
+.hero .num.pos { color: var(--green) }
+.hero .num.neg { color: var(--red) }
+.hero-empty { margin-bottom: 14px }
+.hero-note { color: var(--muted); margin-bottom: 24px; max-width: 34em }
+
+.hero-meta {
+  margin-top: 24px;
+  display: flex; flex-direction: column; gap: 6px;
+  color: var(--muted); font-size: 15px;
+  max-width: 34em;
 }
 
-.nav-item:hover { color: var(--sidebar-text); background: rgba(255,255,255,0.04) }
+.meter { display: flex; align-items: center; gap: 14px; margin-bottom: 6px }
+.meter-track { width: 200px; height: 6px; background: var(--tint); border-radius: 3px; overflow: hidden; flex-shrink: 0 }
+.meter-fill { height: 100%; background: var(--ink); border-radius: 3px }
+.meter-fill.high { background: var(--red) }
 
-.nav-item.active {
-  color: #fff;
-  border-left-color: #3ecb62;
-  background: rgba(255,255,255,0.06);
+.dash-grid {
+  margin-top: clamp(40px, 6vw, 72px);
+  display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 72px);
+  align-items: start;
+}
+.dash-col { display: flex; flex-direction: column; gap: clamp(36px, 5vw, 56px); min-width: 0 }
+
+.block h2 {
+  font-family: var(--serif); font-weight: 500;
+  font-size: 22px; letter-spacing: -0.01em;
+  margin-bottom: 18px;
 }
 
-.nav-icon {
-  width: 18px; height: 18px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; color: inherit; background: none;
+.dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; display: inline-block }
+
+.link-btn {
+  margin-top: 14px; background: none; border: none; cursor: pointer;
+  color: var(--ink); font-size: 14px; font-weight: 600;
+  text-decoration: underline; text-underline-offset: 3px;
+  padding: 0;
 }
+.link-btn:hover { color: var(--green) }
 
-.nav-item.active .nav-icon { color: #3ecb62 }
+/* Dia a dia */
+.daily { margin: 0 }
+.daily-plot { display: flex; align-items: flex-end; gap: 3px; height: 190px }
+.daily-col { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px }
+.daily-bar { width: 100%; background: var(--ink); border-radius: 2px 2px 0 0; min-height: 0; flex: none }
+.daily-bar.peak { background: var(--red) }
+.daily-bar.is-zero { height: 2px; background: var(--line2) }
+.daily-tick { height: 14px; font-size: 11px; color: var(--faint); line-height: 14px }
+.daily figcaption { margin-top: 10px; color: var(--muted); font-size: 14px }
+.daily figcaption strong { color: var(--ink) }
 
-.nav-label { font-size: 14px; font-weight: 500 }
-
-.sidebar-footer {
-  margin-top: auto;
-  padding: 1.25rem 1.5rem;
-  border-top: 1px solid var(--sidebar-border);
+/* Categorias */
+.split-bar { display: flex; height: 14px; border-radius: 3px; overflow: hidden; gap: 2px; margin-bottom: 18px }
+.split-bar span { min-width: 3px }
+.split-list { list-style: none }
+.split-list li {
+  display: grid; grid-template-columns: 9px 1fr auto auto; gap: 12px; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid var(--line);
 }
+.split-list li:last-child { border-bottom: none }
+.split-pct { color: var(--faint); font-size: 13px; min-width: 34px; text-align: right }
+.split-val { font-weight: 600; min-width: 96px; text-align: right }
 
-.period-label {
-  font-size: 12px; color: var(--sidebar-text2);
-  margin-bottom: 6px; font-weight: 500;
+/* Extrato */
+.statement { display: flex; flex-direction: column; gap: 22px }
+.statement-day h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 4px }
+.statement-day ul { list-style: none }
+.statement-day li {
+  display: grid; grid-template-columns: 9px 1fr auto; gap: 12px; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid var(--line);
+}
+.statement-day li:last-child { border-bottom: none }
+.statement-desc { display: flex; flex-direction: column; font-weight: 500; line-height: 1.3 }
+.statement-desc small { font-size: 13px; font-weight: 400; color: var(--muted) }
+.statement-amount { font-weight: 600; white-space: nowrap }
+.statement-amount.in { color: var(--green) }
+
+/* Histórico de meses */
+.history { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; align-items: end }
+.history-col { display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0.5 }
+.history-col.current { opacity: 1 }
+.history-bars { height: 120px; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 4px }
+.history-bar { width: 38%; max-width: 18px; border-radius: 2px 2px 0 0; min-height: 2px }
+.history-bar.in  { background: var(--green) }
+.history-bar.out { background: var(--ink) }
+.history-label { font-size: 13px; color: var(--muted); font-weight: 500 }
+.history-col.current .history-label { color: var(--ink); font-weight: 700 }
+.history-key { grid-column: 1 / -1; display: flex; gap: 18px; font-size: 13px; color: var(--muted); margin-top: 6px }
+.history-key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px }
+.key-in  { background: var(--green) }
+.key-out { background: var(--ink) }
+
+/* ── Cabeçalho das telas de cadastro ───── */
+.page-header { margin-bottom: clamp(24px, 4vw, 40px) }
+.page-title {
+  font-family: var(--serif); font-weight: 500;
+  font-size: clamp(30px, 4vw, 42px); letter-spacing: -0.02em; line-height: 1.1;
 }
 
 /* ── Select customizado ────────────────── */
