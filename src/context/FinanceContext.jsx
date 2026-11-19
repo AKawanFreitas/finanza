@@ -9,6 +9,7 @@ export function FinanceProvider({ children }) {
   const [categorias, setCategorias]     = useState([]);
   const [loading, setLoading]           = useState(true);
   const [editing, setEditing]           = useState(null);
+  const [editingRec, setEditingRec]     = useState(null);
 
   const [toast, setToast] = useState({ msg: '', type: 'ok', visible: false });
   const toastTimer = useRef(null);
@@ -32,7 +33,7 @@ export function FinanceProvider({ children }) {
     });
   }, []);
 
-  async function sendTransaction(url, method, data) {
+  async function sendJson(url, method, data) {
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
@@ -47,7 +48,7 @@ export function FinanceProvider({ children }) {
   }
 
   async function addTransaction(data) {
-    const created = await sendTransaction(`${API}/transactions`, 'POST', data);
+    const created = await sendJson(`${API}/transactions`, 'POST', data);
     if (!created) return false;
     setTransactions(prev => [...prev, created]);
     showToast(data.tipo === 'entrada' ? 'Receita adicionada ✓' : 'Gasto adicionado ✓');
@@ -55,7 +56,7 @@ export function FinanceProvider({ children }) {
   }
 
   async function updateTransaction(id, data) {
-    const updated = await sendTransaction(`${API}/transactions/${id}`, 'PUT', data);
+    const updated = await sendJson(`${API}/transactions/${id}`, 'PUT', data);
     if (!updated) return false;
     setTransactions(prev => prev.map(t => (t.id === id ? updated : t)));
     showToast('Lançamento atualizado ✓');
@@ -70,19 +71,25 @@ export function FinanceProvider({ children }) {
   }
 
   async function addRecorrente(data) {
-    const res = await fetch(`${API}/recorrentes`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    const created = await res.json();
+    const created = await sendJson(`${API}/recorrentes`, 'POST', data);
+    if (!created) return false;
     setRecorrentes(prev => [...prev, created]);
     showToast('Recorrente adicionado ✓');
+    return true;
+  }
+
+  async function updateRecorrente(id, data) {
+    const updated = await sendJson(`${API}/recorrentes/${id}`, 'PUT', data);
+    if (!updated) return false;
+    setRecorrentes(prev => prev.map(r => (r.id === id ? updated : r)));
+    showToast('Recorrente atualizado ✓');
+    return true;
   }
 
   async function delRecorrente(id) {
     await fetch(`${API}/recorrentes/${id}`, { method: 'DELETE' });
     setRecorrentes(prev => prev.filter(r => r.id !== id));
+    setEditingRec(e => (e?.id === id ? null : e));
     showToast('Removido', 'err');
   }
 
@@ -116,7 +123,8 @@ export function FinanceProvider({ children }) {
       transactions, recorrentes, categorias, toast,
       editing, setEditing,
       addTransaction, updateTransaction, delTransaction,
-      addRecorrente, delRecorrente,
+      editingRec, setEditingRec,
+      addRecorrente, updateRecorrente, delRecorrente,
       addCategoria, delCategoria,
     }}>
       {children}

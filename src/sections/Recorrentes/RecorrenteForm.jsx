@@ -1,23 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import Select from '../../components/Select';
 import {
   AlignLeft, Tag, CalendarClock, MessageSquare,
-  RefreshCw, Zap, Plus
+  RefreshCw, Zap, Plus, Check, X
 } from 'lucide-react';
 
 const EMPTY = (cats) => ({ nome: '', valor: '', tipo: 'fixo', cat: cats[0]?.nome || '', dia: '', obs: '' });
 
 export default function RecorrenteForm() {
-  const { categorias, addRecorrente } = useFinance();
+  const { categorias, addRecorrente, updateRecorrente, editingRec, setEditingRec } = useFinance();
   const [form, setForm] = useState(EMPTY(categorias));
+
+  useEffect(() => {
+    if (editingRec) {
+      const { nome, valor, tipo, cat, dia, obs } = editingRec;
+      setForm({ nome, valor: String(valor), tipo, cat, dia: String(dia), obs: obs || '' });
+    } else {
+      setForm(EMPTY(categorias));
+    }
+  }, [editingRec, categorias]);
 
   function set(field, value) { setForm(f => ({ ...f, [field]: value })); }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!form.nome || !form.valor || !form.dia) return;
-    addRecorrente({ ...form, valor: parseFloat(form.valor), dia: parseInt(form.dia) });
-    setForm(EMPTY(categorias));
+    const data = { ...form, valor: parseFloat(form.valor), dia: parseInt(form.dia) };
+    const ok = editingRec
+      ? await updateRecorrente(editingRec.id, data)
+      : await addRecorrente(data);
+    if (!ok) return;
+    if (editingRec) setEditingRec(null);
+    else setForm(EMPTY(categorias));
   }
 
   const catOptions = categorias.map(c => ({ value: c.nome, label: c.nome, color: c.cor }));
@@ -25,12 +39,11 @@ export default function RecorrenteForm() {
   return (
     <div className="form-wrap">
       <div className="form-header">
-        <div className="form-header-icon">
-          <RefreshCw size={18} strokeWidth={2} />
-        </div>
         <div className="form-header-text">
-          <div className="form-header-title">Adicionar recorrente</div>
-          <div className="form-header-sub">Despesas que se repetem todo mês</div>
+          <div className="form-header-title">{editingRec ? 'Editar recorrente' : 'Adicionar recorrente'}</div>
+          <div className="form-header-sub">
+            {editingRec ? 'Altere os dados e salve' : 'Despesas que se repetem todo mês'}
+          </div>
         </div>
       </div>
 
@@ -130,9 +143,15 @@ export default function RecorrenteForm() {
 
       <div className="form-actions">
         <button className="btn btn-primary btn-full" onClick={handleSubmit}>
-          <Plus size={15} strokeWidth={2.5} />
-          Adicionar recorrente
+          {editingRec ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
+          {editingRec ? 'Salvar alterações' : 'Adicionar recorrente'}
         </button>
+        {editingRec && (
+          <button className="btn btn-ghost" onClick={() => setEditingRec(null)}>
+            <X size={14} strokeWidth={2} />
+            Cancelar
+          </button>
+        )}
       </div>
     </div>
   );

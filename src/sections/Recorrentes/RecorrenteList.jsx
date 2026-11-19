@@ -1,9 +1,9 @@
-import { Trash2, CalendarClock } from 'lucide-react';
+import { Pencil, Trash2, CalendarClock } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { fmt, catIcon, getCatColor } from '../../utils/formatters';
 
 export default function RecorrenteList() {
-  const { recorrentes, categorias, delRecorrente } = useFinance();
+  const { recorrentes, categorias, delRecorrente, editingRec, setEditingRec } = useFinance();
   const total = recorrentes.reduce((a, r) => a + r.valor, 0);
 
   return (
@@ -20,7 +20,7 @@ export default function RecorrenteList() {
           const CatIcon = catIcon(r.cat);
           const color   = getCatColor(categorias, r.cat);
           return (
-            <div key={r.id} className="rec-card">
+            <div key={r.id} className={`rec-card ${editingRec?.id === r.id ? 'editing' : ''}`}>
               <div className="rec-left">
                 <div className="rec-icon" style={{ background: color + '18', color }}>
                   <CatIcon size={16} strokeWidth={2} />
@@ -39,9 +39,14 @@ export default function RecorrenteList() {
                   {r.tipo === 'fixo' ? 'Fixo' : 'Variável'}
                 </span>
                 <div className="rec-amount">{fmt(r.valor)}</div>
-                <button className="del-btn" onClick={() => delRecorrente(r.id)} title="Excluir">
-                  <Trash2 size={13} strokeWidth={2} />
-                </button>
+                <div className="hist-actions">
+                  <button className="del-btn" onClick={() => { setEditingRec(r); window.scrollTo({ top: 0, behavior: 'smooth' }); }} title="Editar">
+                    <Pencil size={13} strokeWidth={2} />
+                  </button>
+                  <button className="del-btn" onClick={() => delRecorrente(r.id)} title="Excluir">
+                    <Trash2 size={13} strokeWidth={2} />
+                  </button>
+                </div>
               </div>
             </div>
           );
