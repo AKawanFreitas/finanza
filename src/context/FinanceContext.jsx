@@ -8,6 +8,7 @@ export function FinanceProvider({ children }) {
   const [recorrentes, setRecorrentes]   = useState([]);
   const [categorias, setCategorias]     = useState([]);
   const [loading, setLoading]           = useState(true);
+  const [editing, setEditing]           = useState(null);
 
   const [toast, setToast] = useState({ msg: '', type: 'ok', visible: false });
   const toastTimer = useRef(null);
@@ -31,20 +32,40 @@ export function FinanceProvider({ children }) {
     });
   }, []);
 
-  async function addTransaction(data) {
-    const res = await fetch(`${API}/transactions`, {
-      method: 'POST',
+  async function sendTransaction(url, method, data) {
+    const res = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    const created = await res.json();
+    const body = await res.json();
+    if (!res.ok) {
+      showToast(body.error || 'Não foi possível salvar.', 'err');
+      return null;
+    }
+    return body;
+  }
+
+  async function addTransaction(data) {
+    const created = await sendTransaction(`${API}/transactions`, 'POST', data);
+    if (!created) return false;
     setTransactions(prev => [...prev, created]);
     showToast(data.tipo === 'entrada' ? 'Receita adicionada ✓' : 'Gasto adicionado ✓');
+    return true;
+  }
+
+  async function updateTransaction(id, data) {
+    const updated = await sendTransaction(`${API}/transactions/${id}`, 'PUT', data);
+    if (!updated) return false;
+    setTransactions(prev => prev.map(t => (t.id === id ? updated : t)));
+    showToast('Lançamento atualizado ✓');
+    return true;
   }
 
   async function delTransaction(id) {
     await fetch(`${API}/transactions/${id}`, { method: 'DELETE' });
     setTransactions(prev => prev.filter(t => t.id !== id));
+    setEditing(e => (e?.id === id ? null : e));
     showToast('Removido', 'err');
   }
 
@@ -93,7 +114,8 @@ export function FinanceProvider({ children }) {
   return (
     <FinanceContext.Provider value={{
       transactions, recorrentes, categorias, toast,
-      addTransaction, delTransaction,
+      editing, setEditing,
+      addTransaction, updateTransaction, delTransaction,
       addRecorrente, delRecorrente,
       addCategoria, delCategoria,
     }}>
