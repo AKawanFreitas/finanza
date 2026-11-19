@@ -64,7 +64,7 @@ export default function CategoriaForm() {
           >
             <div className="color-swatch" style={{ background: cor }} />
             <span className="color-swatch-label">{cor.toUpperCase()}</span>
-            <Palette size={14} strokeWidth={2} style={{ color: 'var(--text3)' }} />
+            <Palette size={14} strokeWidth={2} style={{ color: 'var(--faint)' }} />
             <input ref={colorRef} type="color" value={cor} onChange={e => setCor(e.target.value)} />
           </div>
         </div>

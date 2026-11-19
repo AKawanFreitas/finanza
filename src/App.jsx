@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FinanceProvider } from './context/FinanceContext';
-import TopNav from './components/TopNav';
+import Sidebar from './components/Sidebar';
 import Toast from './components/Toast';
 import Dashboard from './sections/Dashboard/Dashboard';
 import Lancamentos from './sections/Lancamentos/Lancamentos';
@@ -14,13 +14,15 @@ export default function App() {
 
   return (
     <FinanceProvider>
-      <TopNav active={section} onNavigate={setSection} ym={ym} onYmChange={setYm} />
-      <main className="page">
-        {section === 'dashboard'   && <Dashboard ym={ym} onNavigate={setSection} />}
-        {section === 'lancamento'  && <Lancamentos />}
-        {section === 'recorrentes' && <Recorrentes />}
-        {section === 'categorias'  && <Categorias />}
-      </main>
+      <div className="shell">
+        <Sidebar active={section} onNavigate={setSection} />
+        <main className="page">
+          {section === 'dashboard'   && <Dashboard ym={ym} onYmChange={setYm} onNavigate={setSection} />}
+          {section === 'lancamento'  && <Lancamentos />}
+          {section === 'recorrentes' && <Recorrentes />}
+          {section === 'categorias'  && <Categorias />}
+        </main>
+      </div>
       <Toast />
     </FinanceProvider>
   );
