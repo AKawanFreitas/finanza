@@ -54,7 +54,7 @@ No `backend/`: `npm start` e `npm run dev` (reinicia ao salvar).
 
 ## O que o app faz
 
-- **Resumo:** o mês em uma frase (quanto entrou, quanto saiu, quanto sobrou), com a comparação com o mês anterior e as contas fixas. Abaixo, os gastos dia a dia, a divisão por categoria, as últimas movimentações agrupadas por dia e os últimos 6 meses. O mês é trocado pelas setas na barra superior.
+- **Resumo:** indicadores do mês (saldo, receitas, gastos e contas fixas, com variação em relação ao mês anterior), gastos por dia, divisão por categoria, últimas movimentações, comprometimento da renda e histórico dos últimos 6 meses. O mês é trocado pelas setas no topo da página.
 - **Lançamentos:** criar, editar e excluir entradas e saídas. A lista filtra por texto, tipo, categoria e mês e mostra o saldo do que está filtrado.
 - **Recorrentes:** cadastro de despesas mensais (fixas ou variáveis). Cada uma pode ser lançada como gasto do mês atual, uma a uma ou todas as pendentes, sem duplicar.
 - **Categorias:** criar, editar (nome e cor) e excluir. Renomear atualiza também os lançamentos e recorrentes da categoria. Categoria em uso não pode ser excluída.
@@ -86,7 +86,7 @@ backend/
 src/
   context/               Estado global e chamadas à API
   sections/              Dashboard, Lancamentos, Recorrentes, Categorias
-  components/            TopNav, Select, Toast
+  components/            Sidebar, MonthStepper, Select, Toast
   utils/                 Formatadores e funções de período
   index.css              Estilos
 ```
