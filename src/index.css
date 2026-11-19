@@ -268,8 +268,9 @@ html, body {
 .metric-label { font-size: 13px; color: var(--text2); font-weight: 500; margin-bottom: 0 }
 
 .metric-value {
-  font-size: 30px; font-weight: 700;
+  font-size: clamp(19px, 2.4vw, 30px); font-weight: 700;
   letter-spacing: -0.03em; line-height: 1.15;
+  white-space: nowrap;
   color: var(--text);
 }
 .metric-value.green { color: var(--green) }

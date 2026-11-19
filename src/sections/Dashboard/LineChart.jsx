@@ -2,9 +2,11 @@ import { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 import { useFinance } from '../../context/FinanceContext';
 
-const MONTH_ABBR = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+import { MONTH_ABBR, shiftYM } from '../../utils/period';
 
-export default function LineChart() {
+const WINDOW = 6;
+
+export default function LineChart({ ym }) {
   const { transactions } = useFinance();
   const canvasRef = useRef(null);
   const chartRef  = useRef(null);
@@ -18,8 +20,9 @@ export default function LineChart() {
       else                       map[ym].gastos   += t.valor;
     });
 
-    const months = Object.keys(map).sort();
-    if (!months.length) return;
+    // Janela dos últimos 6 meses terminando no período escolhido, incluindo meses sem lançamentos.
+    const months = Array.from({ length: WINDOW }, (_, i) => shiftYM(ym, i - (WINDOW - 1)));
+    months.forEach(m => { if (!map[m]) map[m] = { receitas: 0, gastos: 0 }; });
 
     if (chartRef.current) chartRef.current.destroy();
 
@@ -65,7 +68,7 @@ export default function LineChart() {
     });
 
     return () => chartRef.current?.destroy();
-  }, [transactions]);
+  }, [transactions, ym]);
 
   return <canvas ref={canvasRef} />;
 }

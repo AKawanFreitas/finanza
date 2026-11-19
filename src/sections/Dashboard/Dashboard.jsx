@@ -2,21 +2,23 @@ import { useMemo } from 'react';
 import { Wallet, TrendingUp, TrendingDown, Bookmark, Activity } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { fmt } from '../../utils/formatters';
+import { periodToYM, shiftYM, MONTH_ABBR } from '../../utils/period';
 import MetricCard from './MetricCard';
 import LineChart from './LineChart';
 import DonutChart from './DonutChart';
 import CategoryBars from './CategoryBars';
 import RecentTransactions from './RecentTransactions';
 
-const MONTH_MAP = {
-  'Janeiro':'01','Fevereiro':'02','Março':'03','Abril':'04',
-  'Maio':'05','Junho':'06','Julho':'07','Agosto':'08',
-  'Setembro':'09','Outubro':'10','Novembro':'11','Dezembro':'12',
-};
-
-function periodToYM(period) {
-  const [mName, year] = period.split(' ');
-  return `${year}-${MONTH_MAP[mName]}`;
+// Variação em relação ao mês anterior; sem base de comparação, mostra só a contagem.
+function delta(atual, anterior, mes, goodWhenUp, fallback) {
+  if (!anterior) return { pill: fallback, pillClass: 'neu' };
+  const pct = Math.round(((atual - anterior) / anterior) * 100);
+  if (pct === 0) return { pill: `Igual a ${mes}`, pillClass: 'neu' };
+  const up = pct > 0;
+  return {
+    pill: `${up ? '▲' : '▼'} ${Math.abs(pct)}% vs. ${mes}`,
+    pillClass: up === goodWhenUp ? 'up' : 'dn',
+  };
 }
 
 function healthScore(rec, gas) {
@@ -28,20 +30,27 @@ function healthScore(rec, gas) {
 export default function Dashboard({ period }) {
   const { transactions, recorrentes, categorias } = useFinance();
 
-  const { rec, gas, fixo, saldo, sorted, filtered, txCount } = useMemo(() => {
-    const ym       = periodToYM(period);
+  const ym     = periodToYM(period);
+  const prevYM = shiftYM(ym, -1);
+
+  const { rec, gas, fixo, saldo, sorted, filtered, txCount, prevRec, prevGas } = useMemo(() => {
+    const total = (list, tipo) => list.filter(t => t.tipo === tipo).reduce((a, t) => a + t.valor, 0);
+    const prev     = transactions.filter(t => t.data.startsWith(prevYM));
+    const prevRec  = total(prev, 'entrada');
+    const prevGas  = total(prev, 'saida');
     const filtered = transactions.filter(t => t.data.startsWith(ym));
-    const rec      = filtered.filter(t => t.tipo === 'entrada').reduce((a, t) => a + t.valor, 0);
-    const gas      = filtered.filter(t => t.tipo === 'saida').reduce((a, t) => a + t.valor, 0);
+    const rec      = total(filtered, 'entrada');
+    const gas      = total(filtered, 'saida');
     const fixo     = recorrentes.filter(r => r.tipo === 'fixo').reduce((a, r) => a + r.valor, 0);
     const catMap   = {};
     filtered.filter(t => t.tipo === 'saida').forEach(t => {
       catMap[t.cat] = (catMap[t.cat] || 0) + t.valor;
     });
     const sorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
-    return { rec, gas, fixo, saldo: rec - gas, sorted, filtered, txCount: filtered.length };
-  }, [transactions, recorrentes, period]);
+    return { rec, gas, fixo, saldo: rec - gas, sorted, filtered, txCount: filtered.length, prevRec, prevGas };
+  }, [transactions, recorrentes, ym, prevYM]);
 
+  const prevMes   = MONTH_ABBR[Number(prevYM.slice(5)) - 1].toLowerCase();
   const fixoCount = recorrentes.filter(r => r.tipo === 'fixo').length;
   const spendPct  = healthScore(rec, gas);
 
@@ -72,11 +81,11 @@ export default function Dashboard({ period }) {
         />
         <MetricCard
           accent="b" icon={TrendingUp} label="Receitas" value={fmt(rec)}
-          pill={`${filtered.filter(t=>t.tipo==='entrada').length} entradas`} pillClass="neu"
+          {...delta(rec, prevRec, prevMes, true, `${filtered.filter(t=>t.tipo==='entrada').length} entradas`)}
         />
         <MetricCard
           accent="r" icon={TrendingDown} label="Gastos" value={fmt(gas)}
-          pill={`${filtered.filter(t=>t.tipo==='saida').length} saídas`} pillClass="dn"
+          {...delta(gas, prevGas, prevMes, false, `${filtered.filter(t=>t.tipo==='saida').length} saídas`)}
         />
         <MetricCard
           accent="a" icon={Bookmark} label="Fixos mensais" value={fmt(fixo)}
@@ -113,7 +122,7 @@ export default function Dashboard({ period }) {
             </div>
           </div>
           <div style={{ position: 'relative', height: 200 }}>
-            <LineChart />
+            <LineChart ym={ym} />
           </div>
         </div>
         <div className="card">
