@@ -531,111 +531,77 @@ html, body {
 }
 .del-btn:hover { background: var(--red-bg); color: var(--red) }
 
-/* ══════════════════════════════════════
-   RECORRENTES
-══════════════════════════════════════ */
-.rec-grid { display: flex; flex-direction: column; gap: 8px }
+/* ── Recorrentes ───────────────────────── */
+.rec-grid { display: flex; flex-direction: column }
 
 .rec-card {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 13px 16px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  transition: all var(--ease);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
 }
-
-.rec-card:hover {
-  background: var(--surface3);
-  border-color: var(--border2);
-  transform: translateX(3px);
-  box-shadow: var(--shadow-xs);
-}
+.rec-card:last-child { border-bottom: none }
 
 .rec-left { display: flex; align-items: center; gap: 12px }
+.rec-icon { display: none }
+.rec-name-text   { font-size: 14px; font-weight: 600; color: var(--text) }
+.rec-detail-text { font-size: 13px; color: var(--text3); margin-top: 1px }
+.rec-right { display: flex; align-items: center; gap: 14px }
+.rec-amount { font-size: 15px; font-weight: 700; color: var(--text) }
 
-.rec-icon {
-  width: 36px; height: 36px; border-radius: var(--radius-sm);
-  display: flex; align-items: center; justify-content: center;
-  background: var(--red-bg); color: var(--red); flex-shrink: 0;
-}
+.tag { font-size: 13px; padding: 0; font-weight: 500; color: var(--text2) }
+.tag-fixo, .tag-rec { background: none }
 
-.rec-name-text  { font-size: 13px; font-weight: 500; color: var(--text) }
-.rec-detail-text { font-size: 11px; color: var(--text3); margin-top: 2px }
-.rec-right { display: flex; align-items: center; gap: 10px }
-.rec-amount { font-size: 14px; font-weight: 700; color: var(--red) }
-
-.tag { font-size: 10px; padding: 3px 9px; border-radius: 20px; font-weight: 600; letter-spacing: 0.03em }
-.tag-fixo { background: var(--blue-bg); color: var(--blue) }
-.tag-rec  { background: var(--green-bg); color: var(--green) }
-
-/* ══════════════════════════════════════
-   CATEGORIAS
-══════════════════════════════════════ */
-.cat-admin-grid { display: flex; flex-direction: column; gap: 6px }
+/* ── Categorias (admin) ────────────────── */
+.cat-admin-grid { display: flex; flex-direction: column }
 
 .cat-admin-row {
   display: flex; align-items: center; gap: 12px;
-  padding: 11px 14px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  transition: all var(--ease);
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
 }
+.cat-admin-row:last-child { border-bottom: none }
 
-.cat-admin-row:hover { border-color: var(--border2); background: var(--surface3) }
+.cat-swatch { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0 }
+.cat-admin-name { flex: 1; font-size: 14px; font-weight: 500; color: var(--text) }
 
-.cat-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0 }
-.cat-admin-name { flex: 1; font-size: 13px; font-weight: 500; color: var(--text) }
+/* ── Estado vazio ──────────────────────── */
+.empty { padding: 2.5rem 0; color: var(--text3); font-size: 14px; text-align: left }
 
-/* ══════════════════════════════════════
-   ESTADO VAZIO
-══════════════════════════════════════ */
-.empty {
-  text-align: center; padding: 3rem;
-  color: var(--text3); font-size: 13px;
-}
-
-/* ══════════════════════════════════════
-   TOAST
-══════════════════════════════════════ */
+/* ── Toast ─────────────────────────────── */
 .toast {
   position: fixed; bottom: 24px; right: 24px;
-  background: var(--text);
-  color: var(--surface);
-  font-size: 13px; padding: 12px 18px;
+  background: var(--text); color: #fff;
+  font-size: 14px; padding: 11px 16px;
   border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(60px); opacity: 0;
-  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  transform: translateY(16px); opacity: 0;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
   z-index: 999; pointer-events: none; font-weight: 500;
 }
-
 .toast.show { transform: translateY(0); opacity: 1 }
-.toast.ok  { background: var(--green); color: #fff }
-.toast.err { background: var(--red);   color: #fff }
+.toast.ok  { background: var(--green) }
+.toast.err { background: var(--red) }
 
-/* ══════════════════════════════════════
-   SCROLLBAR
-══════════════════════════════════════ */
-::-webkit-scrollbar { width: 5px }
+::-webkit-scrollbar { width: 8px }
 ::-webkit-scrollbar-track { background: transparent }
-::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 10px }
-::-webkit-scrollbar-thumb:hover { background: var(--surface4) }
+::-webkit-scrollbar-thumb { background: var(--surface4); border-radius: 4px }
 
-/* ══════════════════════════════════════
-   RESPONSIVO
-══════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important }
+}
+
+/* ── Responsivo ────────────────────────── */
 @media (max-width: 768px) {
   .sidebar { width: 64px }
   .logo-img { display: none }
   .logo-icon-img { display: block }
   .nav-label, .sidebar-section-label, .sidebar-footer { display: none }
   .sidebar-logo { display: flex; justify-content: center; padding: 1.25rem 0 }
-  .nav-item { justify-content: center; padding: 0.65rem; margin: 1px 0.25rem; width: calc(100% - 0.5rem) }
-  .nav-icon { width: 36px; height: 36px }
-  .main { margin-left: 64px; padding: 1rem; max-width: calc(100% - 64px) }
+  .nav-item { justify-content: center; padding: 0.7rem 0 }
+  .main { margin-left: 64px; padding: 1.25rem 1rem; max-width: calc(100% - 64px) }
+  .page-title { font-size: 24px }
   .metrics-row { grid-template-columns: 1fr 1fr }
+  .metric-card:nth-child(3) { border-left: none }
+  .metric-card:nth-child(n+3) { border-top: 1px solid var(--border) }
   .charts-row, .bottom-row { grid-template-columns: 1fr }
   .form-grid { grid-template-columns: 1fr }
   .form-span-2 { grid-column: span 1 }
