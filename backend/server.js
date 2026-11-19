@@ -5,7 +5,7 @@ const recorrentes  = require('./routes/recorrentes');
 const categorias   = require('./routes/categorias');
 
 const app  = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 4747;
 
 app.use(cors());
 app.use(express.json());
