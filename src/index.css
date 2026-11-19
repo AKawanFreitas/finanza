@@ -1,63 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Syne:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 
 :root {
-  /* ── Off-white content palette ── */
-  --bg:        #f0ede8;
+  /* Papel frio e tinta azul-marinho; o verde só aparece onde há dinheiro entrando */
+  --bg:        #f4f6f5;
   --surface:   #ffffff;
-  --surface2:  #f7f5f2;
-  --surface3:  #ede9e3;
-  --surface4:  #e2ddd6;
+  --surface2:  #f4f6f5;
+  --surface3:  #e8ecea;
+  --surface4:  #d9dfdc;
 
-  /* ── Sidebar (dark navy, da logo Finanza) ── */
-  --sidebar-bg:      #0c1220;
-  --sidebar-bg2:     #111827;
-  --sidebar-border:  rgba(255,255,255,0.06);
-  --sidebar-text:    #c8d0e0;
-  --sidebar-text2:   #5a6a82;
+  --sidebar-bg:      #0e1726;
+  --sidebar-bg2:     #162133;
+  --sidebar-border:  rgba(255,255,255,0.08);
+  --sidebar-text:    #dde3ec;
+  --sidebar-text2:   #8592a6;
 
-  /* ── Texto (conteúdo) ── */
-  --text:  #1a2035;
-  --text2: #5a6678;
-  --text3: #9aa3b2;
+  --text:  #0e1726;
+  --text2: #475266;
+  --text3: #6f7a8c;
 
-  /* ── Bordas ── */
-  --border:  rgba(0,0,0,0.07);
-  --border2: rgba(0,0,0,0.13);
+  --border:  #dfe4e1;
+  --border2: #c6cec9;
 
-  /* ── Verde Finanza ── */
-  --green:       #22a84a;
-  --green-light: #2dc653;
-  --green-bg:    rgba(34,168,74,0.10);
-  --green-glow:  rgba(34,168,74,0.20);
+  --green:       #1d8f3e;
+  --green-light: #25a64a;
+  --green-bg:    #e3f2e7;
 
-  /* ── Cores de status ── */
-  --red:      #e84057;
-  --red-bg:   rgba(232,64,87,0.10);
-  --blue:     #2563eb;
-  --blue-bg:  rgba(37,99,235,0.10);
-  --amber:    #d97706;
-  --amber-bg: rgba(217,119,6,0.10);
-  --purple:   #7c3aed;
+  --red:      #c8344a;
+  --red-bg:   #f8e5e8;
+  --blue:     #2858c4;
+  --blue-bg:  #e4ebf8;
+  --amber:    #a8620a;
+  --amber-bg: #f5ead8;
+  --purple:   #6a3fc0;
 
-  /* ── Sombras ── */
-  --shadow-xs: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.05);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.12), 0 3px 10px rgba(0,0,0,0.06);
+  --font-display: 'Schibsted Grotesk', system-ui, sans-serif;
+  --font-body:    'Schibsted Grotesk', system-ui, sans-serif;
 
-  /* ── Tipografia ── */
-  --font-display: 'Syne', sans-serif;
-  --font-body:    'Inter', sans-serif;
-
-  /* ── Layout ── */
-  --radius:    12px;
-  --radius-sm: 8px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --sidebar:   252px;
-  --ease:      0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius:    6px;
+  --radius-sm: 4px;
+  --radius-lg: 6px;
+  --sidebar:   236px;
+  --ease:      0.12s ease-out;
 }
 
 html, body {
@@ -66,25 +51,22 @@ html, body {
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
 
 #root { min-height: 100vh }
 
-/* ══════════════════════════════════════
-   LAYOUT
-══════════════════════════════════════ */
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px }
+
 .layout { display: flex; min-height: 100vh }
 
-/* ══════════════════════════════════════
-   SIDEBAR
-══════════════════════════════════════ */
+/* ── Sidebar ───────────────────────────── */
 .sidebar {
   width: var(--sidebar);
   flex-shrink: 0;
   background: var(--sidebar-bg);
-  border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -93,73 +75,54 @@ html, body {
   z-index: 100;
 }
 
-.sidebar-logo {
-  padding: 1.75rem 1.5rem 1.4rem;
-  border-bottom: 1px solid var(--sidebar-border);
-}
+.sidebar-logo { padding: 1.6rem 1.5rem 1.4rem }
 
 .logo-img {
-  width: 100%; max-width: 148px;
+  width: 100%; max-width: 132px;
   height: auto; object-fit: contain; display: block;
   filter: brightness(0) invert(1);
-  opacity: 0.92;
 }
 
-.logo-icon-img {
-  width: 34px; height: 34px;
-  object-fit: contain; display: none;
-}
+.logo-icon-img { width: 32px; height: 32px; object-fit: contain; display: none }
 
 .sidebar-section-label {
-  font-size: 10px; font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: 12px; font-weight: 500;
   color: var(--sidebar-text2);
-  text-transform: uppercase;
-  padding: 1.25rem 1.5rem 0.5rem;
+  padding: 0.5rem 1.5rem 0.4rem;
 }
 
 .nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 0.6rem 1rem;
-  margin: 1px 0.75rem;
-  border-radius: var(--radius-sm);
+  display: flex; align-items: center; gap: 12px;
+  padding: 0.55rem 1.5rem;
+  margin: 0;
   cursor: pointer;
   color: var(--sidebar-text2);
-  font-size: 13px; font-weight: 500;
-  border: 1px solid transparent;
+  font-size: 14px; font-weight: 500;
+  border: none;
+  border-left: 3px solid transparent;
   background: none;
-  width: calc(100% - 1.5rem);
+  width: 100%;
   text-align: left;
-  transition: all var(--ease);
+  transition: color var(--ease), background var(--ease);
 }
 
-.nav-item:hover {
-  background: rgba(255,255,255,0.05);
-  color: var(--sidebar-text);
-}
+.nav-item:hover { color: var(--sidebar-text); background: rgba(255,255,255,0.04) }
 
 .nav-item.active {
-  background: rgba(34,168,74,0.14);
-  color: #4dd870;
-  border-color: rgba(34,168,74,0.22);
+  color: #fff;
+  border-left-color: #3ecb62;
+  background: rgba(255,255,255,0.06);
 }
 
 .nav-icon {
-  width: 30px; height: 30px;
-  border-radius: var(--radius-sm);
+  width: 18px; height: 18px;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(255,255,255,0.05);
-  flex-shrink: 0;
-  transition: all var(--ease);
-  color: inherit;
+  flex-shrink: 0; color: inherit; background: none;
 }
 
-.nav-item.active .nav-icon {
-  background: rgba(34,168,74,0.18);
-  color: #4dd870;
-}
+.nav-item.active .nav-icon { color: #3ecb62 }
 
-.nav-label { font-size: 13px; font-weight: 500 }
+.nav-label { font-size: 14px; font-weight: 500 }
 
 .sidebar-footer {
   margin-top: auto;
@@ -168,117 +131,76 @@ html, body {
 }
 
 .period-label {
-  font-size: 10px; color: var(--sidebar-text2);
-  text-transform: uppercase; letter-spacing: 0.1em;
-  margin-bottom: 8px; font-weight: 600;
+  font-size: 12px; color: var(--sidebar-text2);
+  margin-bottom: 6px; font-weight: 500;
 }
 
-/* ══════════════════════════════════════
-   CUSTOM SELECT (cselect)
-══════════════════════════════════════ */
+/* ── Select customizado ────────────────── */
 .cselect { position: relative; width: 100% }
 
 .cselect-trigger {
   width: 100%;
   display: flex; align-items: center; gap: 8px;
-  padding: 11px 12px;
-  background: var(--surface2);
-  border: 1.5px solid var(--border2);
+  padding: 9px 11px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
   border-radius: var(--radius-sm);
-  color: var(--text); font-family: var(--font-body); font-size: 13px;
+  color: var(--text); font-family: var(--font-body); font-size: 14px;
   cursor: pointer; text-align: left;
-  transition: all var(--ease);
+  transition: border-color var(--ease);
 }
 
-.cselect-trigger:hover { border-color: rgba(34,168,74,0.45) }
-.cselect-trigger.open  {
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px rgba(34,168,74,0.1);
-  background: var(--surface);
-}
+.cselect-trigger:hover { border-color: var(--text3) }
+.cselect-trigger.open  { border-color: var(--text) }
 
 .cselect-prefix { color: var(--text3); display: flex; align-items: center; flex-shrink: 0 }
-.cselect-trigger.open .cselect-prefix { color: var(--green) }
+.cselect-value  { flex: 1; font-size: 14px }
+.cselect-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0 }
 
-.cselect-value  { flex: 1; font-size: 13px }
-
-.cselect-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%; flex-shrink: 0;
-}
-
-.cselect-chevron {
-  color: var(--text3); flex-shrink: 0;
-  transition: transform var(--ease);
-}
-.cselect-trigger.open .cselect-chevron { transform: rotate(180deg); color: var(--green) }
+.cselect-chevron { color: var(--text3); flex-shrink: 0; transition: transform var(--ease) }
+.cselect-trigger.open .cselect-chevron { transform: rotate(180deg) }
 
 .cselect-menu {
-  position: absolute; top: calc(100% + 5px); left: 0; right: 0;
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
   background: var(--surface);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border2);
   border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 6px 20px rgba(14,23,38,0.12);
   z-index: 200;
-  overflow: hidden;
-  animation: cselect-in 0.13s ease;
-}
-
-@keyframes cselect-in {
-  from { opacity: 0; transform: translateY(-6px) scale(0.98) }
-  to   { opacity: 1; transform: translateY(0)   scale(1) }
+  max-height: 260px; overflow-y: auto;
 }
 
 .cselect-option {
   width: 100%;
   display: flex; align-items: center; gap: 9px;
-  padding: 9px 12px;
+  padding: 8px 11px;
   background: transparent; border: none;
-  color: var(--text); font-family: var(--font-body); font-size: 13px;
+  color: var(--text); font-family: var(--font-body); font-size: 14px;
   cursor: pointer; text-align: left;
-  transition: background var(--ease);
 }
 
 .cselect-option:hover    { background: var(--surface2) }
-.cselect-option.selected { background: var(--green-bg); color: var(--green); font-weight: 600 }
-.cselect-option + .cselect-option { border-top: 1px solid var(--border) }
-
+.cselect-option.selected { font-weight: 600 }
 .cselect-check { color: var(--green); flex-shrink: 0 }
 
-/* Dark variant — used inside .sidebar */
 .cselect-dark .cselect-trigger {
   background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.14);
   color: var(--sidebar-text);
 }
-
-.cselect-dark .cselect-trigger:hover { border-color: rgba(34,168,74,0.5) }
-.cselect-dark .cselect-trigger.open  {
-  border-color: rgba(34,168,74,0.6);
-  box-shadow: 0 0 0 3px rgba(34,168,74,0.12);
-  background: rgba(255,255,255,0.09);
-}
-
+.cselect-dark .cselect-trigger:hover,
+.cselect-dark .cselect-trigger.open { border-color: rgba(255,255,255,0.4) }
 .cselect-dark .cselect-value   { color: var(--sidebar-text) }
 .cselect-dark .cselect-chevron { color: var(--sidebar-text2) }
-.cselect-dark .cselect-trigger.open .cselect-chevron { color: #22a84a }
-
 .cselect-dark .cselect-menu {
   background: var(--sidebar-bg2);
-  border-color: rgba(255,255,255,0.10);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  bottom: calc(100% + 5px);
-  top: auto;
+  border-color: rgba(255,255,255,0.14);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  bottom: calc(100% + 4px); top: auto;
 }
-
 .cselect-dark .cselect-option { color: var(--sidebar-text) }
 .cselect-dark .cselect-option:hover { background: rgba(255,255,255,0.07) }
-.cselect-dark .cselect-option.selected {
-  background: rgba(34,168,74,0.14);
-  color: #4dd870;
-}
-.cselect-dark .cselect-option + .cselect-option { border-color: rgba(255,255,255,0.06) }
-.cselect-dark .cselect-check { color: #4dd870 }
+.cselect-dark .cselect-check { color: #3ecb62 }
 
 /* ══════════════════════════════════════
    MAIN CONTENT
