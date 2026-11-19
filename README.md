@@ -91,4 +91,4 @@ src/
   index.css              Estilos
 ```
 
-O banco `backend/financeiro.db` está versionado no repositório.
+O banco `backend/financeiro.db` é criado na primeira execução e não é versionado (guarda contas e dados financeiros).
