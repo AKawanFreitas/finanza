@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Banco local (guarda contas e dados financeiros)
+backend/*.db
+backend/*.db-*
