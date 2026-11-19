@@ -3,6 +3,15 @@ import { createContext, useContext, useState, useCallback, useRef, useEffect } f
 const API = '/api';
 const FinanceContext = createContext(null);
 
+// Sessão expirada ou encerrada em outro aparelho: recarrega para cair no login.
+function conferirSessao(res) {
+  if (res.status === 401) {
+    window.location.reload();
+    throw new Error('Sessão encerrada.');
+  }
+  return res;
+}
+
 export function FinanceProvider({ children }) {
   const [transactions, setTransactions] = useState([]);
   const [recorrentes, setRecorrentes]   = useState([]);
@@ -23,9 +32,9 @@ export function FinanceProvider({ children }) {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${API}/transactions`).then(r => r.json()),
-      fetch(`${API}/recorrentes`).then(r => r.json()),
-      fetch(`${API}/categorias`).then(r => r.json()),
+      fetch(`${API}/transactions`).then(conferirSessao).then(r => r.json()),
+      fetch(`${API}/recorrentes`).then(conferirSessao).then(r => r.json()),
+      fetch(`${API}/categorias`).then(conferirSessao).then(r => r.json()),
     ]).then(([txs, recs, cats]) => {
       setTransactions(txs);
       setRecorrentes(recs);
@@ -40,6 +49,7 @@ export function FinanceProvider({ children }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
+    conferirSessao(res);
     const body = await res.json();
     if (!res.ok) {
       showToast(body.error || 'Não foi possível salvar.', 'err');
