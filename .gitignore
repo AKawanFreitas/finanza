@@ -26,3 +26,6 @@ dist-ssr
 # Banco local (guarda contas e dados financeiros)
 backend/*.db
 backend/*.db-*
+
+# Banco de demonstração (npm run seed)
+backend/demo.db
