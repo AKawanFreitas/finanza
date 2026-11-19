@@ -1,85 +1,112 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 
 :root {
-  --paper:   #f6f7f5;
+  /* Paleta tirada da logo: azul-marinho do nome e degradê verde da folha */
+  --navy-950: #0a1526;
+  --navy-900: #0f2038;
+  --navy-800: #162a47;
+  --navy:     #1b2c47;
+
+  --green-300: #7fd35f;
+  --green-400: #4fbd55;
+  --green-500: #2f9e44;
+  --green-700: #1b6e30;
+  --green-900: #0e4a22;
+  --brand-grad: linear-gradient(135deg, #5fcf5b 0%, #2f9e44 48%, #145c2c 100%);
+
+  --bg:      #edf1f4;
   --surface: #ffffff;
-  --tint:    #eceee9;
-  --ink:     #0f1b2d;
-  --muted:   #596475;
-  --faint:   #8a94a3;
-  --line:    #dde2de;
-  --line2:   #c3cbc5;
+  --head:    #f4f7f9;
+  --ink:     #14233a;
+  --muted:   #55657b;
+  --faint:   #8795a8;
+  --line:    #dbe2e9;
+  --line2:   #c2ccd7;
 
-  --green:    #1a8f43;
-  --green-bg: #e1f1e6;
-  --red:      #c63a3a;
-  --red-bg:   #f8e4e2;
+  --green:    #1f8a3b;
+  --green-bg: #e2f4e3;
+  --red:      #cf3f3f;
+  --red-bg:   #fbe6e5;
+  --amber:    #a96a0a;
+  --amber-bg: #fbefd9;
 
-  --serif: 'Newsreader', Georgia, serif;
-  --sans:  'Hanken Grotesk', system-ui, sans-serif;
-
-  --measure: 1080px;
-  --gutter:  clamp(16px, 4vw, 40px);
-  --ease:    0.12s ease-out;
+  --font: 'Hanken Grotesk', system-ui, sans-serif;
+  --side: 248px;
+  --ease: 0.12s ease-out;
 }
 
 html, body {
-  background: var(--paper);
+  background: var(--bg);
   color: var(--ink);
-  font-family: var(--sans);
-  font-size: 15px;
+  font-family: var(--font);
+  font-size: 14.5px;
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
 
 button { font-family: inherit }
-:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
+:focus-visible { outline: 2px solid var(--green-500); outline-offset: 2px }
 
-/* ── Navegação superior ────────────────── */
-.topnav {
-  position: sticky; top: 0; z-index: 50;
-  background: var(--paper);
-  border-bottom: 1px solid var(--line);
+/* ── Estrutura ─────────────────────────── */
+.shell { display: flex; min-height: 100vh }
+.page { flex: 1; min-width: 0; margin-left: var(--side); padding: 28px clamp(20px, 3vw, 44px) 72px; max-width: calc(1240px + var(--side)) }
+
+/* ── Menu lateral ──────────────────────── */
+.sidebar {
+  position: fixed; inset: 0 auto 0 0; width: var(--side); z-index: 60;
+  background: linear-gradient(180deg, var(--navy-900) 0%, var(--navy-950) 100%);
+  display: flex; flex-direction: column;
+  border-right: 1px solid #000;
+}
+.sidebar::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--brand-grad);
 }
 
-.topnav-inner {
-  max-width: var(--measure); margin: 0 auto;
-  padding: 0 var(--gutter);
-  display: flex; align-items: center; gap: 32px;
-  min-height: 64px;
+.brand {
+  display: flex; align-items: center; gap: 12px; text-align: left;
+  background: none; border: none; cursor: pointer; color: #fff;
+  padding: 22px 20px 24px; border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.brand img { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0 }
+.brand-text { display: flex; flex-direction: column; line-height: 1.15 }
+.brand-text strong { font-size: 22px; font-weight: 700; letter-spacing: -0.02em }
+.brand-text small { font-size: 10.5px; color: #8fa3bd; margin-top: 3px; letter-spacing: 0.01em }
+
+.side-nav { display: flex; flex-direction: column; gap: 2px; padding: 18px 12px }
+.side-link {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: 6px; border: none; background: none; cursor: pointer;
+  color: #a9b8cc; font-size: 14.5px; font-weight: 500; text-align: left;
+  position: relative; transition: background var(--ease), color var(--ease);
+}
+.side-link:hover { background: rgba(255,255,255,.06); color: #fff }
+.side-link.active { background: rgba(127,211,95,.14); color: #fff; font-weight: 600 }
+.side-link.active svg { color: var(--green-300) }
+.side-link.active::before {
+  content: ''; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 4px;
+  border-radius: 0 3px 3px 0; background: var(--green-300);
 }
 
-.topnav-logo { background: none; border: none; cursor: pointer; display: flex; padding: 0 }
-.topnav-logo img { height: 34px; width: auto; display: block }
-
-.topnav-links { display: flex; gap: 4px; flex: 1; min-width: 0 }
-
-.topnav-link {
-  background: none; border: none; cursor: pointer;
-  padding: 21px 12px 19px;
-  font-size: 15px; font-weight: 500; color: var(--muted);
-  border-bottom: 2px solid transparent;
-  transition: color var(--ease);
-  white-space: nowrap;
-}
-.topnav-link:hover { color: var(--ink) }
-.topnav-link.active { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink) }
+/* ── Cabeçalho da página ───────────────── */
+.page-bar, .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px }
+.page-title { font-size: 26px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.15; color: var(--navy) }
+.page-subtitle { color: var(--muted); margin-top: 2px }
+.section-enter { animation: none }
 
 .month-stepper {
-  display: flex; align-items: center; gap: 2px;
-  border: 1px solid var(--line2); border-radius: 999px;
-  padding: 3px;
-  background: var(--surface);
+  display: flex; align-items: center; background: var(--surface);
+  border: 1px solid var(--line2); border-radius: 6px; overflow: hidden;
 }
 .month-stepper button {
-  width: 30px; height: 30px; border-radius: 50%;
-  border: none; background: none; color: var(--ink); cursor: pointer;
+  width: 36px; height: 36px; border: none; background: var(--head); color: var(--navy); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
 }
-.month-stepper button:hover:not(:disabled) { background: var(--tint) }
+.month-stepper button:first-child { border-right: 1px solid var(--line) }
+.month-stepper button:last-child  { border-left: 1px solid var(--line) }
+.month-stepper button:hover:not(:disabled) { background: var(--green-bg); color: var(--green-700) }
 .month-stepper button:disabled { color: var(--line2); cursor: default }
-.month-stepper-label { min-width: 118px; text-align: center; font-size: 14px; font-weight: 600 }
+.month-stepper-label { min-width: 140px; text-align: center; font-weight: 700; color: var(--navy) }
 
 /* ── Página ────────────────────────────── */
 .page {
