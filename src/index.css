@@ -553,6 +553,7 @@ html, body {
   border-bottom: 1px solid var(--border);
 }
 .rec-card:last-child { border-bottom: none }
+.rec-card.editing { background: var(--green-bg); margin: 0 -0.5rem; padding-left: 0.5rem; padding-right: 0.5rem }
 
 .rec-left { display: flex; align-items: center; gap: 12px }
 .rec-icon { display: none }
