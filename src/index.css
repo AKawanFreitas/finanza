@@ -548,3 +548,214 @@ html, body {
 .tx-amount.in  { color: var(--green) }
 .tx-amount.out { color: var(--red) }
 
+/* ══════════════════════════════════════
+   FORMULÁRIOS
+══════════════════════════════════════ */
+.form-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--green);
+  border-radius: var(--radius-lg);
+  padding: 1.6rem; margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Form header (icon + title + sub) */
+.form-header {
+  display: flex; align-items: flex-start; gap: 12px;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.form-header-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--green-bg);
+  color: var(--green);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.form-header-title {
+  font-family: var(--font-display);
+  font-size: 15px; font-weight: 700;
+  color: var(--text); letter-spacing: -0.01em;
+}
+
+.form-header-sub {
+  font-size: 11.5px; color: var(--text3); margin-top: 2px;
+}
+
+/* Grid */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 1.35rem }
+.form-group { display: flex; flex-direction: column; gap: 6px }
+.form-span-2 { grid-column: span 2 }
+
+.form-label {
+  font-size: 11px; color: var(--text3); font-weight: 600;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 4px;
+}
+
+.form-label-opt { font-weight: 400; text-transform: none; letter-spacing: 0; opacity: 0.7 }
+
+/* Input with prefix icon */
+.form-input-wrap {
+  position: relative; display: flex; align-items: center;
+}
+
+.form-input-wrap .form-control { padding-left: 38px }
+.form-input-wrap.has-text-prefix .form-control { padding-left: 36px }
+
+.form-prefix {
+  position: absolute; left: 12px;
+  color: var(--text3); pointer-events: none;
+  display: flex; align-items: center;
+}
+
+.form-prefix-text {
+  position: absolute; left: 12px;
+  font-size: 12px; font-weight: 600; color: var(--text3);
+  pointer-events: none; user-select: none;
+}
+
+.form-control {
+  width: 100%;
+  padding: 11px 13px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text); font-family: var(--font-body); font-size: 13px;
+  transition: all var(--ease); outline: none;
+}
+
+.form-control:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(34,168,74,0.1);
+  background: var(--surface);
+}
+
+.form-control:focus ~ .form-prefix,
+.form-input-wrap:focus-within .form-prefix,
+.form-input-wrap:focus-within .form-prefix-text { color: var(--green) }
+
+.form-control::placeholder { color: var(--text3) }
+
+/* Tipo toggle / segmented control */
+.tipo-toggle {
+  display: flex;
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  overflow: hidden;
+}
+
+.tipo-btn {
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 12px;
+  font-size: 13px; font-weight: 500; font-family: var(--font-body);
+  cursor: pointer; border: none; background: transparent; color: var(--text3);
+  transition: all var(--ease);
+}
+
+.tipo-btn:hover { color: var(--text); background: var(--surface3) }
+.tipo-btn + .tipo-btn { border-left: 1.5px solid var(--border2) }
+
+.tipo-btn.active-saida   { background: var(--red-bg);                color: var(--red);    font-weight: 600 }
+.tipo-btn.active-entrada { background: var(--green-bg);              color: var(--green);  font-weight: 600 }
+.tipo-btn.active-fixo    { background: var(--blue-bg);               color: var(--blue);   font-weight: 600 }
+.tipo-btn.active-recorrente { background: rgba(124,58,237,0.1);      color: var(--purple); font-weight: 600 }
+
+/* Color picker */
+.color-pick-wrap {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 13px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--ease);
+  position: relative;
+}
+
+.color-pick-wrap:hover  { border-color: rgba(34,168,74,0.4) }
+.color-pick-wrap:focus-within { border-color: var(--green); box-shadow: 0 0 0 3px rgba(34,168,74,0.1) }
+
+.color-swatch {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 2px solid rgba(0,0,0,0.12);
+  flex-shrink: 0;
+  transition: all var(--ease);
+}
+
+.color-swatch-label { font-size: 12.5px; color: var(--text2); flex: 1; font-family: var(--font-body) }
+
+.color-pick-wrap input[type="color"] {
+  opacity: 0; position: absolute;
+  inset: 0; width: 100%; height: 100%;
+  cursor: pointer; border: none;
+}
+
+/* Preset color dots */
+.color-presets {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-top: -0.5rem; margin-bottom: 0.25rem;
+}
+
+.color-preset-dot {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--ease);
+  flex-shrink: 0;
+}
+
+.color-preset-dot:hover { transform: scale(1.15) }
+.color-preset-dot.selected { border-color: var(--text); transform: scale(1.1) }
+
+/* Actions row */
+.form-actions { display: flex; gap: 8px; align-items: center }
+
+/* ══════════════════════════════════════
+   BOTÕES
+══════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid var(--border2);
+  background: var(--surface2); color: var(--text2);
+  transition: all var(--ease);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.btn:hover { background: var(--surface3); color: var(--text) }
+
+.btn-ghost {
+  padding: 10px 12px;
+  background: transparent; border-color: var(--border2);
+}
+
+.btn-ghost:hover { background: var(--surface3); color: var(--red) }
+
+.btn-full { flex: 1; justify-content: center }
+
+.btn-primary {
+  background: var(--green); border-color: var(--green);
+  color: #fff; font-weight: 600;
+  box-shadow: 0 2px 12px rgba(34,168,74,0.28);
+}
+
+.btn-primary:hover {
+  background: var(--green-light); border-color: var(--green-light);
+  box-shadow: 0 4px 20px rgba(34,168,74,0.38);
+  transform: translateY(-1px);
+}
+
