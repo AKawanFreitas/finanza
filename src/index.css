@@ -481,6 +481,17 @@ html, body {
 .btn-primary { background: var(--green); border-color: var(--green); color: #fff }
 .btn-primary:hover { background: #187a35; border-color: #187a35; color: #fff }
 
+/* ── Filtros ───────────────────────────── */
+.filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 10px; align-items: center;
+  padding-bottom: 12px;
+}
+.filters-search { grid-column: 1 / -1 }
+.filters-search .form-control { padding-left: 36px }
+.filters .cselect-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+
 /* ── Histórico (tabela) ────────────────── */
 .hist-wrap {
   background: var(--surface);
@@ -610,4 +621,5 @@ html, body {
   .hist-head, .hist-row { grid-template-columns: 2fr 1fr 100px 64px }
   .hist-head > *:nth-child(3), .hist-row > *:nth-child(3) { display: none }
   .health-banner { flex-wrap: wrap; gap: 0.75rem }
+  .filters { grid-template-columns: 1fr 1fr }
 }
