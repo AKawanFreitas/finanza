@@ -1,30 +1,26 @@
 import { useState } from 'react';
 import { FinanceProvider } from './context/FinanceContext';
-import Sidebar from './components/Sidebar';
+import TopNav from './components/TopNav';
 import Toast from './components/Toast';
 import Dashboard from './sections/Dashboard/Dashboard';
 import Lancamentos from './sections/Lancamentos/Lancamentos';
 import Recorrentes from './sections/Recorrentes/Recorrentes';
 import Categorias from './sections/Categorias/Categorias';
-import { ymToPeriod, currentYM } from './utils/period';
-
-const CURRENT_PERIOD = ymToPeriod(currentYM());
+import { currentYM } from './utils/period';
 
 export default function App() {
   const [section, setSection] = useState('dashboard');
-  const [period, setPeriod]   = useState(CURRENT_PERIOD);
+  const [ym, setYm]           = useState(currentYM());
 
   return (
     <FinanceProvider>
-      <div className="layout">
-        <Sidebar active={section} onNavigate={setSection} period={period} onPeriodChange={setPeriod} />
-        <main className="main">
-          {section === 'dashboard'   && <Dashboard period={period} />}
-          {section === 'lancamento'  && <Lancamentos />}
-          {section === 'recorrentes' && <Recorrentes />}
-          {section === 'categorias'  && <Categorias />}
-        </main>
-      </div>
+      <TopNav active={section} onNavigate={setSection} ym={ym} onYmChange={setYm} />
+      <main className="page">
+        {section === 'dashboard'   && <Dashboard ym={ym} onNavigate={setSection} />}
+        {section === 'lancamento'  && <Lancamentos />}
+        {section === 'recorrentes' && <Recorrentes />}
+        {section === 'categorias'  && <Categorias />}
+      </main>
       <Toast />
     </FinanceProvider>
   );

@@ -1,4 +1,4 @@
-const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+export const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                      'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
 export const MONTH_ABBR = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -26,9 +26,7 @@ export function shiftYM(ym, delta) {
   return currentYM(d);
 }
 
-// Mês atual + todos os meses que têm lançamentos, do mais recente ao mais antigo.
-export function periodOptions(transactions) {
-  const months = new Set([currentYM()]);
-  transactions.forEach(t => months.add(t.data.slice(0, 7)));
-  return [...months].sort().reverse().map(ym => ({ value: ymToPeriod(ym), label: ymToPeriod(ym) }));
+export function daysInMonth(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  return new Date(y, m, 0).getDate();
 }
