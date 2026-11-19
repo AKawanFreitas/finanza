@@ -29,3 +29,4 @@ backend/*.db-*
 
 # Banco de demonstração (npm run seed)
 backend/demo.db
+backend/*.db.backup-*
