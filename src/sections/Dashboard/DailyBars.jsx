@@ -19,8 +19,12 @@ export default function DailyBars({ days, ym }) {
               className={`daily-bar${i === peak ? ' peak' : ''}${v === 0 ? ' is-zero' : ''}`}
               style={{ height: v ? `${Math.max(4, (v / max) * 100)}%` : undefined }}
             />
-            <span className="daily-tick">{(i + 1) % 5 === 0 || i === 0 ? i + 1 : ''}</span>
           </div>
+        ))}
+      </div>
+      <div className="daily-ticks" aria-hidden="true">
+        {days.map((_, i) => (
+          <span key={i} className="daily-tick">{(i + 1) % 5 === 0 || i === 0 ? i + 1 : ''}</span>
         ))}
       </div>
       <figcaption>
