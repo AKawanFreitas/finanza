@@ -1,8 +1,8 @@
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
-import { fmt, getCatColor, catIcon } from '../../utils/formatters';
+import { fmt, fmtDate, getCatColor, catIcon } from '../../utils/formatters';
 
 export default function RecentTransactions({ transactions, categorias }) {
-  const recent = [...transactions].sort((a, b) => b.id - a.id).slice(0, 5);
+  const recent = [...transactions].sort((a, b) => b.data.localeCompare(a.data) || b.id - a.id).slice(0, 5);
 
   if (recent.length === 0) {
     return <div className="empty">Nenhuma transação no período.</div>;
@@ -22,7 +22,7 @@ export default function RecentTransactions({ transactions, categorias }) {
               </div>
               <div>
                 <div className="tx-name">{t.desc}</div>
-                <div className="tx-meta">{t.cat} · {t.data}</div>
+                <div className="tx-meta">{t.cat} · {fmtDate(t.data)}</div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
