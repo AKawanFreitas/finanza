@@ -61,9 +61,7 @@ async function main() {
       const { lastInsertRowid } = db.prepare(
         'INSERT INTO users (nome, email, senha_hash, papel, status, trocar_senha, criado_em) VALUES (?, ?, ?, ?, ?, ?, ?)'
       ).run(nome, email, auth.hashSenha(senha), 'superadmin', 'ativo', senhaInformada ? 0 : 1, new Date().toISOString());
-      const novo = Number(lastInsertRowid);
-      db.seedCategorias(novo);
-      return novo;
+      return Number(lastInsertRowid);
     });
     id = criar();
     console.log(`Super admin criado: ${nome} <${email}>`);
@@ -73,8 +71,10 @@ async function main() {
     }
   }
 
+  // Adotar primeiro preserva as categorias antigas; só se não houver nenhuma criamos as padrão.
   const adotados = db.adoptOrphans(id);
   if (adotados > 0) console.log(`${adotados} registro(s) que estavam sem dono passaram para esta conta.`);
+  db.seedCategorias(id);
 }
 
 main().catch(err => { console.error(err.message); process.exit(1); });

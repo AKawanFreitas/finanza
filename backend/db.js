@@ -111,13 +111,22 @@ function seedCategorias(userId) {
 }
 
 // Dados gravados antes das contas (user_id nulo) passam para o dono informado.
-function adoptOrphans(userId) {
+// Tudo numa transação: ou a adoção inteira vale, ou nada muda.
+const adoptOrphans = db.transaction((userId) => {
+  // Categoria antiga cujo nome a conta já tem seria barrada por UNIQUE(user_id, nome).
+  // Como lançamentos guardam a categoria pelo nome, a repetida pode ser descartada.
+  db.prepare(`
+    DELETE FROM categorias
+    WHERE user_id IS NULL
+      AND nome IN (SELECT nome FROM categorias WHERE user_id = ? COLLATE NOCASE)
+  `).run(userId);
+
   let moved = 0;
   for (const table of ['transactions', 'recorrentes', 'categorias']) {
     moved += db.prepare(`UPDATE ${table} SET user_id = ? WHERE user_id IS NULL`).run(userId).changes;
   }
   return moved;
-}
+});
 
 module.exports = db;
 module.exports.seedCategorias = seedCategorias;
