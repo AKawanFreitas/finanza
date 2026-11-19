@@ -1,6 +1,9 @@
 const express = require('express');
 const router  = express.Router();
 const db      = require('../db');
+const { exigirLogin } = require('../lib/auth');
+
+router.use(exigirLogin);
 
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
@@ -15,7 +18,7 @@ function parseCategoria(body = {}) {
 }
 
 router.get('/', (req, res) => {
-  res.json(db.prepare('SELECT * FROM categorias ORDER BY nome ASC').all());
+  res.json(db.prepare('SELECT * FROM categorias WHERE user_id = ? ORDER BY nome ASC').all(req.user.id));
 });
 
 router.post('/', (req, res) => {
@@ -23,19 +26,19 @@ router.post('/', (req, res) => {
   if (error) return res.status(400).json({ error });
 
   const { nome, cor } = value;
-  const exists = db.prepare('SELECT 1 FROM categorias WHERE nome = ? COLLATE NOCASE').get(nome);
+  const exists = db.prepare('SELECT 1 FROM categorias WHERE user_id = ? AND nome = ? COLLATE NOCASE').get(req.user.id, nome);
   if (exists) return res.status(409).json({ error: 'Já existe uma categoria com esse nome.' });
 
-  const result = db.prepare('INSERT INTO categorias (nome, cor) VALUES (?, ?)').run(nome, cor);
+  const result = db.prepare('INSERT INTO categorias (user_id, nome, cor) VALUES (?, ?, ?)').run(req.user.id, nome, cor);
   res.status(201).json({ id: Number(result.lastInsertRowid), nome, cor });
 });
 
 // Lançamentos e recorrentes guardam a categoria pelo nome, então renomear acompanha os dois.
-const updateCategoria = db.transaction((id, atual, { nome, cor }) => {
-  db.prepare('UPDATE categorias SET nome = ?, cor = ? WHERE id = ?').run(nome, cor, id);
+const updateCategoria = db.transaction((userId, id, atual, { nome, cor }) => {
+  db.prepare('UPDATE categorias SET nome = ?, cor = ? WHERE id = ? AND user_id = ?').run(nome, cor, id, userId);
   if (nome !== atual.nome) {
-    db.prepare('UPDATE transactions SET cat = ? WHERE cat = ?').run(nome, atual.nome);
-    db.prepare('UPDATE recorrentes  SET cat = ? WHERE cat = ?').run(nome, atual.nome);
+    db.prepare('UPDATE transactions SET cat = ? WHERE cat = ? AND user_id = ?').run(nome, atual.nome, userId);
+    db.prepare('UPDATE recorrentes  SET cat = ? WHERE cat = ? AND user_id = ?').run(nome, atual.nome, userId);
   }
 });
 
@@ -44,29 +47,30 @@ router.put('/:id', (req, res) => {
   const { value, error } = parseCategoria(req.body);
   if (error) return res.status(400).json({ error });
 
-  const atual = db.prepare('SELECT * FROM categorias WHERE id = ?').get(id);
+  const atual = db.prepare('SELECT * FROM categorias WHERE id = ? AND user_id = ?').get(id, req.user.id);
   if (!atual) return res.status(404).json({ error: 'Categoria não encontrada.' });
 
-  const duplicada = db.prepare('SELECT 1 FROM categorias WHERE nome = ? COLLATE NOCASE AND id != ?').get(value.nome, id);
+  const duplicada = db.prepare('SELECT 1 FROM categorias WHERE user_id = ? AND nome = ? COLLATE NOCASE AND id != ?')
+    .get(req.user.id, value.nome, id);
   if (duplicada) return res.status(409).json({ error: 'Já existe uma categoria com esse nome.' });
 
-  updateCategoria(id, atual, value);
+  updateCategoria(req.user.id, id, atual, value);
   res.json({ id, ...value });
 });
 
 router.delete('/:id', (req, res) => {
   const id  = Number(req.params.id);
-  const cat = db.prepare('SELECT nome FROM categorias WHERE id = ?').get(id);
+  const cat = db.prepare('SELECT nome FROM categorias WHERE id = ? AND user_id = ?').get(id, req.user.id);
   if (!cat) return res.status(404).json({ error: 'Categoria não encontrada.' });
 
   const emUso =
-    db.prepare('SELECT COUNT(*) AS n FROM transactions WHERE cat = ?').get(cat.nome).n +
-    db.prepare('SELECT COUNT(*) AS n FROM recorrentes  WHERE cat = ?').get(cat.nome).n;
+    db.prepare('SELECT COUNT(*) AS n FROM transactions WHERE cat = ? AND user_id = ?').get(cat.nome, req.user.id).n +
+    db.prepare('SELECT COUNT(*) AS n FROM recorrentes  WHERE cat = ? AND user_id = ?').get(cat.nome, req.user.id).n;
   if (emUso > 0) {
     return res.status(409).json({ error: `"${cat.nome}" está em uso por ${emUso} registro(s). Mude a categoria deles antes de excluir.` });
   }
 
-  db.prepare('DELETE FROM categorias WHERE id = ?').run(id);
+  db.prepare('DELETE FROM categorias WHERE id = ? AND user_id = ?').run(id, req.user.id);
   res.json({ ok: true });
 });
 
