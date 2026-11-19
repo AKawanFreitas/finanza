@@ -47,11 +47,11 @@ export function FinanceProvider({ children }) {
     return body;
   }
 
-  async function addTransaction(data) {
+  async function addTransaction(data, { silent = false } = {}) {
     const created = await sendJson(`${API}/transactions`, 'POST', data);
     if (!created) return false;
     setTransactions(prev => [...prev, created]);
-    showToast(data.tipo === 'entrada' ? 'Receita adicionada ✓' : 'Gasto adicionado ✓');
+    if (!silent) showToast(data.tipo === 'entrada' ? 'Receita adicionada ✓' : 'Gasto adicionado ✓');
     return true;
   }
 
@@ -122,7 +122,7 @@ export function FinanceProvider({ children }) {
 
   return (
     <FinanceContext.Provider value={{
-      transactions, recorrentes, categorias, toast,
+      transactions, recorrentes, categorias, toast, showToast,
       editing, setEditing,
       addTransaction, updateTransaction, delTransaction,
       editingRec, setEditingRec,

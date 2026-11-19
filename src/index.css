@@ -565,6 +565,19 @@ html, body {
 .tag { font-size: 13px; padding: 0; font-weight: 500; color: var(--text2) }
 .tag-fixo, .tag-rec { background: none }
 
+/* ── Lançar recorrentes ────────────────── */
+.launch-bar {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 10px 0 12px;
+  border-bottom: 2px solid var(--text);
+  font-size: 14px; color: var(--text2);
+}
+.btn-sm { padding: 5px 10px; font-size: 13px }
+.launched {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 13px; font-weight: 600; color: var(--green);
+}
+
 /* ── Categorias (admin) ────────────────── */
 .cat-admin-grid { display: flex; flex-direction: column }
 
