@@ -108,8 +108,8 @@ export default function Dashboard({ period }) {
           <div className="card-head">
             <div className="card-title">Evolução mensal</div>
             <div className="chart-legend">
-              <span><span className="legend-dot" style={{ background: '#22a84a' }} />Receitas</span>
-              <span><span className="legend-dot" style={{ background: '#e84057' }} />Gastos</span>
+              <span><span className="legend-dot" style={{ background: '#1d8f3e' }} />Receitas</span>
+              <span><span className="legend-dot" style={{ background: '#0e1726' }} />Gastos</span>
             </div>
           </div>
           <div style={{ position: 'relative', height: 200 }}>

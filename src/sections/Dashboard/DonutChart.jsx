@@ -19,7 +19,7 @@ export default function DonutChart({ sorted, categorias }) {
         datasets: [{
           data: top.map(c => Math.round(c[1])),
           backgroundColor: top.map(c => getCatColor(categorias, c[0])),
-          borderWidth: 0, hoverOffset: 4,
+          borderWidth: 2, borderColor: '#ffffff', hoverOffset: 4,
         }],
       },
       options: {
@@ -27,14 +27,13 @@ export default function DonutChart({ sorted, categorias }) {
         plugins: {
           legend: {
             position: 'bottom',
-            labels: { color: '#8b90a0', font: { size: 11 }, boxWidth: 8, padding: 10, usePointStyle: true },
+            labels: { color: '#475266', font: { size: 13, family: 'Schibsted Grotesk' }, boxWidth: 10, boxHeight: 10, padding: 12, usePointStyle: true, pointStyle: 'rect' },
           },
           tooltip: {
-            backgroundColor: '#1a1e29', borderColor: 'rgba(255,255,255,0.08)',
-            borderWidth: 1, titleColor: '#f0f2f8', bodyColor: '#8b90a0', padding: 10,
+            backgroundColor: '#0e1726', cornerRadius: 4, titleColor: '#fff', bodyColor: '#dde3ec', padding: 10,
           },
         },
-        cutout: '68%',
+        cutout: '58%',
       },
     });
 

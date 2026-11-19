@@ -31,34 +31,35 @@ export default function LineChart() {
           {
             label: 'Receitas',
             data: months.map(ym => map[ym].receitas),
-            borderColor: '#00d68f', backgroundColor: 'rgba(0,214,143,0.07)',
-            fill: true, tension: 0.4, pointRadius: 4,
-            pointBackgroundColor: '#00d68f', pointBorderColor: '#13161e', pointBorderWidth: 2,
+            borderColor: '#1d8f3e', borderWidth: 2.5,
+            fill: false, tension: 0, pointRadius: 0, pointHoverRadius: 5,
+            pointBackgroundColor: '#1d8f3e',
           },
           {
             label: 'Gastos',
             data: months.map(ym => map[ym].gastos),
-            borderColor: '#ff6b6b', backgroundColor: 'rgba(255,107,107,0.07)',
-            fill: true, tension: 0.4, pointRadius: 4,
-            pointBackgroundColor: '#ff6b6b', pointBorderColor: '#13161e', pointBorderWidth: 2,
+            borderColor: '#0e1726', borderWidth: 2.5, borderDash: [6, 4],
+            fill: false, tension: 0, pointRadius: 0, pointHoverRadius: 5,
+            pointBackgroundColor: '#0e1726',
           },
         ],
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1a1e29', borderColor: 'rgba(255,255,255,0.08)',
-            borderWidth: 1, titleColor: '#f0f2f8', bodyColor: '#8b90a0', padding: 10,
+            backgroundColor: '#0e1726', cornerRadius: 4, titleColor: '#fff', bodyColor: '#dde3ec', padding: 10,
+            callbacks: { label: c => ` ${c.dataset.label}: R$ ${c.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` },
           },
         },
         scales: {
           y: {
-            ticks: { callback: v => 'R$' + Math.round(v / 1000) + 'k', color: '#555a6e', font: { size: 10 } },
-            grid: { color: 'rgba(255,255,255,0.04)' }, border: { display: false },
+            ticks: { callback: v => 'R$' + Math.round(v / 1000) + 'k', color: '#6f7a8c', font: { size: 12, family: 'Schibsted Grotesk' } },
+            grid: { color: '#e8ecea' }, border: { display: false },
           },
-          x: { ticks: { color: '#555a6e', font: { size: 11 } }, grid: { display: false }, border: { display: false } },
+          x: { ticks: { color: '#475266', font: { size: 13, family: 'Schibsted Grotesk' } }, grid: { display: false }, border: { display: false } },
         },
       },
     });
