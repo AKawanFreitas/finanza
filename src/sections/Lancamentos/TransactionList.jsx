@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Pencil, Trash2, ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react';
+import { Pencil, Trash2, Search } from 'lucide-react';
 import Select from '../../components/Select';
 import { useFinance } from '../../context/FinanceContext';
-import { fmt, fmtDate, getCatColor, catIcon } from '../../utils/formatters';
+import { fmt, fmtDate, getCatColor } from '../../utils/formatters';
 
 const NO_FILTERS = { busca: '', tipo: '', cat: '', mes: '' };
 
@@ -80,30 +80,21 @@ export default function TransactionList() {
           {hasFilters ? 'Nenhum lançamento corresponde aos filtros.' : 'Nenhum lançamento ainda. Use o formulário acima para adicionar o primeiro.'}
         </div>
       ) : sorted.map(t => {
-        const CatIcon = catIcon(t.cat);
         const color   = getCatColor(categorias, t.cat);
         const isIn    = t.tipo === 'entrada';
         return (
           <div key={t.id} className={`hist-row ${editing?.id === t.id ? 'editing' : ''}`}>
             <div className="hist-desc-wrap">
-              <div className="hist-mini-icon" style={{ background: color + '18', color }}>
-                <CatIcon size={13} strokeWidth={2} />
-              </div>
+              <span className="dot" style={{ background: color }} />
               <div>
-                <div style={{ fontSize: 13, fontWeight: 500 }}>{t.desc}</div>
-                {t.obs && <div style={{ fontSize: 11, color: 'var(--text3)' }}>{t.obs}</div>}
+                <div className="hist-desc">{t.desc}</div>
+                {t.obs && <div className="hist-obs">{t.obs}</div>}
               </div>
             </div>
             <div><span className="cat-badge">{t.cat}</span></div>
-            <div style={{ fontSize: 12, color: 'var(--text3)' }}>{fmtDate(t.data)}</div>
-            <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 5 }}>
-              {isIn
-                ? <ArrowDownLeft size={13} color="var(--green)" strokeWidth={2.5} />
-                : <ArrowUpRight  size={13} color="var(--red)"   strokeWidth={2.5} />
-              }
-              <span style={{ fontSize: 13, fontWeight: 600, color: isIn ? 'var(--green)' : 'var(--red)' }}>
-                {isIn ? '+' : '-'}{fmt(t.valor)}
-              </span>
+            <div className="hist-date">{fmtDate(t.data)}</div>
+            <div className={`tx-amount ${isIn ? 'in' : ''}`} style={{ justifyContent: 'flex-end' }}>
+              {isIn ? '+' : '−'} {fmt(t.valor)}
             </div>
             <div className="hist-actions">
               <button className="del-btn" onClick={() => { setEditing(t); window.scrollTo({ top: 0, behavior: 'smooth' }); }} title="Editar">

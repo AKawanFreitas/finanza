@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
-export default function Select({ value, onChange, options, prefix, dark = false }) {
+export default function Select({ value, onChange, options, prefix }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -21,7 +21,7 @@ export default function Select({ value, onChange, options, prefix, dark = false 
   const selected = options.find(o => o.value === value) ?? options[0];
 
   return (
-    <div className={`cselect${dark ? ' cselect-dark' : ''}`} ref={ref}>
+    <div className="cselect" ref={ref}>
       <button
         type="button"
         className={`cselect-trigger${open ? ' open' : ''}`}
