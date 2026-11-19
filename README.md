@@ -2,7 +2,7 @@
 
 Controle financeiro pessoal: lançamentos de entradas e saídas, gastos recorrentes, categorias e um dashboard mensal.
 
-- **Front:** React 18 + Vite, gráficos com Chart.js
+- **Front:** React 18 + Vite
 - **Back:** Express + SQLite (`better-sqlite3`)
 
 ## Como rodar
@@ -54,7 +54,7 @@ No `backend/`: `npm start` e `npm run dev` (reinicia ao salvar).
 
 ## O que o app faz
 
-- **Dashboard:** saldo, receitas, gastos e fixos do mês, com comparação com o mês anterior, evolução dos últimos 6 meses, gastos por categoria e últimas transações. O mês é escolhido no menu lateral; só aparecem o mês atual e meses com lançamentos.
+- **Resumo:** o mês em uma frase (quanto entrou, quanto saiu, quanto sobrou), com a comparação com o mês anterior e as contas fixas. Abaixo, os gastos dia a dia, a divisão por categoria, as últimas movimentações agrupadas por dia e os últimos 6 meses. O mês é trocado pelas setas na barra superior.
 - **Lançamentos:** criar, editar e excluir entradas e saídas. A lista filtra por texto, tipo, categoria e mês e mostra o saldo do que está filtrado.
 - **Recorrentes:** cadastro de despesas mensais (fixas ou variáveis). Cada uma pode ser lançada como gasto do mês atual, uma a uma ou todas as pendentes, sem duplicar.
 - **Categorias:** criar, editar (nome e cor) e excluir. Renomear atualiza também os lançamentos e recorrentes da categoria. Categoria em uso não pode ser excluída.
@@ -86,7 +86,7 @@ backend/
 src/
   context/               Estado global e chamadas à API
   sections/              Dashboard, Lancamentos, Recorrentes, Categorias
-  components/            Sidebar, Select, Toast
+  components/            TopNav, Select, Toast
   utils/                 Formatadores e funções de período
   index.css              Estilos
 ```
