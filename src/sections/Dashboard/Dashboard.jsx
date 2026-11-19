@@ -1,156 +1,129 @@
 import { useMemo } from 'react';
-import { Wallet, TrendingUp, TrendingDown, Bookmark, Activity } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { fmt } from '../../utils/formatters';
-import { periodToYM, shiftYM, MONTH_ABBR } from '../../utils/period';
-import MetricCard from './MetricCard';
-import LineChart from './LineChart';
-import DonutChart from './DonutChart';
-import CategoryBars from './CategoryBars';
-import RecentTransactions from './RecentTransactions';
+import { MONTH_NAMES, shiftYM, daysInMonth } from '../../utils/period';
+import DailyBars from './DailyBars';
+import MonthHistory from './MonthHistory';
+import CategorySplit from './CategorySplit';
+import Movements from './Movements';
 
-// Variação em relação ao mês anterior; sem base de comparação, mostra só a contagem.
-function delta(atual, anterior, mes, goodWhenUp, fallback) {
-  if (!anterior) return { pill: fallback, pillClass: 'neu' };
+const HISTORY_MONTHS = 6;
+
+const sum = (list, tipo) => list.filter(t => t.tipo === tipo).reduce((a, t) => a + t.valor, 0);
+
+// "gastos 16% maiores que em setembro"
+function compare(nome, atual, anterior, mesAnterior) {
+  if (!anterior) return null;
   const pct = Math.round(((atual - anterior) / anterior) * 100);
-  if (pct === 0) return { pill: `Igual a ${mes}`, pillClass: 'neu' };
-  const up = pct > 0;
-  return {
-    pill: `${up ? '▲' : '▼'} ${Math.abs(pct)}% vs. ${mes}`,
-    pillClass: up === goodWhenUp ? 'up' : 'dn',
-  };
+  if (pct === 0) return `${nome} iguais a ${mesAnterior}`;
+  return `${nome} ${Math.abs(pct)}% ${pct > 0 ? 'maiores' : 'menores'} que em ${mesAnterior}`;
 }
 
-function healthScore(rec, gas) {
-  if (rec === 0) return 0;
-  const pct = Math.min(100, Math.round((gas / rec) * 100));
-  return pct;
-}
-
-export default function Dashboard({ period }) {
+export default function Dashboard({ ym, onNavigate }) {
   const { transactions, recorrentes, categorias } = useFinance();
 
-  const ym     = periodToYM(period);
-  const prevYM = shiftYM(ym, -1);
+  const data = useMemo(() => {
+    const byMonth = m => transactions.filter(t => t.data.startsWith(m));
+    const month   = byMonth(ym);
+    const prev    = byMonth(shiftYM(ym, -1));
 
-  const { rec, gas, fixo, saldo, sorted, filtered, txCount, prevRec, prevGas } = useMemo(() => {
-    const total = (list, tipo) => list.filter(t => t.tipo === tipo).reduce((a, t) => a + t.valor, 0);
-    const prev     = transactions.filter(t => t.data.startsWith(prevYM));
-    const prevRec  = total(prev, 'entrada');
-    const prevGas  = total(prev, 'saida');
-    const filtered = transactions.filter(t => t.data.startsWith(ym));
-    const rec      = total(filtered, 'entrada');
-    const gas      = total(filtered, 'saida');
-    const fixo     = recorrentes.filter(r => r.tipo === 'fixo').reduce((a, r) => a + r.valor, 0);
-    const catMap   = {};
-    filtered.filter(t => t.tipo === 'saida').forEach(t => {
+    const days = Array(daysInMonth(ym)).fill(0);
+    const catMap = {};
+    month.filter(t => t.tipo === 'saida').forEach(t => {
+      days[Number(t.data.slice(8)) - 1] += t.valor;
       catMap[t.cat] = (catMap[t.cat] || 0) + t.valor;
     });
-    const sorted = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
-    return { rec, gas, fixo, saldo: rec - gas, sorted, filtered, txCount: filtered.length, prevRec, prevGas };
-  }, [transactions, recorrentes, ym, prevYM]);
 
-  const prevMes   = MONTH_ABBR[Number(prevYM.slice(5)) - 1].toLowerCase();
-  const fixoCount = recorrentes.filter(r => r.tipo === 'fixo').length;
-  const spendPct  = healthScore(rec, gas);
+    const history = Array.from({ length: HISTORY_MONTHS }, (_, i) => {
+      const m = shiftYM(ym, i - (HISTORY_MONTHS - 1));
+      const list = byMonth(m);
+      return { ym: m, rec: sum(list, 'entrada'), gas: sum(list, 'saida') };
+    });
 
-  const healthColor = spendPct >= 90 ? 'var(--red)'
-    : spendPct >= 70 ? 'var(--amber)'
-    : 'var(--green)';
+    return {
+      month,
+      rec: sum(month, 'entrada'),
+      gas: sum(month, 'saida'),
+      prevRec: sum(prev, 'entrada'),
+      prevGas: sum(prev, 'saida'),
+      days,
+      history,
+      sorted: Object.entries(catMap).sort((a, b) => b[1] - a[1]),
+    };
+  }, [transactions, ym]);
 
-  const healthLabel = spendPct >= 90 ? 'Atenção: gastos elevados'
-    : spendPct >= 70 ? 'Moderado'
-    : rec === 0 ? 'Sem dados'
-    : 'Saudável';
+  const { month, rec, gas, prevRec, prevGas } = data;
+  const saldo     = rec - gas;
+  const [anoStr, mesStr] = ym.split('-');
+  const mesNome   = MONTH_NAMES[Number(mesStr) - 1];
+  const mesAnterior = MONTH_NAMES[(Number(mesStr) + 10) % 12].toLowerCase();
+  const fixos     = recorrentes.filter(r => r.tipo === 'fixo');
+  const fixosTotal = fixos.reduce((a, r) => a + r.valor, 0);
+  const spentPct  = rec > 0 ? Math.min(100, Math.round((gas / rec) * 100)) : null;
+
+  const comparisons = [
+    compare('Gastos', gas, prevGas, mesAnterior),
+    compare('receitas', rec, prevRec, mesAnterior),
+  ].filter(Boolean);
+
+  if (month.length === 0) {
+    return (
+      <div>
+        <h1 className="hero hero-empty">Nenhum lançamento em {mesNome.toLowerCase()} de {anoStr}.</h1>
+        <p className="hero-note">Registre uma entrada ou saída para ver o resumo do mês.</p>
+        <button className="btn btn-primary" onClick={() => onNavigate('lancamento')}>Adicionar lançamento</button>
+      </div>
+    );
+  }
 
   return (
-    <div className="section-enter">
-      <div className="page-header">
-        <div>
-          <div className="page-title">Visão Geral</div>
-          <div className="page-subtitle">{period} · {txCount} transações</div>
-        </div>
+    <div>
+      <h1 className="hero">
+        Em {mesNome.toLowerCase()} você recebeu <span className="num">{fmt(rec)}</span> e
+        gastou <span className="num">{fmt(gas)}</span>.{' '}
+        {saldo >= 0 ? 'Sobraram ' : 'Faltaram '}
+        <span className={`num ${saldo >= 0 ? 'pos' : 'neg'}`}>{fmt(Math.abs(saldo))}</span>.
+      </h1>
+
+      <div className="hero-meta">
+        {spentPct !== null && (
+          <div className="meter" role="img" aria-label={`${spentPct}% da receita foi gasta`}>
+            <div className="meter-track"><div className={`meter-fill${spentPct >= 90 ? ' high' : ''}`} style={{ width: `${spentPct}%` }} /></div>
+            <span>{spentPct}% da receita já foi gasto</span>
+          </div>
+        )}
+        {comparisons.length > 0 && <p>{comparisons.join('; ')}.</p>}
+        {fixos.length > 0 && (
+          <p>Contas fixas somam {fmt(fixosTotal)} por mês, em {fixos.length} {fixos.length === 1 ? 'item' : 'itens'}.</p>
+        )}
       </div>
 
-      {/* Métricas */}
-      <div className="metrics-row">
-        <MetricCard
-          accent="g" icon={Wallet} label="Saldo do período" value={fmt(saldo)}
-          pill={saldo >= 0 ? '▲ Superávit' : '▼ Déficit'}
-          pillClass={saldo >= 0 ? 'up' : 'dn'}
-        />
-        <MetricCard
-          accent="b" icon={TrendingUp} label="Receitas" value={fmt(rec)}
-          {...delta(rec, prevRec, prevMes, true, `${filtered.filter(t=>t.tipo==='entrada').length} entradas`)}
-        />
-        <MetricCard
-          accent="r" icon={TrendingDown} label="Gastos" value={fmt(gas)}
-          {...delta(gas, prevGas, prevMes, false, `${filtered.filter(t=>t.tipo==='saida').length} saídas`)}
-        />
-        <MetricCard
-          accent="a" icon={Bookmark} label="Fixos mensais" value={fmt(fixo)}
-          pill={`${fixoCount} ${fixoCount === 1 ? 'item' : 'itens'}`} pillClass="neu"
-        />
-      </div>
+      <div className="dash-grid">
+        <div className="dash-col">
+          <section className="block">
+            <h2>Dia a dia</h2>
+            <DailyBars days={data.days} ym={ym} />
+          </section>
 
-      {/* Banner saúde financeira */}
-      {rec > 0 && (
-        <div className="health-banner">
-          <Activity size={16} color={healthColor} strokeWidth={2} />
-          <div className="health-label">Saúde financeira</div>
-          <div className="health-track">
-            <div
-              className="health-fill"
-              style={{ width: `${spendPct}%`, background: healthColor }}
-            />
-          </div>
-          <div className="health-value" style={{ color: healthColor }}>
-            {spendPct}% comprometido
-          </div>
-          <div className="health-desc">— {healthLabel}</div>
+          <section className="block">
+            <h2>Movimentações</h2>
+            <Movements transactions={month} categorias={categorias} />
+            {month.length > 8 && (
+              <button className="link-btn" onClick={() => onNavigate('lancamento')}>Ver todos os lançamentos</button>
+            )}
+          </section>
         </div>
-      )}
 
-      {/* Gráficos */}
-      <div className="charts-row">
-        <div className="card">
-          <div className="card-head">
-            <div className="card-title">Evolução mensal</div>
-            <div className="chart-legend">
-              <span><span className="legend-dot" style={{ background: '#1d8f3e' }} />Receitas</span>
-              <span><span className="legend-dot" style={{ background: '#0e1726' }} />Gastos</span>
-            </div>
-          </div>
-          <div style={{ position: 'relative', height: 200 }}>
-            <LineChart ym={ym} />
-          </div>
-        </div>
-        <div className="card">
-          <div className="card-head">
-            <div className="card-title">Por categoria</div>
-            <div className="card-sub">{gas > 0 ? fmt(gas) + ' em gastos' : 'Sem gastos'}</div>
-          </div>
-          <div style={{ position: 'relative', height: 200 }}>
-            <DonutChart sorted={sorted} categorias={categorias} />
-          </div>
-        </div>
-      </div>
+        <div className="dash-col">
+          <section className="block">
+            <h2>Para onde foi o dinheiro</h2>
+            <CategorySplit sorted={data.sorted} categorias={categorias} />
+          </section>
 
-      {/* Inferior */}
-      <div className="bottom-row">
-        <div className="card">
-          <div className="card-head">
-            <div className="card-title">Gastos por categoria</div>
-            <div className="card-sub">{sorted.length} categorias</div>
-          </div>
-          <CategoryBars sorted={sorted} categorias={categorias} />
-        </div>
-        <div className="card">
-          <div className="card-head">
-            <div className="card-title">Últimas transações</div>
-            <div className="card-sub">{txCount} no período</div>
-          </div>
-          <RecentTransactions transactions={filtered} categorias={categorias} />
+          <section className="block">
+            <h2>Últimos {HISTORY_MONTHS} meses</h2>
+            <MonthHistory history={data.history} ym={ym} />
+          </section>
         </div>
       </div>
     </div>
