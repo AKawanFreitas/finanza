@@ -35,3 +35,12 @@ export function fmtDate(iso) {
   const [y, m, d] = iso.split('-');
   return `${d}/${m}/${y}`;
 }
+
+// Data (AAAA-MM-DD) do vencimento no mês de `ref`; dias 29–31 caem no último dia de meses curtos.
+export function dueDate(dia, ref = new Date()) {
+  const y = ref.getFullYear();
+  const m = ref.getMonth();
+  const last = new Date(y, m + 1, 0).getDate();
+  const d = Math.min(dia, last);
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
