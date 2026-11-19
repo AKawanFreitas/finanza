@@ -94,18 +94,20 @@ export function FinanceProvider({ children }) {
   }
 
   async function addCategoria(data) {
-    const res = await fetch(`${API}/categorias`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    const created = await res.json();
+    const created = await sendJson(`${API}/categorias`, 'POST', data);
+    if (!created) return false;
     setCategorias(prev => [...prev, created]);
     showToast('Categoria criada ✓');
+    return true;
   }
 
   async function delCategoria(id) {
-    await fetch(`${API}/categorias/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${API}/categorias/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      showToast(body.error || 'Não foi possível remover a categoria.', 'err');
+      return;
+    }
     setCategorias(prev => prev.filter(c => c.id !== id));
     showToast('Categoria removida', 'err');
   }

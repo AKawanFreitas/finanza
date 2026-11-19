@@ -13,10 +13,10 @@ export default function CategoriaForm() {
   const [cor, setCor]   = useState('#22a84a');
   const colorRef        = useRef(null);
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!nome.trim()) return;
-    addCategoria({ nome: nome.trim(), cor });
-    setNome('');
+    const ok = await addCategoria({ nome: nome.trim(), cor });
+    if (ok) setNome('');
   }
 
   return (
