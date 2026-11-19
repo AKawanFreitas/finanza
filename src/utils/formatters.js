@@ -30,3 +30,8 @@ export function catIcon(cat) {
 export function today() {
   return new Date().toISOString().split('T')[0];
 }
+
+export function fmtDate(iso) {
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
