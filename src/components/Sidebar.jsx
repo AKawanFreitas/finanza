@@ -1,5 +1,7 @@
 import { LayoutDashboard, PlusCircle, RefreshCw, Tag } from 'lucide-react';
 import Select from './Select';
+import { useFinance } from '../context/FinanceContext';
+import { periodOptions } from '../utils/period';
 
 const NAV = [
   { id: 'dashboard',   Icon: LayoutDashboard, label: 'Dashboard' },
@@ -8,21 +10,10 @@ const NAV = [
   { id: 'categorias',  Icon: Tag,               label: 'Categorias' },
 ];
 
-const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-                     'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-
-function getRecentPeriods(n = 6) {
-  const now = new Date();
-  return Array.from({ length: n }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    return `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
-  });
-}
-
-const PERIODS     = getRecentPeriods();
-const PERIOD_OPTS = PERIODS.map(p => ({ value: p, label: p }));
-
 export default function Sidebar({ active, onNavigate, period, onPeriodChange }) {
+  const { transactions } = useFinance();
+  const periodOpts = periodOptions(transactions);
+
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -50,7 +41,7 @@ export default function Sidebar({ active, onNavigate, period, onPeriodChange }) 
         <Select
           value={period}
           onChange={onPeriodChange}
-          options={PERIOD_OPTS}
+          options={periodOpts}
           dark
         />
       </div>
