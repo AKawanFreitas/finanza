@@ -1,10 +1,43 @@
 // Carga de dados de demonstração.
 // Uso: npm run seed            -> grava em backend/demo.db (não toca no financeiro.db)
 //      DB_PATH=outro.db npm run seed
-// Reexecutar apaga lançamentos/recorrentes do arquivo alvo e recria tudo.
+//      npm run seed -- --email alguem@exemplo.com
+// Os dados pertencem a uma conta: sem --email, usa a conta mais antiga do banco.
+// Se o banco não tiver conta nenhuma, cria "demo@finanza.local" com a senha "demo1234".
+// Reexecutar apaga lançamentos/recorrentes dessa conta e recria tudo.
 const path = require('path');
 process.env.DB_PATH = process.env.DB_PATH || path.join(__dirname, 'demo.db');
 const db = require('./db');
+const { hashSenha } = require('./lib/auth');
+
+const emailArg = (() => {
+  const i = process.argv.indexOf('--email');
+  return i >= 0 ? String(process.argv[i + 1] || '').trim().toLowerCase() : '';
+})();
+
+function contaAlvo() {
+  if (emailArg) {
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(emailArg);
+    if (!user) {
+      console.error(`Nenhuma conta com o e-mail ${emailArg} neste banco.`);
+      process.exit(1);
+    }
+    return user;
+  }
+
+  const primeiro = db.prepare('SELECT * FROM users ORDER BY id ASC LIMIT 1').get();
+  if (primeiro) return primeiro;
+
+  const { lastInsertRowid } = db.prepare(
+    'INSERT INTO users (nome, email, senha_hash, papel, status, criado_em) VALUES (?, ?, ?, ?, ?, ?)'
+  ).run('Conta demo', 'demo@finanza.local', hashSenha('demo1234'), 'user', 'ativo', new Date().toISOString());
+  const id = Number(lastInsertRowid);
+  db.seedCategorias(id);
+  console.log('Conta de demonstração criada: demo@finanza.local / demo1234');
+  return db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+}
+
+const dono = contaAlvo();
 
 const MESES = 5; // mês atual + 4 anteriores
 
@@ -90,15 +123,15 @@ for (let i = MESES - 1; i >= 0; i--) {
 }
 
 const tx = db.transaction(() => {
-  db.prepare('DELETE FROM transactions').run();
-  db.prepare('DELETE FROM recorrentes').run();
-  db.prepare("DELETE FROM sqlite_sequence WHERE name IN ('transactions','recorrentes')").run();
+  db.prepare('DELETE FROM transactions WHERE user_id = ?').run(dono.id);
+  db.prepare('DELETE FROM recorrentes  WHERE user_id = ?').run(dono.id);
+  db.seedCategorias(dono.id);
 
-  const insT = db.prepare('INSERT INTO transactions (desc, valor, tipo, cat, data, obs) VALUES (?, ?, ?, ?, ?, ?)');
-  for (const r of rows) insT.run(...r);
+  const insT = db.prepare('INSERT INTO transactions (user_id, desc, valor, tipo, cat, data, obs) VALUES (?, ?, ?, ?, ?, ?, ?)');
+  for (const r of rows) insT.run(dono.id, ...r);
 
-  const insR = db.prepare('INSERT INTO recorrentes (nome, valor, tipo, cat, dia, obs) VALUES (?, ?, ?, ?, ?, ?)');
-  for (const r of recorrentes) insR.run(r.nome, r.valor, r.tipo, r.cat, r.dia, r.obs);
+  const insR = db.prepare('INSERT INTO recorrentes (user_id, nome, valor, tipo, cat, dia, obs) VALUES (?, ?, ?, ?, ?, ?, ?)');
+  for (const r of recorrentes) insR.run(dono.id, r.nome, r.valor, r.tipo, r.cat, r.dia, r.obs);
 });
 tx();
 
@@ -107,9 +140,9 @@ const resumo = db.prepare(`
          ROUND(SUM(CASE WHEN tipo='entrada' THEN valor END), 2) AS entradas,
          ROUND(SUM(CASE WHEN tipo='saida'   THEN valor END), 2) AS saidas,
          COUNT(*) AS lancamentos
-  FROM transactions GROUP BY mes ORDER BY mes
-`).all();
+  FROM transactions WHERE user_id = ? GROUP BY mes ORDER BY mes
+`).all(dono.id);
 
-console.log(`Carga gravada em ${process.env.DB_PATH}`);
+console.log(`Carga gravada em ${process.env.DB_PATH} para ${dono.email}`);
 console.table(resumo);
 console.log(`${recorrentes.length} recorrentes, ${rows.length} lançamentos.`);
