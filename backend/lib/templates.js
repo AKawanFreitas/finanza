@@ -51,6 +51,19 @@ function alertaOrcamento({ nome, categoria, limite, gasto, percentual, mes }) {
   };
 }
 
+function lembreteVencimentos({ nome, itens }) {
+  const dataBR = iso => iso.split('-').reverse().join('/');
+  const atrasados = itens.filter(i => i.atrasada).length;
+  const assunto = atrasados === itens.length ? `${itens.length === 1 ? 'Conta atrasada' : 'Contas atrasadas'}`
+    : itens.length === 1 ? 'Uma conta vence em breve' : `${itens.length} contas vencem em breve`;
+  const linha = i => `${i.atrasada ? '⚠ ' : '• '}${i.titulo} — ${brl(i.valor)} (${i.atrasada ? 'venceu em' : 'vence em'} ${dataBR(i.vencimento)})`;
+  return {
+    assunto,
+    texto: `Olá, ${primeiroNome(nome)}!\n\n${itens.map(linha).join('\n')}\n\nMarque como paga em ${urlApp()}\n\nPara não receber estes avisos, desative em Configurações.`,
+    html: moldura(assunto, `<p>Olá, ${esc(primeiroNome(nome))}!</p><ul>${itens.map(i => `<li>${i.atrasada ? '⚠ ' : ''}${esc(i.titulo)} — <b>${brl(i.valor)}</b> (${i.atrasada ? 'venceu em' : 'vence em'} ${dataBR(i.vencimento)})</li>`).join('')}</ul>`, { url: urlApp(), rotulo: 'Abrir o Finanza' }),
+  };
+}
+
 function metaAtingida({ nome, meta, valor }) {
   const assunto = `Meta atingida: ${meta}`;
   const frase = `Parabéns! Você chegou a ${brl(valor)} e atingiu a meta "${meta}".`;
@@ -80,4 +93,4 @@ function resumoMensal({ nome, mes, resumo }) {
   };
 }
 
-module.exports = { redefinirSenha, verificarEmail, alertaOrcamento, metaAtingida, resumoMensal };
+module.exports = { redefinirSenha, verificarEmail, alertaOrcamento, metaAtingida, lembreteVencimentos, resumoMensal };

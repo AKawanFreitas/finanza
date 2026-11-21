@@ -23,4 +23,26 @@ function notificarUmaVez(userId, tipo, chave, montar) {
   return true;
 }
 
-module.exports = { notificarUmaVez };
+// Como notificarUmaVez, mas para vários itens de uma vez: só entram no e-mail os que ainda não foram avisados,
+// e a pessoa recebe UM e-mail com todos (e não um por item). `chaveDe(item)` identifica cada item.
+// Se o envio falhar, os registros são desfeitos para a próxima rodada tentar de novo.
+function notificarLote(userId, tipo, itens, chaveDe, montar) {
+  const user = db.prepare(
+    'SELECT id, nome, email, status, email_verificado_em, notificacoes_email FROM users WHERE id = ?'
+  ).get(userId);
+  if (!user || user.status !== 'ativo' || !user.email_verificado_em || !user.notificacoes_email || itens.length === 0) return 0;
+
+  const registrar = db.prepare('INSERT OR IGNORE INTO notificacoes (user_id, tipo, chave, criado_em) VALUES (?, ?, ?, ?)');
+  const agora = new Date().toISOString();
+  const novos = db.transaction(() => itens.filter(i => registrar.run(userId, tipo, chaveDe(i), agora).changes > 0))();
+  if (novos.length === 0) return 0;
+
+  enviarEmail({ para: user.email, ...montar(user, novos) }).catch(err => {
+    logger.error({ err, tipo, userId }, 'falha ao enviar e-mail em lote');
+    const apagar = db.prepare('DELETE FROM notificacoes WHERE user_id = ? AND tipo = ? AND chave = ?');
+    db.transaction(() => novos.forEach(i => apagar.run(userId, tipo, chaveDe(i))))();
+  });
+  return novos.length;
+}
+
+module.exports = { notificarUmaVez, notificarLote };
