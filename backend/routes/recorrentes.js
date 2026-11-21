@@ -3,23 +3,28 @@ const router  = express.Router();
 const db      = require('../db');
 const { exigirLogin } = require('../lib/auth');
 const { paraReais }   = require('../lib/money');
+const { mesValido, mesAtual, dataVencimento } = require('../lib/datas');
 const { recorrente, validar } = require('../lib/schemas');
 const { resolverCategoria }   = require('../lib/categorias');
+const { resolverConta }       = require('../lib/contas');
+const { SELECT: SELECT_TX, paraApi: txParaApi } = require('./transactions');
 
 router.use(exigirLogin);
 
+// `lancado`: já existe um lançamento gerado por este recorrente no mês pedido.
 const SELECT = `
-  SELECT r.id, r.nome, r.valor_centavos, r.tipo, r.categoria_id, c.nome AS cat, r.dia, r.obs
+  SELECT r.id, r.nome, r.valor_centavos, r.tipo, r.categoria_id, c.nome AS cat, r.dia, r.obs,
+         EXISTS (SELECT 1 FROM transactions t WHERE t.recorrente_id = r.id AND substr(t.data, 1, 7) = :mes) AS lancado
   FROM recorrentes r JOIN categorias c ON c.id = r.categoria_id
 `;
 
 const paraApi = r => ({
   id: r.id, nome: r.nome, valor: paraReais(r.valor_centavos), tipo: r.tipo,
-  cat: r.cat, categoria_id: r.categoria_id, dia: r.dia, obs: r.obs,
+  cat: r.cat, categoria_id: r.categoria_id, dia: r.dia, obs: r.obs, lancado: !!r.lancado,
 });
 
-const buscar = (id, userId) => {
-  const r = db.prepare(`${SELECT} WHERE r.id = ? AND r.user_id = ?`).get(id, userId);
+const buscar = (id, userId, mes = mesAtual()) => {
+  const r = db.prepare(`${SELECT} WHERE r.id = :id AND r.user_id = :uid`).get({ id, uid: userId, mes });
   return r ? paraApi(r) : null;
 };
 
@@ -31,8 +36,17 @@ function preparar(req) {
   return { dados: { ...value, categoria_id: categoria.id } };
 }
 
+const lerMes = req => {
+  const mes = req.query?.mes ?? req.body?.mes ?? mesAtual();
+  return mesValido(mes) ? mes : null;
+};
+
+// GET /api/recorrentes?mes=AAAA-MM  (o campo `lancado` vale para esse mês)
 router.get('/', (req, res) => {
-  res.json(db.prepare(`${SELECT} WHERE r.user_id = ? ORDER BY r.dia ASC, r.id ASC`).all(req.user.id).map(paraApi));
+  const mes = lerMes(req);
+  if (!mes) return res.status(400).json({ error: 'O mês deve estar no formato AAAA-MM.' });
+  res.json(db.prepare(`${SELECT} WHERE r.user_id = :uid ORDER BY r.dia ASC, r.id ASC`)
+    .all({ uid: req.user.id, mes }).map(paraApi));
 });
 
 router.post('/', (req, res) => {
@@ -60,6 +74,57 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   db.prepare('DELETE FROM recorrentes WHERE id = ? AND user_id = ?').run(Number(req.params.id), req.user.id);
   res.json({ ok: true });
+});
+
+/* ── Lançar no mês, sem duplicar ───────────────────── */
+
+// Gera o lançamento de um recorrente num mês, se ainda não houver. Devolve o id ou null.
+// Roda dentro de transação: a conferência e a inserção não se separam.
+const lancarUm = db.transaction((userId, rec, mes, contaId) => {
+  const ja = db.prepare('SELECT 1 FROM transactions WHERE recorrente_id = ? AND substr(data, 1, 7) = ?').get(rec.id, mes);
+  if (ja) return null;
+  return Number(db.prepare(`
+    INSERT INTO transactions (user_id, conta_id, recorrente_id, descricao, valor_centavos, tipo, categoria_id, data, obs)
+    VALUES (?, ?, ?, ?, ?, 'saida', ?, ?, ?)
+  `).run(userId, contaId, rec.id, rec.nome, rec.valor_centavos, rec.categoria_id, dataVencimento(mes, rec.dia), rec.obs).lastInsertRowid);
+});
+
+function contaDaRequisicao(req) {
+  const id = req.body?.conta_id;
+  if (id !== undefined && !Number.isInteger(id)) return { error: 'Conta inválida.' };
+  const contaId = resolverConta(req.user.id, id);
+  return contaId ? { contaId } : { error: 'Conta não encontrada ou arquivada.' };
+}
+
+// POST /api/recorrentes/lancar-pendentes  { mes?, conta_id? }
+router.post('/lancar-pendentes', (req, res) => {
+  const mes = lerMes(req);
+  if (!mes) return res.status(400).json({ error: 'O mês deve estar no formato AAAA-MM.' });
+  const { contaId, error } = contaDaRequisicao(req);
+  if (error) return res.status(400).json({ error });
+
+  const todos = db.prepare('SELECT * FROM recorrentes WHERE user_id = ? ORDER BY dia, id').all(req.user.id);
+  const criados = [];
+  for (const rec of todos) {
+    const id = lancarUm(req.user.id, rec, mes, contaId);
+    if (id) criados.push(txParaApi(db.prepare(`${SELECT_TX} WHERE t.id = ?`).get(id)));
+  }
+  res.json({ lancados: criados.length, itens: criados });
+});
+
+// POST /api/recorrentes/:id/lancar  { mes?, conta_id? }
+router.post('/:id/lancar', (req, res) => {
+  const mes = lerMes(req);
+  if (!mes) return res.status(400).json({ error: 'O mês deve estar no formato AAAA-MM.' });
+  const { contaId, error } = contaDaRequisicao(req);
+  if (error) return res.status(400).json({ error });
+
+  const rec = db.prepare('SELECT * FROM recorrentes WHERE id = ? AND user_id = ?').get(Number(req.params.id), req.user.id);
+  if (!rec) return res.status(404).json({ error: 'Recorrente não encontrado.' });
+
+  const id = lancarUm(req.user.id, rec, mes, contaId);
+  if (!id) return res.status(409).json({ error: 'Este recorrente já foi lançado neste mês.' });
+  res.status(201).json(txParaApi(db.prepare(`${SELECT_TX} WHERE t.id = ?`).get(id)));
 });
 
 module.exports = router;
