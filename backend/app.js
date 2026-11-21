@@ -1,5 +1,7 @@
 // Monta o app Express sem abrir porta, para os testes importarem direto.
 const express      = require('express');
+const fs           = require('fs');
+const path         = require('path');
 const cors         = require('cors');
 const helmet       = require('helmet');
 const crypto       = require('crypto');
@@ -38,7 +40,9 @@ app.use(pinoHttp({
   },
 }));
 
-app.use(helmet());
+// Sem HTTPS (COOKIE_SECURE=false, uso local), "upgrade-insecure-requests" faria o navegador tentar https em localhost.
+const semHttps = process.env.COOKIE_SECURE === 'false';
+app.use(helmet({ contentSecurityPolicy: { directives: { 'upgrade-insecure-requests': semHttps ? null : [] } }, hsts: !semHttps }));
 
 // Em desenvolvimento o front chega pelo proxy do Vite, na mesma origem.
 // CORS_ORIGIN libera origens externas específicas, com o cookie de sessão.
@@ -67,6 +71,23 @@ app.use('/api/orcamentos',   orcamentos);
 app.use('/api/exportacao',   exportacao);
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
+
+// Em produção a própria API serve o front compilado (npm run build gera dist/). Sem dist/, só a API responde.
+const dist = process.env.STATIC_DIR || path.join(__dirname, '..', 'dist');
+if (fs.existsSync(path.join(dist, 'index.html'))) {
+  app.use(express.static(dist, {
+    index: false,
+    setHeaders: (res, arquivo) => {
+      // Arquivos em assets/ têm hash no nome: podem ficar em cache para sempre.
+      res.setHeader('Cache-Control', arquivo.includes(`${path.sep}assets${path.sep}`) ? 'public, max-age=31536000, immutable' : 'public, max-age=3600');
+    },
+  }));
+  // Qualquer outra rota que não seja da API devolve o app (o React cuida da navegação).
+  app.get(/^\/(?!api\/).*/, (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache');
+    res.sendFile(path.join(dist, 'index.html'));
+  });
+}
 
 // Erros não tratados viram JSON, sem vazar detalhes internos.
 // eslint-disable-next-line no-unused-vars

@@ -58,8 +58,9 @@ function lerCookie(req) {
   return null;
 }
 
-// Secure só em produção: em desenvolvimento o app roda em http://localhost.
-const seguro = () => process.env.NODE_ENV === 'production';
+// Cookie Secure em produção (exige HTTPS). Para rodar o build de produção em http://localhost
+// (ex.: docker compose local), COOKIE_SECURE=false desliga.
+const seguro = () => (process.env.COOKIE_SECURE ? process.env.COOKIE_SECURE === 'true' : process.env.NODE_ENV === 'production');
 
 function gravarCookie(res, token, expira) {
   const partes = [
