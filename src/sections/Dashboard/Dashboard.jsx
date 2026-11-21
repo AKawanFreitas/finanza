@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
-import { fmt } from '../../utils/formatters';
+import { fmt, fmtDate } from '../../utils/formatters';
 import { MONTH_NAMES } from '../../utils/period';
 import MonthStepper from '../../components/MonthStepper';
 import Kpi from './Kpi';
@@ -130,6 +130,28 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
                   </div>
                   <p className="meter-note">da receita do mês já foi gasto</p>
                 </div>
+              </section>
+            )}
+
+            {resumo.vencimentos.length > 0 && (
+              <section className="panel">
+                <div className="panel-head">
+                  <h2>Próximos vencimentos</h2>
+                  <button className="link-btn" onClick={() => onNavigate('contas-pagar')}>Ver contas</button>
+                </div>
+                <ul className="venc-lista">
+                  {resumo.vencimentos.map(v => (
+                    <li key={v.chave}>
+                      <button className="venc-item" onClick={() => onNavigate(v.tipo === 'fatura' ? 'cartoes' : 'contas-pagar')}>
+                        <span className="venc-titulo">{v.titulo}</span>
+                        <span className={`chip ${v.atrasada ? 'bad' : v.dias <= 3 ? 'warn' : ''}`}>
+                          {v.atrasada ? `Atrasada ${-v.dias}d` : v.dias === 0 ? 'Hoje' : `${fmtDate(v.vencimento).slice(0, 5)}`}
+                        </span>
+                        <span className="venc-valor">{fmt(v.valor)}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </section>
             )}
 
