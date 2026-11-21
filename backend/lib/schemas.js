@@ -46,6 +46,7 @@ const recorrente = z.object({
     .int('O dia do vencimento deve estar entre 1 e 31.')
     .min(1, 'O dia do vencimento deve estar entre 1 e 31.')
     .max(31, 'O dia do vencimento deve estar entre 1 e 31.'),
+  automatico: z.boolean({ error: 'Valor inválido para lançamento automático.' }).optional().default(false),
   obs,
   ...categoria,
 }).refine(exigeCategoria, msgCategoria);
@@ -78,6 +79,15 @@ const categoriaInput = z.object({
   cor: COR,
 });
 
+const orcamento = z.object({
+  limite: z.union([z.number(), z.string()], { error: 'O limite deve ser maior que zero.' })
+    .transform((v, ctx) => {
+      const c = paraCentavos(v);
+      if (c === null) ctx.addIssue({ code: 'custom', message: 'O limite deve ser maior que zero.' });
+      return c;
+    }),
+});
+
 // Devolve { value } ou { error } com a primeira mensagem, no formato que as rotas já usavam.
 function validar(schema, body) {
   const r = schema.safeParse(body ?? {});
@@ -85,4 +95,4 @@ function validar(schema, body) {
   return { error: r.error.issues[0]?.message || 'Dados inválidos.' };
 }
 
-module.exports = { transacao, recorrente, categoriaInput, conta, transferencia, dataISO, validar };
+module.exports = { transacao, recorrente, categoriaInput, conta, transferencia, orcamento, dataISO, validar };
