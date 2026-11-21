@@ -242,3 +242,115 @@ test('excluir parcelas: só esta, esta e as futuras, ou todas', async () => {
   assert.equal(await total(), 1, 'a primeira parcela da compra A continua');
 });
 
+/* ── Pagamento da fatura ──────────────────────────── */
+
+async function comFatura(valor = 300) {
+  const { u, cartao } = await comCartao();
+  const principal = (await u.agente.get('/api/contas')).body.find(c => c.tipo === 'corrente');
+  await u.agente.put(`/api/contas/${principal.id}`).send({ nome: principal.nome, tipo: 'corrente', saldo_inicial: 1000 });
+  await compra(u, cartao, { valor, data: '2026-03-05' });
+  return { u, cartao, principal };
+}
+const pagar = (u, cartao, corpo, mes = '2026-03') => u.agente.post(`/api/cartoes/${cartao.id}/faturas/${mes}/pagar`).send(corpo);
+const saldoDe = async (u, id) => (await u.agente.get('/api/contas')).body.find(c => c.id === id).saldo;
+
+test('pagar a fatura inteira: quita, zera a dívida e tira da conta pagadora', async () => {
+  const { u, cartao, principal } = await comFatura(300);
+  const r = await pagar(u, cartao, { origem_id: principal.id, data: '2026-03-15' });
+  assert.equal(r.status, 201);
+  assert.equal(r.body.fatura.status, 'paga');
+  assert.equal(r.body.fatura.pago, 300);
+  assert.equal(r.body.fatura.restante, 0);
+  assert.equal(r.body.cartao.usado, 0);
+  assert.equal(await saldoDe(u, principal.id), 700);
+  assert.equal(await saldoDe(u, cartao.id), 0);
+});
+
+test('pagar a fatura não é gasto: o mês não conta duas vezes', async () => {
+  const { u, cartao, principal } = await comFatura(300);
+  await pagar(u, cartao, { origem_id: principal.id, data: '2026-03-15' });
+  const resumo = (await u.agente.get('/api/resumo?mes=2026-03')).body;
+  assert.equal(resumo.saidas, 300, 'só a compra');
+  assert.equal((await u.agente.get('/api/transactions?mes=2026-03')).body.total, 1);
+});
+
+test('pagamento parcial deixa a fatura parcial e o restante certo', async () => {
+  const { u, cartao, principal } = await comFatura(300);
+  const r = await pagar(u, cartao, { origem_id: principal.id, valor: 120.5 });
+  assert.equal(r.body.fatura.status, 'parcial');
+  assert.equal(r.body.fatura.restante, 179.5);
+  const r2 = await pagar(u, cartao, { origem_id: principal.id, valor: 179.5 });
+  assert.equal(r2.body.fatura.status, 'paga');
+  assert.equal((await fatura(u, cartao, '2026-03')).pagamentos.length, 2);
+});
+
+test('não paga mais que o restante nem fatura sem valor', async () => {
+  const { u, cartao, principal } = await comFatura(300);
+  assert.equal((await pagar(u, cartao, { origem_id: principal.id, valor: 300.01 })).status, 400);
+  assert.equal((await pagar(u, cartao, { origem_id: principal.id, valor: 0 })).status, 400);
+  await pagar(u, cartao, { origem_id: principal.id });
+  assert.equal((await pagar(u, cartao, { origem_id: principal.id })).status, 409, 'já quitada');
+  assert.equal((await pagar(u, cartao, { origem_id: principal.id }, '2030-01')).status, 409, 'fatura sem nada');
+});
+
+test('quem paga precisa ser uma conta sua, ativa e que não seja cartão', async () => {
+  const { u, cartao } = await comFatura(100);
+  const outroCartao = (await u.agente.post('/api/cartoes').send(cartaoBase({ nome: 'Outro cartão' }))).body;
+  assert.equal((await pagar(u, cartao, { origem_id: outroCartao.id })).status, 400);
+  assert.equal((await pagar(u, cartao, { origem_id: 999999 })).status, 400);
+  assert.equal((await pagar(u, cartao, {})).status, 400);
+  const estranho = await novoUsuario();
+  const contaAlheia = (await estranho.agente.get('/api/contas')).body[0];
+  assert.equal((await pagar(u, cartao, { origem_id: contaAlheia.id })).status, 400);
+});
+
+test('status vencida: passou do vencimento sem quitar', async () => {
+  const { u, cartao } = await comCartao(); // fecha 10, vence 17
+  await compra(u, cartao, { data: '2020-03-05' }); // fatura de 2020-03, vencida há anos
+  const lista = (await u.agente.get(`/api/cartoes/${cartao.id}/faturas`)).body;
+  assert.equal(lista.find(f => f.mes === '2020-03').status, 'vencida');
+});
+
+test('lista de faturas: mais recente primeiro, com meses só de pagamento', async () => {
+  const { u, cartao, principal } = await comFatura(100);
+  await compra(u, cartao, { data: '2026-05-05' });
+  await pagar(u, cartao, { origem_id: principal.id, valor: 10 });
+  const meses = (await u.agente.get(`/api/cartoes/${cartao.id}/faturas`)).body.map(f => f.mes);
+  assert.deepEqual(meses, ['2026-05', '2026-03']);
+});
+
+/* ── Isolamento ───────────────────────────────────── */
+
+test('ninguém vê, edita, apaga nem paga o cartão de outro usuário', async () => {
+  const { u: dono, cartao, principal } = await comFatura(100);
+  const b = await novoUsuario('Bia');
+  assert.deepEqual((await b.agente.get('/api/cartoes')).body, []);
+  for (const rota of [`/api/cartoes/${cartao.id}/faturas`, `/api/cartoes/${cartao.id}/faturas/2026-03`]) {
+    assert.equal((await b.agente.get(rota)).status, 404, rota);
+  }
+  assert.equal((await b.agente.put(`/api/cartoes/${cartao.id}`).send(cartaoBase())).status, 404);
+  assert.equal((await b.agente.delete(`/api/cartoes/${cartao.id}`)).status, 404);
+  const contaB = (await b.agente.get('/api/contas')).body[0];
+  assert.equal((await pagar(b, cartao, { origem_id: contaB.id })).status, 404);
+  assert.equal((await pagar(b, cartao, { origem_id: principal.id })).status, 404);
+  assert.equal((await compra(b, cartao)).status, 400, 'não lança no cartão alheio');
+  assert.equal((await fatura(dono, cartao, '2026-03')).total, 100, 'nada mudou para o dono');
+});
+
+test('/api/cartoes/:id com uma conta comum devolve 404', async () => {
+  const u = await novoUsuario();
+  const comum = (await u.agente.get('/api/contas')).body[0];
+  assert.equal((await u.agente.get(`/api/cartoes/${comum.id}/faturas`)).status, 404);
+});
+
+test('excluir o usuário com cartão, compras parceladas e pagamentos não esbarra nas FKs', async () => {
+  const { u, cartao, principal } = await comFatura(300);
+  await compra(u, cartao, { valor: 90, parcelas: 3 });
+  await pagar(u, cartao, { origem_id: principal.id, valor: 50 });
+  const r = await u.agente.delete('/api/auth/conta').send({ senha: u.senha });
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  for (const t of ['transactions', 'contas', 'transferencias']) {
+    assert.equal(db.prepare(`SELECT COUNT(*) AS n FROM ${t} WHERE user_id = ?`).get(u.id).n, 0, t);
+  }
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM cartoes WHERE conta_id = ?').get(cartao.id).n, 0);
+});
