@@ -59,3 +59,112 @@ test('data da parcela: mesmo dia nos meses seguintes, limitado ao fim do mês', 
   assert.equal(dataDaParcela('2026-11-15', 3), '2027-02-15');
 });
 
+/* ── Cartão ───────────────────────────────────────── */
+
+test('cria cartão: aparece com limite, uso zero e a fatura em curso', async () => {
+  const { cartao } = await comCartao();
+  assert.deepEqual([cartao.nome, cartao.limite, cartao.usado, cartao.disponivel, cartao.percentual_usado], ['Nubank', 5000, 0, 5000, 0]);
+  assert.equal(cartao.fatura_atual.status, 'aberta');
+  assert.equal(cartao.fatura_atual.total, 0);
+});
+
+test('cartão também aparece como conta (tipo cartao), com saldo igual à dívida negativa', async () => {
+  const { u, cartao } = await comCartao({ divida_inicial: 300 });
+  const conta = (await u.agente.get('/api/contas')).body.find(c => c.id === cartao.id);
+  assert.equal(conta.tipo, 'cartao');
+  assert.equal(conta.saldo, -300);
+  assert.equal((await u.agente.get('/api/cartoes')).body[0].usado, 300);
+});
+
+test('validações do cartão', async () => {
+  const u = await novoUsuario();
+  const casos = [
+    [{ nome: '' }, /nome/i], [{ limite: 0 }, /limite/i], [{ limite: 'x' }, /limite/i],
+    [{ dia_fechamento: 0 }, /fechamento/], [{ dia_fechamento: 32 }, /fechamento/],
+    [{ dia_vencimento: 'a' }, /vencimento/], [{ cor: 'roxo' }, /cor/i], [{ divida_inicial: -5 }, /dívida/],
+    [{ conta_pagamento_id: 999999 }, /pagamento/],
+  ];
+  for (const [extra, regex] of casos) {
+    const r = await u.agente.post('/api/cartoes').send(cartaoBase(extra));
+    assert.equal(r.status, 400, JSON.stringify(extra));
+    assert.match(r.body.error, regex, JSON.stringify(extra));
+  }
+  await u.agente.post('/api/cartoes').send(cartaoBase());
+  assert.equal((await u.agente.post('/api/cartoes').send(cartaoBase({ nome: 'nubank' }))).status, 409);
+});
+
+test('cartão não é criado nem convertido pela rota de contas', async () => {
+  const { u, cartao } = await comCartao();
+  const r = await u.agente.post('/api/contas').send({ nome: 'Outro', tipo: 'cartao' });
+  assert.equal(r.status, 400);
+  const conv = await u.agente.put(`/api/contas/${cartao.id}`).send({ nome: 'Nubank', tipo: 'corrente' });
+  assert.equal(conv.status, 400);
+  const comum = (await u.agente.get('/api/contas')).body.find(c => c.tipo === 'corrente');
+  assert.equal((await u.agente.put(`/api/contas/${comum.id}`).send({ nome: comum.nome, tipo: 'cartao' })).status, 400);
+  const arq = await u.agente.put(`/api/contas/${cartao.id}`).send({ nome: 'Nubank', tipo: 'cartao', arquivada: true });
+  assert.equal(arq.status, 200, 'arquivar o cartão pela tela de contas é permitido');
+  assert.equal(arq.body.arquivada, true);
+});
+
+test('editar o cartão muda limite e dias; excluir só sem movimentações', async () => {
+  const { u, cartao } = await comCartao();
+  const put = await u.agente.put(`/api/cartoes/${cartao.id}`).send(cartaoBase({ limite: 8000, dia_fechamento: 20, dia_vencimento: 28 }));
+  assert.equal(put.body.limite, 8000);
+  assert.equal(put.body.dia_fechamento, 20);
+  await compra(u, cartao);
+  assert.equal((await u.agente.delete(`/api/cartoes/${cartao.id}`)).status, 409);
+  const vazio = (await u.agente.post('/api/cartoes').send(cartaoBase({ nome: 'Vazio' }))).body;
+  assert.equal((await u.agente.delete(`/api/cartoes/${vazio.id}`)).status, 200);
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM cartoes WHERE conta_id = ?').get(vazio.id).n, 0, 'a configuração some junto');
+});
+
+/* ── Compras e faturas ────────────────────────────── */
+
+test('a compra cai na fatura certa pela data e pelo fechamento', async () => {
+  const { u, cartao } = await comCartao(); // fecha dia 10
+  const r1 = await compra(u, cartao, { data: '2026-03-10' });
+  const r2 = await compra(u, cartao, { data: '2026-03-11' });
+  assert.equal(r1.body.fatura, '2026-03');
+  assert.equal(r2.body.fatura, '2026-04');
+  assert.equal((await fatura(u, cartao, '2026-03')).lancamentos.length, 1);
+  assert.equal((await fatura(u, cartao, '2026-04')).lancamentos.length, 1);
+});
+
+test('lançamento em conta comum não tem fatura', async () => {
+  const u = await novoUsuario();
+  const r = await u.agente.post('/api/transactions').send({ desc: 'x', valor: 1, tipo: 'saida', cat: 'Outros', data: '2026-03-01' });
+  assert.equal(r.body.fatura, null);
+  assert.equal(r.body.parcela, null);
+});
+
+test('total da fatura soma compras e subtrai estornos', async () => {
+  const { u, cartao } = await comCartao();
+  await compra(u, cartao, { valor: 300 });
+  await compra(u, cartao, { valor: 50.5, data: '2026-03-08' });
+  await compra(u, cartao, { valor: 80, tipo: 'entrada', desc: 'Estorno', data: '2026-03-09' });
+  const f = await fatura(u, cartao, '2026-03');
+  assert.equal(f.total, 270.5);
+  assert.equal(f.itens, 3);
+  assert.equal(f.fechamento, '2026-03-10');
+  assert.equal(f.vencimento, '2026-03-17');
+});
+
+test('limite usado e disponível acompanham as compras', async () => {
+  const { u, cartao } = await comCartao({ limite: 1000 });
+  await compra(u, cartao, { valor: 250 });
+  await compra(u, cartao, { valor: 150, data: '2026-04-20' });
+  const c = (await u.agente.get('/api/cartoes')).body[0];
+  assert.deepEqual([c.usado, c.disponivel, c.percentual_usado], [400, 600, 40]);
+});
+
+test('compra no cartão conta como gasto na data e não mexe no saldo da conta bancária', async () => {
+  const { u, cartao } = await comCartao();
+  const [principal] = (await u.agente.get('/api/contas')).body.filter(c => c.tipo === 'corrente');
+  await compra(u, cartao, { valor: 200, data: '2026-03-05' });
+  const resumo = (await u.agente.get('/api/resumo?mes=2026-03')).body;
+  assert.equal(resumo.saidas, 200);
+  const contas = (await u.agente.get('/api/contas')).body;
+  assert.equal(contas.find(c => c.id === principal.id).saldo, 0);
+  assert.equal(contas.find(c => c.id === cartao.id).saldo, -200);
+});
+
