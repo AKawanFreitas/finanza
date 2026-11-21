@@ -35,7 +35,7 @@ function bancoLegado() {
 
 test('banco novo chega na última versão', () => {
   const db = new Database(':memory:');
-  assert.deepEqual(migrar(db), [1, 2, 3, 4, 5, 6]);
+  assert.deepEqual(migrar(db), [1, 2, 3, 4, 5, 6, 7]);
   assert.equal(versaoAtual(db), ultimaVersao);
 });
 
@@ -152,7 +152,7 @@ test('006: migração que deixaria uma FK quebrada é desfeita e as FKs voltam a
     migrations.pop();
   }
   assert.equal(db.pragma('foreign_keys', { simple: true }), 1);
-  assert.equal(db.pragma('user_version', { simple: true }), 6, 'a versão não avançou');
+  assert.equal(db.pragma('user_version', { simple: true }), ultimaVersao, 'a versão não avançou');
 });
 
 test('migração que falha desfaz tudo e não avança a versão', () => {
