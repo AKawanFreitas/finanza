@@ -67,9 +67,11 @@ No `backend/`: `npm start`, `npm run dev` (reinicia ao salvar), `npm test` (test
 
 ## O que o app faz
 
-- **Resumo:** indicadores do mês (saldo, receitas, gastos e contas fixas, com variação em relação ao mês anterior), gastos por dia, divisão por categoria, últimas movimentações, comprometimento da renda e histórico dos últimos 6 meses. O mês é trocado pelas setas no topo da página.
-- **Lançamentos:** criar, editar e excluir entradas e saídas. A lista filtra por texto, tipo, categoria e mês e mostra o saldo do que está filtrado.
-- **Recorrentes:** cadastro de despesas mensais (fixas ou variáveis). Cada uma pode ser lançada como gasto do mês atual, uma a uma ou todas as pendentes, sem duplicar.
+- **Resumo:** (calculado no servidor) indicadores do mês (saldo, receitas, gastos e contas fixas, com variação em relação ao mês anterior), gastos por dia, divisão por categoria, últimas movimentações, comprometimento da renda e histórico dos últimos 6 meses. O mês é trocado pelas setas no topo da página.
+- **Lançamentos:** criar, editar e excluir entradas e saídas, cada uma numa conta. A lista é paginada no servidor e filtra por texto (sem diferenciar acento nem maiúsculas), tipo, categoria, conta e mês, mostrando o saldo de tudo o que está filtrado.
+- **Contas:** carteiras, bancos, poupança e investimentos, com saldo calculado (inicial + lançamentos + transferências). Transferências entre contas não contam como receita nem gasto. Conta com movimentações é arquivada, não excluída.
+- **Importar extrato:** OFX (conta e cartão) e CSV (separador, aspas e formatos de data e valor brasileiros detectados sozinhos). Mostra uma prévia com categoria sugerida (a que você já usou para a mesma descrição), marca o que já foi importado ou parece duplicado e só grava o que você confirmar. Importar o mesmo arquivo duas vezes não duplica.
+- **Recorrentes:** cadastro de despesas mensais (fixas ou variáveis). Cada uma pode ser lançada como gasto do mês atual, uma a uma ou todas as pendentes. O servidor liga o lançamento ao recorrente, então nunca duplica.
 - **Contas:** criar conta com e-mail e senha, entrar e sair. A sessão fica num cookie `httpOnly` e vale 30 dias. Cada conta vê apenas os próprios dados.
 - **Configurações:** alterar nome, e-mail e senha, e excluir a conta com tudo o que há nela.
 - **Administração (super admin):** listar e buscar contas, suspender e reativar, redefinir senha com uma provisória de uso único e excluir contas, além dos números de uso do sistema.
@@ -83,13 +85,21 @@ Base: `/api`. Erros de validação voltam como `{ "error": "mensagem" }` com sta
 | ------------------- | ---------------------------------------- |
 | `/api/auth`         | `POST /registrar`, `POST /login`, `POST /logout`, `GET /eu`, `PATCH /perfil`, `POST /senha`, `DELETE /conta` |
 | `/api/admin`        | `GET /usuarios`, `GET /metricas`, `PATCH /usuarios/:id/status`, `POST /usuarios/:id/senha`, `DELETE /usuarios/:id` |
-| `/api/transactions` | `GET`, `POST`, `PUT /:id`, `DELETE /:id` |
-| `/api/recorrentes`  | `GET`, `POST`, `PUT /:id`, `DELETE /:id` |
+| `/api/transactions` | `GET` (filtros e paginação), `POST`, `PUT /:id`, `DELETE /:id` |
+| `/api/resumo`       | `GET ?mes=AAAA-MM` (dados do dashboard) |
+| `/api/contas`       | `GET`, `POST`, `PUT /:id`, `DELETE /:id` |
+| `/api/transferencias` | `GET`, `POST`, `DELETE /:id` |
+| `/api/recorrentes`  | `GET ?mes=`, `POST`, `PUT /:id`, `DELETE /:id`, `POST /:id/lancar`, `POST /lancar-pendentes` |
+| `/api/importacao`   | `POST /previa`, `POST /confirmar` |
 | `/api/categorias`   | `GET`, `POST`, `PUT /:id`, `DELETE /:id` |
 
 Formatos:
 
-- **transactions:** `{ desc, valor, tipo: "entrada" | "saida", categoria_id | cat, data: "AAAA-MM-DD", obs? }`
+- **transactions:** `{ desc, valor, tipo: "entrada" | "saida", categoria_id | cat, conta_id?, data: "AAAA-MM-DD", obs? }` (sem `conta_id`, vai para a conta principal)
+- **GET /transactions:** `?mes=AAAA-MM&tipo=&categoria_id=&conta_id=&q=&pagina=1&limite=20` (máx. 100) devolve `{ itens, total, pagina, paginas, limite, totais: { entradas, saidas, saldo } }`; os totais valem para todo o filtro, não só para a página
+- **contas:** `{ nome, tipo: "corrente" | "poupanca" | "carteira" | "investimento", saldo_inicial?, cor?, arquivada? }`
+- **transferencias:** `{ origem_id, destino_id, valor, data, descricao? }`
+- **importação:** `previa { conta_id, conteudo }` devolve os itens com `categoria_id` sugerida e `duplicada` (`"importada"` ou `"provavel"`); `confirmar { conta_id, itens }` grava e devolve `{ importados, ignorados }`
 - **recorrentes:** `{ nome, valor, tipo: "fixo" | "recorrente", categoria_id | cat, dia: 1–31, obs? }`
 - **categorias:** `{ nome, cor: "#RRGGBB" }`
 
@@ -101,15 +111,16 @@ Dinheiro é guardado em **centavos inteiros** (`valor_centavos`) e a API fala em
 backend/
   app.js, server.js      App Express (testável) e processo que abre a porta
   db.js                  Conexão SQLite, backup antes de migrar, categorias padrão
-  migrations/            Schema versionado (PRAGMA user_version): 001 baseline, 002 centavos e categoria_id
+  migrations/            Schema versionado (PRAGMA user_version): 001 baseline, 002 centavos e categoria_id, 003 contas e vínculos
   lib/                   auth (senhas, sessões), money (centavos), schemas (zod), categorias
-  routes/                auth, admin, transactions, recorrentes, categorias
+  routes/                auth, admin, transactions, resumo, contas, transferencias, recorrentes, importacao, categorias
+  lib/importacao/        Leitores de OFX e CSV, ids de deduplicação e sugestão de categoria
   scripts/create-admin   Cria ou promove o super admin
   tests/                 Testes com node:test + supertest (banco em memória)
 .github/workflows/       CI: testes do backend, lint e build do front
 src/
   context/               Sessão (AuthContext) e dados financeiros (FinanceContext)
-  sections/              Auth, Dashboard, Lancamentos, Recorrentes, Categorias, Configuracoes, Admin
+  sections/              Auth, Dashboard, Lancamentos, Contas, Importar, Recorrentes, Categorias, Configuracoes, Admin
   components/            Sidebar, MonthStepper, Select, Toast
   utils/                 Formatadores e funções de período
   index.css              Estilos
