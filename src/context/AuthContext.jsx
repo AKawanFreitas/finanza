@@ -52,6 +52,21 @@ export function AuthProvider({ children }) {
     setUser(user);
   }, []);
 
+  const salvarPreferencias = useCallback(async (notificacoes_email) => {
+    const { user } = await pedir('/preferencias', { method: 'PATCH', body: { notificacoes_email } });
+    setUser(user);
+  }, []);
+
+  // Recuperação de senha e confirmação de e-mail funcionam sem sessão (o link vem por e-mail).
+  const esqueciSenha  = useCallback(email => pedir('/esqueci-senha', { method: 'POST', body: { email } }), []);
+  const redefinirSenha = useCallback((token, nova) => pedir('/redefinir-senha', { method: 'POST', body: { token, nova } }), []);
+  const verificarEmail = useCallback(async (token) => {
+    await pedir('/verificar-email', { method: 'POST', body: { token } });
+    // Se a pessoa já está logada, o aviso de "confirme seu e-mail" some.
+    pedir('/eu').then(({ user }) => setUser(user)).catch(() => {});
+  }, []);
+  const reenviarVerificacao = useCallback(() => pedir('/reenviar-verificacao', { method: 'POST' }), []);
+
   const excluirConta = useCallback(async (senha) => {
     await pedir('/conta', { method: 'DELETE', body: { senha } });
     setUser(null);
@@ -61,6 +76,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       user, carregando, ehAdmin: user?.papel === 'superadmin',
       entrar, criarConta, sair, salvarPerfil, trocarSenha, excluirConta,
+      salvarPreferencias, esqueciSenha, redefinirSenha, verificarEmail, reenviarVerificacao,
     }}>
       {children}
     </AuthContext.Provider>
