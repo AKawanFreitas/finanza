@@ -2,27 +2,16 @@ const express = require('express');
 const router  = express.Router();
 const db      = require('../db');
 const { exigirLogin } = require('../lib/auth');
+const { categoriaInput, validar } = require('../lib/schemas');
 
 router.use(exigirLogin);
 
-const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
-
-function parseCategoria(body = {}) {
-  const nome = typeof body.nome === 'string' ? body.nome.trim() : '';
-  const cor  = body.cor;
-
-  if (!nome)                     return { error: 'Informe o nome da categoria.' };
-  if (nome.length > 40)          return { error: 'O nome deve ter até 40 caracteres.' };
-  if (!COLOR_RE.test(cor || '')) return { error: 'A cor deve estar no formato #RRGGBB.' };
-  return { value: { nome, cor } };
-}
-
 router.get('/', (req, res) => {
-  res.json(db.prepare('SELECT * FROM categorias WHERE user_id = ? ORDER BY nome ASC').all(req.user.id));
+  res.json(db.prepare('SELECT id, nome, cor FROM categorias WHERE user_id = ? ORDER BY nome ASC').all(req.user.id));
 });
 
 router.post('/', (req, res) => {
-  const { value, error } = parseCategoria(req.body);
+  const { value, error } = validar(categoriaInput, req.body);
   if (error) return res.status(400).json({ error });
 
   const { nome, cor } = value;
@@ -33,28 +22,20 @@ router.post('/', (req, res) => {
   res.status(201).json({ id: Number(result.lastInsertRowid), nome, cor });
 });
 
-// Lançamentos e recorrentes guardam a categoria pelo nome, então renomear acompanha os dois.
-const updateCategoria = db.transaction((userId, id, atual, { nome, cor }) => {
-  db.prepare('UPDATE categorias SET nome = ?, cor = ? WHERE id = ? AND user_id = ?').run(nome, cor, id, userId);
-  if (nome !== atual.nome) {
-    db.prepare('UPDATE transactions SET cat = ? WHERE cat = ? AND user_id = ?').run(nome, atual.nome, userId);
-    db.prepare('UPDATE recorrentes  SET cat = ? WHERE cat = ? AND user_id = ?').run(nome, atual.nome, userId);
-  }
-});
-
+// Lançamentos e recorrentes apontam por id, então renomear é só atualizar a categoria.
 router.put('/:id', (req, res) => {
   const id = Number(req.params.id);
-  const { value, error } = parseCategoria(req.body);
+  const { value, error } = validar(categoriaInput, req.body);
   if (error) return res.status(400).json({ error });
 
-  const atual = db.prepare('SELECT * FROM categorias WHERE id = ? AND user_id = ?').get(id, req.user.id);
+  const atual = db.prepare('SELECT id FROM categorias WHERE id = ? AND user_id = ?').get(id, req.user.id);
   if (!atual) return res.status(404).json({ error: 'Categoria não encontrada.' });
 
   const duplicada = db.prepare('SELECT 1 FROM categorias WHERE user_id = ? AND nome = ? COLLATE NOCASE AND id != ?')
     .get(req.user.id, value.nome, id);
   if (duplicada) return res.status(409).json({ error: 'Já existe uma categoria com esse nome.' });
 
-  updateCategoria(req.user.id, id, atual, value);
+  db.prepare('UPDATE categorias SET nome = ?, cor = ? WHERE id = ? AND user_id = ?').run(value.nome, value.cor, id, req.user.id);
   res.json({ id, ...value });
 });
 
@@ -64,8 +45,8 @@ router.delete('/:id', (req, res) => {
   if (!cat) return res.status(404).json({ error: 'Categoria não encontrada.' });
 
   const emUso =
-    db.prepare('SELECT COUNT(*) AS n FROM transactions WHERE cat = ? AND user_id = ?').get(cat.nome, req.user.id).n +
-    db.prepare('SELECT COUNT(*) AS n FROM recorrentes  WHERE cat = ? AND user_id = ?').get(cat.nome, req.user.id).n;
+    db.prepare('SELECT COUNT(*) AS n FROM transactions WHERE categoria_id = ?').get(id).n +
+    db.prepare('SELECT COUNT(*) AS n FROM recorrentes  WHERE categoria_id = ?').get(id).n;
   if (emUso > 0) {
     return res.status(409).json({ error: `"${cat.nome}" está em uso por ${emUso} registro(s). Mude a categoria deles antes de excluir.` });
   }

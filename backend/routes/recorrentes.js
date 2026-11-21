@@ -2,52 +2,59 @@ const express = require('express');
 const router  = express.Router();
 const db      = require('../db');
 const { exigirLogin } = require('../lib/auth');
+const { paraReais }   = require('../lib/money');
+const { recorrente, validar } = require('../lib/schemas');
+const { resolverCategoria }   = require('../lib/categorias');
 
 router.use(exigirLogin);
 
-function parseRecorrente(body = {}) {
-  const nome  = typeof body.nome === 'string' ? body.nome.trim() : '';
-  const cat   = typeof body.cat  === 'string' ? body.cat.trim()  : '';
-  const valor = Number(body.valor);
-  const dia   = Number(body.dia);
-  const { tipo } = body;
-  const obs   = typeof body.obs === 'string' ? body.obs : '';
+const SELECT = `
+  SELECT r.id, r.nome, r.valor_centavos, r.tipo, r.categoria_id, c.nome AS cat, r.dia, r.obs
+  FROM recorrentes r JOIN categorias c ON c.id = r.categoria_id
+`;
 
-  if (!nome)                                 return { error: 'Informe o nome.' };
-  if (!Number.isFinite(valor) || valor <= 0) return { error: 'O valor deve ser maior que zero.' };
-  if (tipo !== 'fixo' && tipo !== 'recorrente') return { error: 'O tipo deve ser "fixo" ou "recorrente".' };
-  if (!cat)                                  return { error: 'Informe a categoria.' };
-  if (!Number.isInteger(dia) || dia < 1 || dia > 31) return { error: 'O dia do vencimento deve estar entre 1 e 31.' };
+const paraApi = r => ({
+  id: r.id, nome: r.nome, valor: paraReais(r.valor_centavos), tipo: r.tipo,
+  cat: r.cat, categoria_id: r.categoria_id, dia: r.dia, obs: r.obs,
+});
 
-  return { value: { nome, valor, tipo, cat, dia, obs } };
+const buscar = (id, userId) => {
+  const r = db.prepare(`${SELECT} WHERE r.id = ? AND r.user_id = ?`).get(id, userId);
+  return r ? paraApi(r) : null;
+};
+
+function preparar(req) {
+  const { value, error } = validar(recorrente, req.body);
+  if (error) return { status: 400, error };
+  const categoria = resolverCategoria(req.user.id, value);
+  if (!categoria) return { status: 400, error: 'Categoria não encontrada.' };
+  return { dados: { ...value, categoria_id: categoria.id } };
 }
 
 router.get('/', (req, res) => {
-  res.json(db.prepare('SELECT * FROM recorrentes WHERE user_id = ? ORDER BY dia ASC').all(req.user.id));
+  res.json(db.prepare(`${SELECT} WHERE r.user_id = ? ORDER BY r.dia ASC, r.id ASC`).all(req.user.id).map(paraApi));
 });
 
 router.post('/', (req, res) => {
-  const { value, error } = parseRecorrente(req.body);
-  if (error) return res.status(400).json({ error });
+  const { dados, error, status } = preparar(req);
+  if (error) return res.status(status).json({ error });
 
-  const { nome, valor, tipo, cat, dia, obs } = value;
-  const result = db.prepare(
-    'INSERT INTO recorrentes (user_id, nome, valor, tipo, cat, dia, obs) VALUES (?, ?, ?, ?, ?, ?, ?)'
-  ).run(req.user.id, nome, valor, tipo, cat, dia, obs);
-  res.status(201).json({ id: Number(result.lastInsertRowid), ...value });
+  const r = db.prepare(
+    'INSERT INTO recorrentes (user_id, nome, valor_centavos, tipo, categoria_id, dia, obs) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).run(req.user.id, dados.nome, dados.valor, dados.tipo, dados.categoria_id, dados.dia, dados.obs);
+  res.status(201).json(buscar(Number(r.lastInsertRowid), req.user.id));
 });
 
 router.put('/:id', (req, res) => {
   const id = Number(req.params.id);
-  const { value, error } = parseRecorrente(req.body);
-  if (error) return res.status(400).json({ error });
+  const { dados, error, status } = preparar(req);
+  if (error) return res.status(status).json({ error });
 
-  const { nome, valor, tipo, cat, dia, obs } = value;
-  const result = db.prepare(
-    'UPDATE recorrentes SET nome = ?, valor = ?, tipo = ?, cat = ?, dia = ?, obs = ? WHERE id = ? AND user_id = ?'
-  ).run(nome, valor, tipo, cat, dia, obs, id, req.user.id);
-  if (result.changes === 0) return res.status(404).json({ error: 'Recorrente não encontrado.' });
-  res.json({ id, ...value });
+  const r = db.prepare(
+    'UPDATE recorrentes SET nome = ?, valor_centavos = ?, tipo = ?, categoria_id = ?, dia = ?, obs = ? WHERE id = ? AND user_id = ?'
+  ).run(dados.nome, dados.valor, dados.tipo, dados.categoria_id, dados.dia, dados.obs, id, req.user.id);
+  if (r.changes === 0) return res.status(404).json({ error: 'Recorrente não encontrado.' });
+  res.json(buscar(id, req.user.id));
 });
 
 router.delete('/:id', (req, res) => {

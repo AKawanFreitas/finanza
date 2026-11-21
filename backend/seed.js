@@ -127,18 +127,27 @@ const tx = db.transaction(() => {
   db.prepare('DELETE FROM recorrentes  WHERE user_id = ?').run(dono.id);
   db.seedCategorias(dono.id);
 
-  const insT = db.prepare('INSERT INTO transactions (user_id, desc, valor, tipo, cat, data, obs) VALUES (?, ?, ?, ?, ?, ?, ?)');
-  for (const r of rows) insT.run(dono.id, ...r);
+  const idDe = Object.fromEntries(
+    db.prepare('SELECT id, nome FROM categorias WHERE user_id = ?').all(dono.id).map(c => [c.nome, c.id])
+  );
+  // Se a conta renomeou ou apagou uma categoria padrão, recria para não quebrar a carga.
+  const categoriaId = nome => idDe[nome] ??= Number(
+    db.prepare('INSERT INTO categorias (user_id, nome, cor) VALUES (?, ?, ?)').run(dono.id, nome, '#8b90a0').lastInsertRowid
+  );
+  const centavos = v => Math.round(v * 100);
 
-  const insR = db.prepare('INSERT INTO recorrentes (user_id, nome, valor, tipo, cat, dia, obs) VALUES (?, ?, ?, ?, ?, ?, ?)');
-  for (const r of recorrentes) insR.run(dono.id, r.nome, r.valor, r.tipo, r.cat, r.dia, r.obs);
+  const insT = db.prepare('INSERT INTO transactions (user_id, descricao, valor_centavos, tipo, categoria_id, data, obs) VALUES (?, ?, ?, ?, ?, ?, ?)');
+  for (const [desc, valor, tipo, cat, data, obs] of rows) insT.run(dono.id, desc, centavos(valor), tipo, categoriaId(cat), data, obs);
+
+  const insR = db.prepare('INSERT INTO recorrentes (user_id, nome, valor_centavos, tipo, categoria_id, dia, obs) VALUES (?, ?, ?, ?, ?, ?, ?)');
+  for (const r of recorrentes) insR.run(dono.id, r.nome, centavos(r.valor), r.tipo, categoriaId(r.cat), r.dia, r.obs);
 });
 tx();
 
 const resumo = db.prepare(`
   SELECT substr(data, 1, 7) AS mes,
-         ROUND(SUM(CASE WHEN tipo='entrada' THEN valor END), 2) AS entradas,
-         ROUND(SUM(CASE WHEN tipo='saida'   THEN valor END), 2) AS saidas,
+         SUM(CASE WHEN tipo='entrada' THEN valor_centavos END) / 100.0 AS entradas,
+         SUM(CASE WHEN tipo='saida'   THEN valor_centavos END) / 100.0 AS saidas,
          COUNT(*) AS lancamentos
   FROM transactions WHERE user_id = ? GROUP BY mes ORDER BY mes
 `).all(dono.id);
