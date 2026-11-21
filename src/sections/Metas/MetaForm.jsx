@@ -1,0 +1,88 @@
+import { useEffect, useState } from 'react';
+import { PiggyBank, Calendar, Plus, Check, X } from 'lucide-react';
+import { useFinance } from '../../context/FinanceContext';
+import { api } from '../../utils/api';
+
+const VAZIO = { nome: '', valor_alvo: '', prazo: '', valor_inicial: '', cor: '#22a84a' };
+
+export default function MetaForm({ editando, onCancelar, onSalvo }) {
+  const { showToast } = useFinance();
+  const [form, setForm] = useState(VAZIO);
+  const [enviando, setEnviando] = useState(false);
+  const set = (campo, valor) => setForm(f => ({ ...f, [campo]: valor }));
+
+  useEffect(() => {
+    setForm(editando
+      ? { nome: editando.nome, valor_alvo: String(editando.valor_alvo), prazo: editando.prazo ?? '', valor_inicial: '', cor: editando.cor }
+      : VAZIO);
+  }, [editando]);
+
+  async function enviar() {
+    if (!form.nome.trim() || !form.valor_alvo) return;
+    const corpo = {
+      nome: form.nome.trim(), valor_alvo: Number(form.valor_alvo), prazo: form.prazo || null, cor: form.cor,
+      ...(editando ? { arquivada: editando.arquivada } : form.valor_inicial ? { valor_inicial: Number(form.valor_inicial) } : {}),
+    };
+    setEnviando(true);
+    try {
+      const { ok, data } = await api(editando ? `/metas/${editando.id}` : '/metas', { method: editando ? 'PUT' : 'POST', body: corpo });
+      if (!ok) return showToast(data?.error || 'Não foi possível salvar a meta.', 'err');
+      showToast(editando ? 'Meta atualizada ✓' : 'Meta criada ✓');
+      if (!editando) setForm(VAZIO);
+      onSalvo();
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <div className="form-wrap">
+      <div className="form-header">
+        <div className="form-header-text">
+          <div className="form-header-title">{editando ? 'Editar meta' : 'Nova meta'}</div>
+          <div className="form-header-sub">{editando ? 'Altere os dados e salve' : 'Reserva de emergência, viagem, entrada do carro... guarde aos poucos'}</div>
+        </div>
+      </div>
+      <div className="form-grid">
+        <div className="form-group">
+          <label className="form-label">Nome</label>
+          <div className="form-input-wrap">
+            <span className="form-prefix"><PiggyBank size={14} strokeWidth={2} /></span>
+            <input className="form-control" placeholder="Ex: Reserva de emergência" maxLength={60} value={form.nome} onChange={e => set('nome', e.target.value)} />
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Valor da meta</label>
+          <div className="form-input-wrap has-text-prefix">
+            <span className="form-prefix-text">R$</span>
+            <input className="form-control" type="number" min="0" step="0.01" placeholder="0,00" value={form.valor_alvo} onChange={e => set('valor_alvo', e.target.value)} />
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Prazo <span className="form-label-opt">(opcional)</span></label>
+          <div className="form-input-wrap">
+            <span className="form-prefix"><Calendar size={14} strokeWidth={2} /></span>
+            <input className="form-control" type="date" value={form.prazo} onChange={e => set('prazo', e.target.value)} />
+          </div>
+          <span className="form-dica">Com prazo, mostramos quanto guardar por mês.</span>
+        </div>
+        {!editando && (
+          <div className="form-group">
+            <label className="form-label">Já guardado <span className="form-label-opt">(opcional)</span></label>
+            <div className="form-input-wrap has-text-prefix">
+              <span className="form-prefix-text">R$</span>
+              <input className="form-control" type="number" min="0" step="0.01" placeholder="0,00" value={form.valor_inicial} onChange={e => set('valor_inicial', e.target.value)} />
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="form-actions">
+        <button className="btn btn-primary btn-full" onClick={enviar} disabled={enviando}>
+          {editando ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
+          {editando ? 'Salvar alterações' : 'Criar meta'}
+        </button>
+        {editando && <button className="btn btn-ghost" onClick={onCancelar}><X size={14} strokeWidth={2} /> Cancelar</button>}
+      </div>
+    </div>
+  );
+}
