@@ -10,7 +10,7 @@ Controle financeiro pessoal em formato SaaS: cada pessoa tem a sua conta, com la
 Precisa do Node.js (testado na versão 24). São dois processos: a API e o front.
 
 ```bash
-# 1. API (porta 3001)
+# 1. API (porta 4747)
 cd backend
 npm install
 npm run dev
@@ -37,17 +37,17 @@ Sem `--senha`, o comando mostra uma senha provisória e pede a troca no primeiro
 
 | Variável   | Onde    | Padrão                  | Para que serve                          |
 | ---------- | ------- | ----------------------- | --------------------------------------- |
-| `PORT`     | backend | `3001`                  | Porta da API                            |
+| `PORT`     | backend | `4747`                  | Porta da API                            |
 | `DB_PATH`  | backend | `backend/financeiro.db` | Arquivo do banco SQLite                 |
-| `API_PORT` | front   | `3001`                  | Porta da API para onde o Vite encaminha |
+| `API_PORT` | front   | `4747`                  | Porta da API para onde o Vite encaminha |
 | `NODE_ENV` | backend | —                       | Com `production`, o cookie de sessão exige HTTPS |
 | `CORS_ORIGIN` | backend | —                    | Origens liberadas quando o front não passa pelo proxy |
 
-Se a porta 3001 já estiver ocupada na sua máquina:
+Se a porta 4747 já estiver ocupada na sua máquina:
 
 ```bash
-cd backend && PORT=3101 npm run dev
-API_PORT=3101 npm run dev   # na raiz
+cd backend && PORT=4800 npm run dev
+API_PORT=4800 npm run dev   # na raiz
 ```
 
 Para experimentar sem mexer nos seus dados, aponte `DB_PATH` para um arquivo temporário. O banco é criado sozinho, já com as categorias padrão.
@@ -63,7 +63,7 @@ Na raiz:
 | `npm run preview` | Serve o build localmente         |
 | `npm run lint`    | ESLint (o `backend/` é ignorado) |
 
-No `backend/`: `npm start`, `npm run dev` (reinicia ao salvar), `npm run create-admin` e `npm run seed` (carga de demonstração em `backend/demo.db`; use `-- --email alguem@exemplo.com` para escolher a conta).
+No `backend/`: `npm start`, `npm run dev` (reinicia ao salvar), `npm test` (testes da API), `npm run create-admin` e `npm run seed` (carga de demonstração em `backend/demo.db`; use `-- --email alguem@exemplo.com` para escolher a conta).
 
 ## O que o app faz
 
@@ -89,20 +89,24 @@ Base: `/api`. Erros de validação voltam como `{ "error": "mensagem" }` com sta
 
 Formatos:
 
-- **transactions:** `{ desc, valor, tipo: "entrada" | "saida", cat, data: "AAAA-MM-DD", obs? }`
-- **recorrentes:** `{ nome, valor, tipo: "fixo" | "recorrente", cat, dia: 1–31, obs? }`
+- **transactions:** `{ desc, valor, tipo: "entrada" | "saida", categoria_id | cat, data: "AAAA-MM-DD", obs? }`
+- **recorrentes:** `{ nome, valor, tipo: "fixo" | "recorrente", categoria_id | cat, dia: 1–31, obs? }`
 - **categorias:** `{ nome, cor: "#RRGGBB" }`
 
-Lançamentos e recorrentes guardam a categoria pelo nome, não por id, e pertencem a um usuário (`user_id`). Fora `/api/auth`, todas as rotas exigem sessão; as de `/api/admin` exigem papel de super admin. As senhas são guardadas como hash scrypt com sal.
+Dinheiro é guardado em **centavos inteiros** (`valor_centavos`) e a API fala em reais com até 2 casas (`19.99`); a conversão acontece só na borda (`backend/lib/money.js`). Lançamentos e recorrentes apontam para a categoria por **`categoria_id`** (FK). As respostas trazem `categoria_id` e também `cat` (o nome); ao gravar, vale enviar qualquer um dos dois, sempre dentro das categorias da própria conta. Tudo pertence a um usuário (`user_id`). Fora `/api/auth`, todas as rotas exigem sessão; as de `/api/admin` exigem papel de super admin. As senhas são guardadas como hash scrypt com sal.
 
 ## Estrutura
 
 ```
 backend/
-  server.js, db.js       Servidor Express, tabelas e migrações
-  lib/auth.js            Senhas, sessões e controle de acesso
+  app.js, server.js      App Express (testável) e processo que abre a porta
+  db.js                  Conexão SQLite, backup antes de migrar, categorias padrão
+  migrations/            Schema versionado (PRAGMA user_version): 001 baseline, 002 centavos e categoria_id
+  lib/                   auth (senhas, sessões), money (centavos), schemas (zod), categorias
   routes/                auth, admin, transactions, recorrentes, categorias
   scripts/create-admin   Cria ou promove o super admin
+  tests/                 Testes com node:test + supertest (banco em memória)
+.github/workflows/       CI: testes do backend, lint e build do front
 src/
   context/               Sessão (AuthContext) e dados financeiros (FinanceContext)
   sections/              Auth, Dashboard, Lancamentos, Recorrentes, Categorias, Configuracoes, Admin
@@ -112,3 +116,15 @@ src/
 ```
 
 O banco `backend/financeiro.db` é criado na primeira execução e não é versionado (guarda contas e dados financeiros).
+
+## Migrações do banco
+
+O schema é versionado em `backend/migrations/` e aplicado sozinho ao subir a API. Antes de migrar um banco que já tem dados, o app grava uma cópia ao lado do arquivo (`financeiro.db.backup-v<versão>-<data>`). Cada migração roda numa transação: se falhar, nada muda. Para alterar o schema, crie `NNN_nome.js` com `{ version, name, up(db) }`, registre em `migrations/index.js` e nunca edite uma migração já publicada.
+
+## Testes
+
+```bash
+cd backend && npm test
+```
+
+Cobrem as migrações (inclusive a partir de um banco legado), conversão de dinheiro, autenticação, CRUD e, principalmente, o isolamento entre contas. A CI roda isso (Node 22 e 24) e também o lint e o build do front a cada push.
