@@ -75,6 +75,7 @@ async function main() {
   const adotados = db.adoptOrphans(id);
   if (adotados > 0) console.log(`${adotados} registro(s) que estavam sem dono passaram para esta conta.`);
   db.seedCategorias(id);
+  db.seedContas(id);
 }
 
 main().catch(err => { console.error(err.message); process.exit(1); });
