@@ -45,6 +45,12 @@ Sem `--senha`, o comando mostra uma senha provisória e pede a troca no primeiro
 | `APP_URL`  | backend | `http://localhost:5173` | Endereço do front, usado nos links dos e-mails |
 | `SMTP_URL` | backend | —                       | Servidor de e-mail, ex.: `smtps://usuario:senha@smtp.exemplo.com`. Sem ele, os e-mails aparecem no console da API |
 | `EMAIL_FROM` | backend | `Finanza <nao-responda@finanza.local>` | Remetente dos e-mails |
+| `BACKUP_DIR` | backend | — | Pasta dos backups diários do banco. Sem ela, o agendador não faz backup (o Docker define `/data/backups`) |
+| `BACKUP_KEEP` | backend | `7` | Quantos backups manter |
+| `LOG_LEVEL` | backend | `info` | Nível dos logs JSON (`debug`, `info`, `warn`, `error`, `silent`) |
+| `STATIC_DIR` | backend | `../dist` | Onde está o front compilado; se existir, a própria API o serve |
+| `COOKIE_SECURE` | backend | `true` em produção | `false` permite o build de produção em `http://localhost` |
+| `TRUST_PROXY` | backend | — | Atrás de um proxy reverso, `1` faz o IP dos limites de tentativa ser o do cliente |
 
 Se a porta 4747 já estiver ocupada na sua máquina:
 
@@ -75,6 +81,9 @@ No `backend/`: `npm start`, `npm run dev` (reinicia ao salvar), `npm test` (test
 - **Contas:** carteiras, bancos, poupança e investimentos, com saldo calculado (inicial + lançamentos + transferências). Transferências entre contas não contam como receita nem gasto. Conta com movimentações é arquivada, não excluída.
 - **Importar extrato:** OFX (conta e cartão) e CSV (separador, aspas e formatos de data e valor brasileiros detectados sozinhos). Mostra uma prévia com categoria sugerida (a que você já usou para a mesma descrição), marca o que já foi importado ou parece duplicado e só grava o que você confirmar. Importar o mesmo arquivo duas vezes não duplica.
 - **Recorrentes:** cadastro de despesas mensais (fixas ou variáveis). Cada uma pode ser lançada como gasto do mês atual, uma a uma ou todas as pendentes. O servidor liga o lançamento ao recorrente, então nunca duplica. Marcando **lançar automaticamente**, o servidor faz o lançamento sozinho no vencimento, na conta escolhida (se ficou fora do ar, recupera na volta, com a data certa).
+- **Cartões de crédito:** limite, dia de fechamento e de vencimento. Cada compra cai na fatura certa pela data (a fatura é calculada, não gravada), com **parcelamento** de 2 a 48 vezes (uma parcela por fatura, somando exatamente o total). Mostra limite usado e disponível, status da fatura (aberta, fechada, vencida, paga em parte, paga) e permite pagar a fatura, inteira ou em parte, a partir de uma conta. O pagamento é uma transferência, então o gasto nunca é contado duas vezes. O saldo de um cartão é a dívida, e o saldo total das contas já a desconta.
+- **Metas e reservas:** objetivo com valor e prazo opcional, alimentado por aportes e retiradas (uma "caixinha" da meta, sem mexer no saldo das contas). Mostra progresso, quanto guardar por mês até o prazo e avisa por e-mail quando a meta é atingida.
+- **Contas a pagar:** boletos e contas com vencimento, com status pendente, atrasada ou paga. Pagar gera o gasto na conta escolhida (e desfazer o remove); apagar o lançamento gerado reabre a conta. O painel do Resumo lista os próximos vencimentos, incluindo faturas de cartão, e um e-mail agrupado lembra do que vence em até 3 dias ou está atrasado.
 - **Orçamentos:** limite mensal por categoria, com barra de progresso (verde, amarelo a partir de 80%, vermelho a partir de 100%) no dashboard e numa tela própria. Por e-mail, avisa quando a categoria chega a 80% e a 100%, uma vez por nível a cada mês.
 - **Exportar:** o histórico de lançamentos sai em CSV (abre direto no Excel em português) ou XLSX (com aba de resumo por categoria), respeitando os filtros da tela.
 - **E-mail:** recuperação de senha (link de uso único, válido por 1 hora), confirmação de e-mail, alertas de orçamento e resumo do mês anterior nos primeiros dias do mês. Os avisos só vão para quem confirmou o e-mail e podem ser desligados em Configurações.
@@ -99,13 +108,21 @@ Base: `/api`. Erros de validação voltam como `{ "error": "mensagem" }` com sta
 | `/api/importacao`   | `POST /previa`, `POST /confirmar` |
 | `/api/orcamentos`   | `GET ?mes=`, `PUT /:categoriaId`, `DELETE /:categoriaId` |
 | `/api/exportacao`   | `GET /lancamentos?formato=csv\|xlsx` (+ filtros da listagem) |
+| `/api/cartoes`      | `GET`, `POST`, `PUT /:id`, `DELETE /:id`, `GET /:id/faturas`, `GET /:id/faturas/:mes`, `POST /:id/faturas/:mes/pagar` |
+| `/api/metas`        | `GET`, `POST`, `PUT /:id`, `DELETE /:id`, `GET /:id/aportes`, `POST /:id/aportes`, `DELETE /:id/aportes/:aporteId` |
+| `/api/contas-pagar` | `GET ?status=&mes=`, `POST`, `PUT /:id`, `DELETE /:id`, `POST /:id/pagar`, `POST /:id/desfazer` |
 | `/api/categorias`   | `GET`, `POST`, `PUT /:id`, `DELETE /:id` |
+| `/api/health`       | `GET` (para o healthcheck) |
 
 Formatos:
 
 - **transactions:** `{ desc, valor, tipo: "entrada" | "saida", categoria_id | cat, conta_id?, data: "AAAA-MM-DD", obs? }` (sem `conta_id`, vai para a conta principal)
 - **GET /transactions:** `?mes=AAAA-MM&tipo=&categoria_id=&conta_id=&q=&pagina=1&limite=20` (máx. 100) devolve `{ itens, total, pagina, paginas, limite, totais: { entradas, saidas, saldo } }`; os totais valem para todo o filtro, não só para a página
-- **contas:** `{ nome, tipo: "corrente" | "poupanca" | "carteira" | "investimento", saldo_inicial?, cor?, arquivada? }`
+- **contas:** `{ nome, tipo: "corrente" | "poupanca" | "carteira" | "investimento", saldo_inicial?, cor?, arquivada? }` (cartões são criados em `/api/cartoes`)
+- **cartoes:** `{ nome, limite, dia_fechamento, dia_vencimento, cor?, conta_pagamento_id?, divida_inicial? }`; pagar fatura: `{ origem_id, valor?, data? }` (sem `valor`, paga o restante)
+- **compra parcelada:** `POST /transactions` com `parcelas: 2–48` numa conta de cartão cria uma parcela por mês; `DELETE /transactions/:id?parcelas=todas|futuras` remove a compra ou as parcelas seguintes
+- **metas:** `{ nome, valor_alvo, prazo?, cor?, valor_inicial? }`; aporte: `{ valor, tipo: "aporte" | "retirada", data?, obs? }`
+- **contas a pagar:** `{ descricao, valor, vencimento, categoria_id | cat, conta_id?, obs? }`; pagar: `{ conta_id?, data? }`
 - **orcamentos:** `PUT { limite }` em reais; `GET` devolve `{ mes, itens: [{ categoria_id, cat, limite, gasto, restante, percentual, status: "ok" | "atencao" | "estourado" }], totais }`
 - **transferencias:** `{ origem_id, destino_id, valor, data, descricao? }`
 - **importação:** `previa { conta_id, conteudo }` devolve os itens com `categoria_id` sugerida e `duplicada` (`"importada"` ou `"provavel"`); `confirmar { conta_id, itens }` grava e devolve `{ importados, ignorados }`
@@ -119,20 +136,23 @@ Dinheiro é guardado em **centavos inteiros** (`valor_centavos`) e a API fala em
 ```
 backend/
   app.js, server.js      App Express (testável) e processo que abre a porta
-  db.js                  Conexão SQLite, backup antes de migrar, categorias padrão
-  migrations/            Schema versionado (PRAGMA user_version): 001 baseline, 002 centavos e categoria_id, 003 contas e vínculos, 004 automação, orçamentos e e-mail
+  db.js                  Conexão SQLite, cópia de segurança antes de migrar, categorias padrão
+  migrations/            Schema versionado (PRAGMA user_version): 001 baseline, 002 centavos e categoria_id, 003 contas e vínculos, 004 automação, orçamentos e e-mail, 005 limites, 006 cartão de crédito, 007 metas, 008 contas a pagar
   lib/                   auth (senhas, sessões), money (centavos), schemas (zod), categorias
-  routes/                auth, admin, transactions, resumo, contas, transferencias, recorrentes, importacao, categorias
+  routes/                auth, admin, transactions, resumo, contas, transferencias, recorrentes, importacao, orcamentos, exportacao, cartoes, metas, contasPagar, categorias
   lib/importacao/        Leitores de OFX e CSV, ids de deduplicação e sugestão de categoria
   lib/agendador.js       Tarefas por hora: recorrentes automáticos, resumo mensal, limpeza (idempotentes)
+  lib/cartoes.js, parcelas.js, metas.js, contasPagar.js, vencimentos.js, lembretes.js   Faturas e parcelas, metas, contas a pagar e lembretes
+  lib/backup.js, limite.js, csrf.js, logger.js   Backup diário, limites de tentativa no banco, checagem de origem, logs JSON
   lib/email.js, templates.js, tokens.js, notificar.js   E-mail (SMTP ou console), textos, links de uso único e envio sem repetir
-  scripts/create-admin   Cria ou promove o super admin
+  scripts/               create-admin (cria ou promove o super admin) e backup
   tests/                 Testes com node:test + supertest (banco em memória)
-.github/workflows/       CI: testes do backend, lint e build do front
+Dockerfile, docker-compose.yml   Imagem de produção (API + front) e execução com volume de dados
+.github/workflows/       CI: testes do backend, lint e build do front, build da imagem Docker
 src/
   context/               Sessão (AuthContext) e dados financeiros (FinanceContext)
-  sections/              Auth, Dashboard, Lancamentos, Contas, Importar, Orçamentos, Recorrentes, Categorias, Configuracoes, Admin
-  components/            Sidebar, MonthStepper, Select, Toast
+  sections/              Auth, Dashboard, Lancamentos, Contas, Cartoes, Metas, ContasPagar, Importar, Orcamentos, Recorrentes, Categorias, Configuracoes, Admin
+  components/            Sidebar, MonthStepper, Select, Toast, diálogos e barras de progresso
   utils/                 Formatadores e funções de período
   index.css              Estilos
 ```
@@ -157,4 +177,34 @@ Sem `SMTP_URL`, nada é enviado: o conteúdo de cada e-mail (inclusive o link de
 
 ## Tarefas agendadas
 
-A API roda, ao subir e a cada hora, os recorrentes automáticos e o resumo mensal. Tudo é idempotente (cada lançamento ou e-mail tem uma chave de controle), então reiniciar ou ter mais de uma instância não duplica nada. Ao escalar para várias instâncias, o ideal é rodar o agendador em um único processo.
+A API roda, ao subir e a cada hora: recorrentes automáticos, resumo mensal, lembretes de vencimento (a partir das 7h, horário de Brasília), backup do dia e limpeza de sessões, tokens e limites vencidos. Tudo é idempotente (cada lançamento ou e-mail tem uma chave de controle), então reiniciar ou ter mais de uma instância não duplica nada. Ao escalar para várias instâncias, o ideal é rodar o agendador em um único processo.
+
+## Docker
+
+```bash
+cp .env.example .env            # ajuste o que precisar
+docker compose up -d --build    # abre em http://localhost:4747
+docker compose exec finanza node backend/scripts/create-admin.js --email voce@exemplo.com --nome "Seu Nome"
+```
+
+A imagem compila o front, instala só as dependências de produção da API e roda como usuário comum, com healthcheck em `/api/health`. O banco e os backups ficam no volume `finanza-data` (`/data`). O `docker-compose.yml` vem com `COOKIE_SECURE=false` para funcionar em `http://localhost`; atrás de HTTPS, remova essa variável e defina `TRUST_PROXY=1` e `APP_URL`. A CI faz o build da imagem a cada push.
+
+## Backup e restauração
+
+Com `BACKUP_DIR` definido (o Docker já define), a API faz **um backup por dia** (`VACUUM INTO`, uma cópia consistente mesmo com a API em uso). Cada cópia é aberta e passa por `PRAGMA integrity_check` antes de valer, e só as últimas `BACKUP_KEEP` ficam no disco. Para fazer um agora: `cd backend && npm run backup` (ou `-- --dir /outra/pasta`).
+
+Para restaurar, pare a API e troque o arquivo do banco por uma cópia:
+
+```bash
+docker compose stop finanza
+docker compose run --rm --no-deps finanza sh -c 'cp /data/backups/finanza-AAAA-MM-DD-HHMMSS.db /data/financeiro.db && rm -f /data/financeiro.db-wal /data/financeiro.db-shm'
+docker compose start finanza
+```
+
+## Segurança
+
+- **Senhas** com scrypt e sal; **sessão** em cookie `httpOnly` + `SameSite=Lax` (+ `Secure` em produção), guardada só como hash.
+- **CSRF:** requisições que alteram dados precisam vir do próprio host, de `APP_URL` ou de `CORS_ORIGIN` (checagem de `Origin`/`Sec-Fetch-Site`).
+- **Limite de tentativas** de login (por e-mail e por IP) e de recuperação de senha, gravado no banco: não zera quando a API reinicia.
+- **Isolamento entre contas** em todas as rotas, coberto por testes; links de redefinição e confirmação são de uso único e guardados só como hash.
+- `helmet` (CSP, HSTS, etc.), validação de entrada com zod e logs sem cookies, com `X-Request-Id`.
