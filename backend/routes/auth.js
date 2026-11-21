@@ -2,6 +2,10 @@ const express = require('express');
 const router  = express.Router();
 const db      = require('../db');
 const auth    = require('../lib/auth');
+const tokens  = require('../lib/tokens');
+const templates = require('../lib/templates');
+const { enviarEmail } = require('../lib/email');
+const { permitir }    = require('../lib/limite');
 
 const EMAIL_RE  = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const SENHA_MIN = 8;
@@ -9,7 +13,16 @@ const SENHA_MIN = 8;
 const publico = u => ({
   id: u.id, nome: u.nome, email: u.email, papel: u.papel,
   trocar_senha: !!u.trocar_senha, criado_em: u.criado_em,
+  email_verificado: !!u.email_verificado_em, notificacoes_email: !!u.notificacoes_email,
 });
+
+// E-mails são disparados sem esperar: a resposta da API não depende do provedor de e-mail.
+const semEsperar = (promessa, rotulo) => promessa.catch(err => console.error(`[email] falha em ${rotulo}: ${err.message}`));
+
+function enviarVerificacao(user) {
+  const { token } = tokens.criarToken(user.id, 'verificar_email');
+  semEsperar(enviarEmail({ para: user.email, ...templates.verificarEmail({ nome: user.nome, token }) }), 'verificação');
+}
 
 function validarNome(valor) {
   const nome = typeof valor === 'string' ? valor.trim().replace(/\s+/g, ' ') : '';
@@ -64,6 +77,7 @@ router.post('/registrar', (req, res) => {
 
   const id = criar();
   abrirSessao(res, id);
+  enviarVerificacao(buscarUser(id));
   res.status(201).json({ user: publico(buscarUser(id)) });
 });
 
@@ -117,8 +131,82 @@ router.patch('/perfil', auth.exigirLogin, (req, res) => {
     return res.status(409).json({ error: 'Já existe uma conta com esse e-mail.' });
   }
 
-  db.prepare('UPDATE users SET nome = ?, email = ? WHERE id = ?').run(nome.value, email.value, req.user.id);
+  // Trocar de e-mail exige confirmar o novo endereço.
+  const mudouEmail = email.value !== req.user.email.toLowerCase();
+  db.prepare('UPDATE users SET nome = ?, email = ?, email_verificado_em = CASE WHEN ? THEN NULL ELSE email_verificado_em END WHERE id = ?')
+    .run(nome.value, email.value, mudouEmail ? 1 : 0, req.user.id);
+  if (mudouEmail) enviarVerificacao(buscarUser(req.user.id));
   res.json({ user: publico(buscarUser(req.user.id)) });
+});
+
+/* ── Preferências de e-mail ─────────────────────────── */
+router.patch('/preferencias', auth.exigirLogin, (req, res) => {
+  const valor = req.body?.notificacoes_email;
+  if (typeof valor !== 'boolean') return res.status(400).json({ error: 'Valor inválido.' });
+  db.prepare('UPDATE users SET notificacoes_email = ? WHERE id = ?').run(valor ? 1 : 0, req.user.id);
+  res.json({ user: publico(buscarUser(req.user.id)) });
+});
+
+/* ── Verificação de e-mail ──────────────────────────── */
+router.post('/verificar-email', (req, res) => {
+  const t = tokens.buscarToken(req.body?.token, 'verificar_email');
+  if (!t) return res.status(400).json({ error: 'Este link é inválido ou expirou. Peça um novo nas configurações.' });
+
+  db.transaction(() => {
+    db.prepare('UPDATE users SET email_verificado_em = ? WHERE id = ?').run(new Date().toISOString(), t.user_id);
+    tokens.consumirToken(t.id);
+  })();
+  res.json({ ok: true });
+});
+
+router.post('/reenviar-verificacao', auth.exigirLogin, (req, res) => {
+  if (req.user.email_verificado_em) return res.json({ ok: true, ja_verificado: true });
+  if (!permitir(`reenviar:${req.user.id}`, 3, 60 * 60e3)) {
+    return res.status(429).json({ error: 'Você já pediu vários e-mails. Tente de novo em uma hora.' });
+  }
+  enviarVerificacao(buscarUser(req.user.id));
+  res.json({ ok: true });
+});
+
+/* ── Recuperar senha ────────────────────────────────── */
+const MSG_ESQUECI = 'Se existir uma conta com esse e-mail, enviamos um link para redefinir a senha.';
+
+router.post('/esqueci-senha', (req, res) => {
+  const email = validarEmail(req.body?.email);
+  if (email.error) return res.status(400).json({ error: email.error });
+
+  // A resposta é sempre a mesma, exista a conta ou não (e mesmo se o limite for atingido).
+  const resposta = { ok: true, mensagem: MSG_ESQUECI };
+  if (!permitir(`esqueci:${email.value}`, 3, 15 * 60e3) || !permitir(`esqueci-ip:${req.ip}`, 20, 15 * 60e3)) {
+    return res.json(resposta);
+  }
+
+  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.value);
+  if (user && user.status === 'ativo') {
+    const { token, validadeMin } = tokens.criarToken(user.id, 'redefinir_senha');
+    semEsperar(enviarEmail({ para: user.email, ...templates.redefinirSenha({ nome: user.nome, token, validadeMin }) }), 'redefinição de senha');
+  }
+  res.json(resposta);
+});
+
+router.post('/redefinir-senha', (req, res) => {
+  const invalido = { error: 'Este link é inválido ou expirou. Peça um novo.' };
+  const t = tokens.buscarToken(req.body?.token, 'redefinir_senha');
+  if (!t) return res.status(400).json(invalido);
+  const user = buscarUser(t.user_id);
+  if (!user || user.status !== 'ativo') return res.status(400).json(invalido);
+
+  const nova = validarSenha(req.body?.nova);
+  if (nova.error) return res.status(400).json({ error: nova.error });
+
+  db.transaction(() => {
+    // Abrir o link enviado ao e-mail também prova que o endereço é da pessoa.
+    db.prepare('UPDATE users SET senha_hash = ?, trocar_senha = 0, email_verificado_em = COALESCE(email_verificado_em, ?) WHERE id = ?')
+      .run(auth.hashSenha(nova.value), new Date().toISOString(), user.id);
+    tokens.consumirToken(t.id);
+    auth.encerrarSessoesDe(user.id);
+  })();
+  res.json({ ok: true });
 });
 
 /* ── Trocar senha ───────────────────────────────────── */

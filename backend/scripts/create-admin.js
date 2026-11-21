@@ -59,8 +59,8 @@ async function main() {
     const nome = String(args.nome || await perguntar('Nome: ') || 'Administrador').trim();
     const criar = db.transaction(() => {
       const { lastInsertRowid } = db.prepare(
-        'INSERT INTO users (nome, email, senha_hash, papel, status, trocar_senha, criado_em) VALUES (?, ?, ?, ?, ?, ?, ?)'
-      ).run(nome, email, auth.hashSenha(senha), 'superadmin', 'ativo', senhaInformada ? 0 : 1, new Date().toISOString());
+        'INSERT INTO users (nome, email, senha_hash, papel, status, trocar_senha, criado_em, email_verificado_em) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(nome, email, auth.hashSenha(senha), 'superadmin', 'ativo', senhaInformada ? 0 : 1, new Date().toISOString(), new Date().toISOString());
       return Number(lastInsertRowid);
     });
     id = criar();
