@@ -31,6 +31,8 @@ const dataISO = z.string({ error: 'A data deve estar no formato AAAA-MM-DD.' })
 
 const transacao = z.object({
   desc: texto('a descrição', 120),
+  parcelas: z.number({ error: 'O número de parcelas deve ser de 1 a 48.' }).int('O número de parcelas deve ser de 1 a 48.')
+    .min(1, 'O número de parcelas deve ser de 1 a 48.').max(48, 'O número de parcelas deve ser de 1 a 48.').optional().default(1),
   valor,
   tipo: z.enum(['entrada', 'saida'], { error: 'O tipo deve ser "entrada" ou "saida".' }),
   data: dataISO,
@@ -55,7 +57,7 @@ const COR = z.string({ error: 'A cor deve estar no formato #RRGGBB.' }).regex(/^
 
 const conta = z.object({
   nome: texto('o nome da conta', 40),
-  tipo: z.enum(['corrente', 'poupanca', 'carteira', 'investimento'], { error: 'Tipo de conta inválido.' }),
+  tipo: z.enum(['corrente', 'poupanca', 'carteira', 'investimento', 'cartao'], { error: 'Tipo de conta inválido.' }),
   cor: COR.optional().default('#4d9fff'),
   saldo_inicial: z.union([z.number(), z.string()]).optional().default(0)
     .transform((v, ctx) => {
@@ -73,6 +75,42 @@ const transferencia = z.object({
   data: dataISO,
   descricao: z.string().trim().max(120, 'A descrição deve ter até 120 caracteres.').optional().default(''),
 }).refine(v => v.origem_id !== v.destino_id, { message: 'Origem e destino devem ser contas diferentes.', path: ['destino_id'] });
+
+const dia = rotulo => z.number({ error: `O dia de ${rotulo} deve estar entre 1 e 31.` }).int(`O dia de ${rotulo} deve estar entre 1 e 31.`)
+  .min(1, `O dia de ${rotulo} deve estar entre 1 e 31.`).max(31, `O dia de ${rotulo} deve estar entre 1 e 31.`);
+
+const cartao = z.object({
+  nome: texto('o nome do cartão', 40),
+  limite: z.union([z.number(), z.string()], { error: 'O limite deve ser maior que zero.' })
+    .transform((v, ctx) => {
+      const c = paraCentavos(v);
+      if (c === null) ctx.addIssue({ code: 'custom', message: 'O limite deve ser maior que zero.' });
+      return c;
+    }),
+  dia_fechamento: dia('fechamento'),
+  dia_vencimento: dia('vencimento'),
+  cor: COR.optional().default('#7c3aed'),
+  conta_pagamento_id: z.number().int().positive().nullable().optional(),
+  divida_inicial: z.union([z.number(), z.string()]).optional().default(0)
+    .transform((v, ctx) => {
+      const c = paraCentavosComSinal(v);
+      if (c === null || c < 0) ctx.addIssue({ code: 'custom', message: 'A dívida inicial deve ser zero ou maior.' });
+      return c;
+    }),
+  arquivada: z.boolean().optional(),
+});
+
+const pagamentoFatura = z.object({
+  origem_id: z.number({ error: 'Escolha a conta que vai pagar.' }).int().positive('Escolha a conta que vai pagar.'),
+  valor: z.union([z.number(), z.string()]).optional()
+    .transform((v, ctx) => {
+      if (v === undefined) return undefined;
+      const c = paraCentavos(v);
+      if (c === null) ctx.addIssue({ code: 'custom', message: 'O valor deve ser maior que zero.' });
+      return c;
+    }),
+  data: dataISO.optional(),
+});
 
 const categoriaInput = z.object({
   nome: texto('o nome da categoria', 40),
@@ -95,4 +133,4 @@ function validar(schema, body) {
   return { error: r.error.issues[0]?.message || 'Dados inválidos.' };
 }
 
-module.exports = { transacao, recorrente, categoriaInput, conta, transferencia, orcamento, dataISO, validar };
+module.exports = { transacao, recorrente, categoriaInput, conta, cartao, pagamentoFatura, transferencia, orcamento, dataISO, validar };

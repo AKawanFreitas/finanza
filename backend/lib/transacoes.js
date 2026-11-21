@@ -1,20 +1,26 @@
 const db = require('../db');
 const { paraReais } = require('./money');
 const { mesValido } = require('./datas');
+const { FATURA_SQL } = require('./cartoes');
 
 // Formato da API: `valor` em reais e `cat`/`conta` com os nomes (além dos ids).
 const SELECT = `
   SELECT t.id, t.descricao, t.valor_centavos, t.tipo, t.categoria_id, c.nome AS cat,
-         t.conta_id, ct.nome AS conta, t.recorrente_id, t.data, t.obs
+         t.conta_id, ct.nome AS conta, t.recorrente_id, t.data, t.obs,
+         t.grupo_parcelas, t.parcela_numero, t.parcela_total,
+         CASE WHEN k.conta_id IS NULL THEN NULL ELSE ${FATURA_SQL} END AS fatura
   FROM transactions t
   JOIN categorias c  ON c.id  = t.categoria_id
   JOIN contas     ct ON ct.id = t.conta_id
+  LEFT JOIN cartoes k ON k.conta_id = t.conta_id
 `;
 
 const paraApi = r => ({
   id: r.id, desc: r.descricao, valor: paraReais(r.valor_centavos), tipo: r.tipo,
   cat: r.cat, categoria_id: r.categoria_id, conta: r.conta, conta_id: r.conta_id,
   recorrente_id: r.recorrente_id, data: r.data, obs: r.obs,
+  fatura: r.fatura, grupo_parcelas: r.grupo_parcelas,
+  parcela: r.parcela_total ? { numero: r.parcela_numero, total: r.parcela_total } : null,
 });
 
 const inteiroPositivo = (v, padrao) => {

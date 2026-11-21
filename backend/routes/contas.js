@@ -25,6 +25,7 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
   const { value, error } = validar(contaSchema, req.body);
   if (error) return res.status(400).json({ error });
+  if (value.tipo === 'cartao') return res.status(400).json({ error: 'Cartões de crédito são criados na tela de Cartões.' });
   if (nomeEmUso(req.user.id, value.nome)) return res.status(409).json({ error: 'Já existe uma conta com esse nome.' });
 
   const r = db.prepare(
@@ -38,8 +39,12 @@ router.put('/:id', (req, res) => {
   const { value, error } = validar(contaSchema, req.body);
   if (error) return res.status(400).json({ error });
 
-  const atual = db.prepare('SELECT id, arquivada FROM contas WHERE id = ? AND user_id = ?').get(id, req.user.id);
+  const atual = db.prepare('SELECT id, arquivada, tipo FROM contas WHERE id = ? AND user_id = ?').get(id, req.user.id);
   if (!atual) return res.status(404).json({ error: 'Conta não encontrada.' });
+  // Cartão não vira conta comum nem o contrário: ele depende da configuração de fatura.
+  if ((atual.tipo === 'cartao') !== (value.tipo === 'cartao')) {
+    return res.status(400).json({ error: 'Não é possível trocar o tipo entre cartão e conta comum.' });
+  }
   if (nomeEmUso(req.user.id, value.nome, id)) return res.status(409).json({ error: 'Já existe uma conta com esse nome.' });
 
   const arquivar = value.arquivada === undefined ? !!atual.arquivada : value.arquivada;
