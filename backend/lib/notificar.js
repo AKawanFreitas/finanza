@@ -1,5 +1,6 @@
 const db = require('../db');
 const { enviarEmail } = require('./email');
+const logger = require('./logger');
 
 // Envia um e-mail automático no máximo uma vez para (usuário, tipo, chave).
 // Só vai para quem está ativo, confirmou o e-mail e não desativou os avisos.
@@ -16,7 +17,7 @@ function notificarUmaVez(userId, tipo, chave, montar) {
   if (r.changes === 0) return false;
 
   enviarEmail({ para: user.email, ...montar(user) }).catch(err => {
-    console.error(`[email] falha ao enviar "${tipo}" para o usuário ${userId}: ${err.message}`);
+    logger.error({ err, tipo, userId }, 'falha ao enviar e-mail automático');
     db.prepare('DELETE FROM notificacoes WHERE id = ?').run(Number(r.lastInsertRowid));
   });
   return true;

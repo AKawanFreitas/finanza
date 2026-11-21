@@ -5,12 +5,13 @@ const db = require('../db');
 const { executarAutomaticos } = require('./recorrentes');
 const { enviarResumosMensais } = require('./resumoMensal');
 const { limparExpiradas } = require('./auth');
+const logger = require('./logger');
 
 const INTERVALO_MS = 60 * 60e3;
 
 function rodarTarefas(agora = new Date()) {
   const resultado = { lancados: 0, resumos: 0 };
-  const tentar = (nome, fn) => { try { return fn(); } catch (err) { console.error(`[agendador] ${nome}: ${err.message}`); return 0; } };
+  const tentar = (nome, fn) => { try { return fn(); } catch (err) { logger.error({ err, tarefa: nome }, 'falha em tarefa agendada'); return 0; } };
 
   tentar('sessões', limparExpiradas);
   tentar('tokens', () => db.prepare('DELETE FROM tokens WHERE expira_em < ? OR usado_em IS NOT NULL').run(agora.toISOString()));
@@ -21,7 +22,7 @@ function rodarTarefas(agora = new Date()) {
 
 function iniciarAgendador() {
   const r = rodarTarefas();
-  if (r.lancados || r.resumos) console.log(`[agendador] ${r.lancados} recorrente(s) lançado(s), ${r.resumos} resumo(s) enviado(s).`);
+  if (r.lancados || r.resumos) logger.info(r, 'tarefas agendadas executadas');
   setInterval(() => rodarTarefas(), INTERVALO_MS).unref();
 }
 

@@ -2,6 +2,9 @@
 const express      = require('express');
 const cors         = require('cors');
 const helmet       = require('helmet');
+const crypto       = require('crypto');
+const pinoHttp     = require('pino-http');
+const logger       = require('./lib/logger');
 const authRoutes   = require('./routes/auth');
 const adminRoutes  = require('./routes/admin');
 const transactions = require('./routes/transactions');
@@ -15,6 +18,25 @@ const orcamentos   = require('./routes/orcamentos');
 const exportacao   = require('./routes/exportacao');
 
 const app = express();
+
+// Atrás de um proxy reverso (nginx, Caddy, balanceador), TRUST_PROXY=1 faz req.ip ser o do cliente real.
+if (process.env.TRUST_PROXY) app.set('trust proxy', /^\d+$/.test(process.env.TRUST_PROXY) ? Number(process.env.TRUST_PROXY) : process.env.TRUST_PROXY);
+
+// Um log por requisição, com id (aceita o X-Request-Id do proxy) devolvido no cabeçalho da resposta.
+app.use(pinoHttp({
+  logger,
+  genReqId: (req, res) => {
+    const id = String(req.headers['x-request-id'] || '').slice(0, 64) || crypto.randomUUID();
+    res.setHeader('X-Request-Id', id);
+    return id;
+  },
+  autoLogging: { ignore: req => req.url === '/api/health' },
+  customLogLevel: (req, res, err) => (err || res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info'),
+  serializers: {
+    req: req => ({ id: req.id, method: req.method, url: req.url }),
+    res: res => ({ status: res.statusCode }),
+  },
+}));
 
 app.use(helmet());
 
@@ -51,7 +73,7 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'Rota não encontrad
 app.use((err, req, res, next) => {
   if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'JSON inválido.' });
   if (err.type === 'entity.too.large')    return res.status(413).json({ error: 'Requisição grande demais.' });
-  console.error(err);
+  req.log.error({ err }, 'erro não tratado');
   res.status(500).json({ error: 'Erro interno. Tente novamente.' });
 });
 
