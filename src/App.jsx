@@ -7,6 +7,8 @@ import Entrar from './sections/Auth/Entrar';
 import TrocarSenha from './sections/Auth/TrocarSenha';
 import Dashboard from './sections/Dashboard/Dashboard';
 import Lancamentos from './sections/Lancamentos/Lancamentos';
+import Contas from './sections/Contas/Contas';
+import Importar from './sections/Importar/Importar';
 import Recorrentes from './sections/Recorrentes/Recorrentes';
 import Categorias from './sections/Categorias/Categorias';
 import Configuracoes from './sections/Configuracoes/Configuracoes';
@@ -36,6 +38,8 @@ function AppLogado() {
         <main className="page">
           {section === 'dashboard'     && <Dashboard ym={ym} onYmChange={setYm} onNavigate={setSection} />}
           {section === 'lancamento'    && <Lancamentos />}
+          {section === 'contas'        && <Contas />}
+          {section === 'importar'      && <Importar onNavigate={setSection} />}
           {section === 'recorrentes'   && <Recorrentes />}
           {section === 'categorias'    && <Categorias />}
           {section === 'configuracoes' && <Configuracoes />}
