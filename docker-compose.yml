@@ -20,6 +20,13 @@ services:
       # Local, sem HTTPS: false. Atrás de um proxy com HTTPS: remova (ou true) e defina TRUST_PROXY=1.
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       TRUST_PROXY: ${TRUST_PROXY:-}
+      # Contas de teste criadas ao subir (vazio = não cria). Veja o .env.example.
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_SENHA: ${BOOTSTRAP_ADMIN_SENHA:-}
+      BOOTSTRAP_ADMIN_NOME: ${BOOTSTRAP_ADMIN_NOME:-Administrador}
+      BOOTSTRAP_DEMO: ${BOOTSTRAP_DEMO:-false}
+      BOOTSTRAP_DEMO_EMAIL: ${BOOTSTRAP_DEMO_EMAIL:-demo@finanza.local}
+      BOOTSTRAP_DEMO_SENHA: ${BOOTSTRAP_DEMO_SENHA:-demo1234}
     volumes:
       - finanza-data:/data
 
