@@ -5,6 +5,7 @@ const { exigirLogin } = require('../lib/auth');
 const { paraReais, paraCentavos } = require('../lib/money');
 const { dataValida } = require('../lib/datas');
 const { resolverConta } = require('../lib/contas');
+const { aposLancamentos } = require('../lib/orcamentos');
 const { lerArquivo, atribuirIds, sugerirCategorias, marcarDuplicadas, MAX_LINHAS } = require('../lib/importacao');
 
 router.use(exigirLogin);
@@ -75,6 +76,7 @@ router.post('/confirmar', (req, res) => {
   }
 
   const importados = inserir(req.user.id, contaId, itens);
+  aposLancamentos(req.user.id, itens);
   res.json({ importados, ignorados: itens.length - importados });
 });
 

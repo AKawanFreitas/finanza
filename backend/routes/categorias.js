@@ -44,6 +44,10 @@ router.delete('/:id', (req, res) => {
   const cat = db.prepare('SELECT nome FROM categorias WHERE id = ? AND user_id = ?').get(id, req.user.id);
   if (!cat) return res.status(404).json({ error: 'Categoria não encontrada.' });
 
+  if (db.prepare('SELECT 1 FROM orcamentos WHERE categoria_id = ?').get(id)) {
+    return res.status(409).json({ error: `"${cat.nome}" tem um orçamento. Remova o orçamento antes de excluir a categoria.` });
+  }
+
   const emUso =
     db.prepare('SELECT COUNT(*) AS n FROM transactions WHERE categoria_id = ?').get(id).n +
     db.prepare('SELECT COUNT(*) AS n FROM recorrentes  WHERE categoria_id = ?').get(id).n;
