@@ -4,6 +4,7 @@
 const migrations = [
   require('./001_baseline'),
   require('./002_centavos_e_categoria_id'),
+  require('./003_contas_transferencias_e_vinculos'),
 ].sort((a, b) => a.version - b.version);
 
 const ultimaVersao = migrations[migrations.length - 1].version;

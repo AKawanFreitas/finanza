@@ -10,6 +10,10 @@ const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
+// Texto sem acento e em minúsculas, para buscar "acao" e achar "Ação" (o LIKE do SQLite só ignora caixa em ASCII).
+const normalizar = s => (s == null ? '' : String(s)).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+db.function('normalizar', { deterministic: true }, normalizar);
+
 // Antes de mexer num banco que já tem dados, guarda uma cópia ao lado do arquivo.
 function copiaDeSeguranca(deVersao) {
   if (emMemoria) return;
@@ -41,6 +45,14 @@ function seedCategorias(userId) {
   for (const [nome, cor] of DEFAULT_CATEGORIAS) insertCategoria.run(userId, nome, cor);
 }
 
+// Conta inicial de um usuário novo (se ainda não tiver nenhuma).
+function seedContas(userId) {
+  const { n } = db.prepare('SELECT COUNT(*) AS n FROM contas WHERE user_id = ?').get(userId);
+  if (n > 0) return;
+  db.prepare("INSERT INTO contas (user_id, nome, tipo, criado_em) VALUES (?, 'Conta principal', 'corrente', ?)")
+    .run(userId, new Date().toISOString());
+}
+
 // Dados gravados antes das contas (user_id nulo) passam para o dono informado.
 // Tudo numa transação: ou a adoção inteira vale, ou nada muda.
 const adoptOrphans = db.transaction((userId) => {
@@ -58,8 +70,21 @@ const adoptOrphans = db.transaction((userId) => {
     db.prepare('DELETE FROM categorias WHERE id = ?').run(orfa);
   }
 
+  // Conta órfã com o mesmo nome de uma que o dono já tem: os lançamentos vão para a dele.
+  const contasRepetidas = db.prepare(`
+    SELECT o.id AS orfa, c.id AS existente
+    FROM contas o JOIN contas c ON c.user_id = ? AND c.nome = o.nome COLLATE NOCASE
+    WHERE o.user_id IS NULL
+  `).all(userId);
+  for (const { orfa, existente } of contasRepetidas) {
+    db.prepare('UPDATE transactions SET conta_id = ? WHERE conta_id = ?').run(existente, orfa);
+    db.prepare('UPDATE transferencias SET origem_id = ? WHERE origem_id = ?').run(existente, orfa);
+    db.prepare('UPDATE transferencias SET destino_id = ? WHERE destino_id = ?').run(existente, orfa);
+    db.prepare('DELETE FROM contas WHERE id = ?').run(orfa);
+  }
+
   let moved = 0;
-  for (const table of ['transactions', 'recorrentes', 'categorias']) {
+  for (const table of ['transactions', 'recorrentes', 'categorias', 'contas']) {
     moved += db.prepare(`UPDATE ${table} SET user_id = ? WHERE user_id IS NULL`).run(userId).changes;
   }
   return moved;
@@ -67,4 +92,6 @@ const adoptOrphans = db.transaction((userId) => {
 
 module.exports = db;
 module.exports.seedCategorias = seedCategorias;
+module.exports.seedContas = seedContas;
 module.exports.adoptOrphans = adoptOrphans;
+module.exports.normalizar = normalizar;
