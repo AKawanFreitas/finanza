@@ -1,0 +1,27 @@
+# Sobe o Finanza (API + front) com os dados em um volume.
+#   cp .env.example .env     (ajuste o que precisar)
+#   docker compose up -d --build
+# Abre em http://localhost:4747. O primeiro administrador é criado assim:
+#   docker compose exec finanza node backend/scripts/create-admin.js --email voce@exemplo.com --nome "Seu Nome"
+services:
+  finanza:
+    build: .
+    image: finanza:latest
+    restart: unless-stopped
+    ports:
+      - "${PORT:-4747}:4747"
+    environment:
+      PORT: "4747"
+      APP_URL: ${APP_URL:-http://localhost:4747}
+      SMTP_URL: ${SMTP_URL:-}
+      EMAIL_FROM: ${EMAIL_FROM:-Finanza <nao-responda@finanza.local>}
+      BACKUP_KEEP: ${BACKUP_KEEP:-7}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Local, sem HTTPS: false. Atrás de um proxy com HTTPS: remova (ou true) e defina TRUST_PROXY=1.
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      TRUST_PROXY: ${TRUST_PROXY:-}
+    volumes:
+      - finanza-data:/data
+
+volumes:
+  finanza-data:
