@@ -11,7 +11,8 @@ const VAZIO = () => ({ origem_id: null, destino_id: null, valor: '', data: today
 
 export default function Transferencias() {
   const { contas, versao, addTransferencia, delTransferencia } = useFinance();
-  const ativas = contas.filter(c => !c.arquivada);
+  // Pagar fatura de cartão é feito na tela de Cartões; aqui só entre contas comuns.
+  const ativas = contas.filter(c => !c.arquivada && c.tipo !== 'cartao');
   const [form, setForm] = useState(VAZIO);
   const [lista, setLista] = useState([]);
   const set = (campo, valor) => setForm(f => ({ ...f, [campo]: valor }));
