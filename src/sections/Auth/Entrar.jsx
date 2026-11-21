@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Lock, User, LogIn, UserPlus } from 'lucide-react';
+import { Mail, Lock, User, LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Entrar() {
@@ -8,6 +8,7 @@ export default function Entrar() {
   const [form, setForm] = useState({ nome: '', email: '', senha: '' });
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [verSenha, setVerSenha] = useState(false);
 
   const novaConta = modo === 'conta';
   const set = (campo, valor) => setForm(f => ({ ...f, [campo]: valor }));
@@ -16,6 +17,7 @@ export default function Entrar() {
     setModo(proximo);
     setErro('');
     setForm(f => ({ ...f, nome: '', senha: '' }));
+    setVerSenha(false);
   }
 
   async function enviar(e) {
@@ -74,11 +76,19 @@ export default function Entrar() {
             <span className="form-input-wrap">
               <span className="form-prefix"><Lock size={15} strokeWidth={2} /></span>
               <input
-                className="form-control" type="password" required
+                className="form-control" type={verSenha ? 'text' : 'password'} required
                 autoComplete={novaConta ? 'new-password' : 'current-password'}
                 minLength={novaConta ? 8 : undefined}
                 value={form.senha} onChange={e => set('senha', e.target.value)}
               />
+              <button
+                type="button" className="form-sufixo"
+                onClick={() => setVerSenha(v => !v)}
+                aria-label={verSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                title={verSenha ? 'Ocultar senha' : 'Mostrar senha'}
+              >
+                {verSenha ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
+              </button>
             </span>
             {novaConta && <span className="form-dica">Pelo menos 8 caracteres.</span>}
           </label>
