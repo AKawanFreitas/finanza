@@ -168,3 +168,77 @@ test('compra no cartão conta como gasto na data e não mexe no saldo da conta b
   assert.equal(contas.find(c => c.id === cartao.id).saldo, -200);
 });
 
+/* ── Parcelamento ─────────────────────────────────── */
+
+test('compra parcelada em 3x gera 3 lançamentos que somam o total, um por fatura', async () => {
+  const { u, cartao } = await comCartao();
+  const r = await compra(u, cartao, { desc: 'Notebook', valor: 100, parcelas: 3, data: '2026-03-05' });
+  assert.equal(r.status, 201);
+  assert.equal(r.body.parcelas_criadas, 3);
+  const lista = (await u.agente.get(`/api/transactions?conta_id=${cartao.id}`)).body.itens.reverse();
+  assert.deepEqual(lista.map(t => t.valor), [33.34, 33.33, 33.33]);
+  assert.deepEqual(lista.map(t => t.data), ['2026-03-05', '2026-04-05', '2026-05-05']);
+  assert.deepEqual(lista.map(t => t.fatura), ['2026-03', '2026-04', '2026-05']);
+  assert.deepEqual(lista.map(t => t.desc), ['Notebook (1/3)', 'Notebook (2/3)', 'Notebook (3/3)']);
+  assert.deepEqual(lista.map(t => t.parcela), [{ numero: 1, total: 3 }, { numero: 2, total: 3 }, { numero: 3, total: 3 }]);
+  assert.equal(new Set(lista.map(t => t.grupo_parcelas)).size, 1);
+  assert.equal(Math.round(lista.reduce((a, t) => a + t.valor, 0) * 100), 10000);
+});
+
+test('parcelas contam como gasto em cada mês (competência pela parcela)', async () => {
+  const { u, cartao } = await comCartao();
+  await compra(u, cartao, { valor: 300, parcelas: 3, data: '2026-03-05' });
+  for (const mes of ['2026-03', '2026-04', '2026-05']) assert.equal((await u.agente.get(`/api/resumo?mes=${mes}`)).body.saidas, 100, mes);
+});
+
+test('parcela no dia 31 respeita meses curtos', async () => {
+  const { u, cartao } = await comCartao();
+  await compra(u, cartao, { valor: 90, parcelas: 3, data: '2026-01-31' });
+  const datas = (await u.agente.get(`/api/transactions?conta_id=${cartao.id}`)).body.itens.map(t => t.data).reverse();
+  assert.deepEqual(datas, ['2026-01-31', '2026-02-28', '2026-03-31']);
+});
+
+test('parcelar só vale para saída em cartão; limites do número de parcelas', async () => {
+  const { u, cartao } = await comCartao();
+  const principal = (await u.agente.get('/api/contas')).body.find(c => c.tipo === 'corrente');
+  assert.equal((await compra(u, principal, { parcelas: 3 })).status, 400, 'conta comum');
+  assert.equal((await compra(u, cartao, { parcelas: 3, tipo: 'entrada' })).status, 400, 'entrada');
+  for (const parcelas of [0, 49, 2.5, 'x']) assert.equal((await compra(u, cartao, { parcelas })).status, 400, String(parcelas));
+  assert.equal((await compra(u, cartao, { parcelas: 48 })).status, 201);
+  assert.equal((await u.agente.get(`/api/transactions?conta_id=${cartao.id}`)).body.total, 48, 'só as 48, nada das tentativas inválidas');
+});
+
+test('descrição longa cabe com o sufixo da parcela', async () => {
+  const { u, cartao } = await comCartao();
+  const r = await compra(u, cartao, { desc: 'x'.repeat(120), parcelas: 12 });
+  assert.equal(r.status, 201);
+  const lista = (await u.agente.get(`/api/transactions?conta_id=${cartao.id}`)).body.itens;
+  assert.ok(lista.every(t => t.desc.length <= 120 && /\(\d+\/12\)$/.test(t.desc)));
+});
+
+test('não dá para parcelar um lançamento já existente (PUT)', async () => {
+  const { u, cartao } = await comCartao();
+  const { body } = await compra(u, cartao);
+  const r = await compra(u, cartao, { parcelas: 3 }).then(() => u.agente.put(`/api/transactions/${body.id}`).send({ desc: 'x', valor: 1, tipo: 'saida', cat: 'Outros', data: '2026-03-05', conta_id: cartao.id, parcelas: 3 }));
+  assert.equal(r.status, 400);
+});
+
+test('excluir parcelas: só esta, esta e as futuras, ou todas', async () => {
+  const { u, cartao } = await comCartao();
+  // Devolve só as parcelas da compra recém-criada (cada compra tem um nome próprio), da primeira à última.
+  const criar = async nome => {
+    await compra(u, cartao, { desc: nome, valor: 400, parcelas: 4 });
+    return (await u.agente.get(`/api/transactions?conta_id=${cartao.id}`)).body.itens.filter(t => t.desc.startsWith(nome)).reverse();
+  };
+  const total = async () => (await u.agente.get(`/api/transactions?conta_id=${cartao.id}`)).body.total;
+
+  let p = await criar('Compra A');
+  assert.equal((await u.agente.delete(`/api/transactions/${p[1].id}`)).body.removidos, 1);
+  assert.equal(await total(), 3);
+  assert.equal((await u.agente.delete(`/api/transactions/${p[2].id}?parcelas=futuras`)).body.removidos, 2);
+  assert.equal(await total(), 1, 'sobrou a primeira');
+  p = await criar('Compra B');
+  assert.equal((await u.agente.delete(`/api/transactions/${p[0].id}?parcelas=todas`)).body.removidos, 4);
+  assert.equal(await total(), 1, 'a primeira parcela da compra A continua');
+});
+
