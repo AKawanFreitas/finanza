@@ -7,6 +7,7 @@ const helmet       = require('helmet');
 const crypto       = require('crypto');
 const pinoHttp     = require('pino-http');
 const logger       = require('./lib/logger');
+const { protegerCsrf } = require('./lib/csrf');
 const authRoutes   = require('./routes/auth');
 const adminRoutes  = require('./routes/admin');
 const transactions = require('./routes/transactions');
@@ -51,6 +52,9 @@ if (process.env.CORS_ORIGIN) {
 } else {
   app.use(cors());
 }
+
+// Requisições que alteram dados precisam vir do próprio app. Vem antes de qualquer rota (inclusive a de importação).
+app.use('/api', protegerCsrf);
 
 // O arquivo do extrato vai no corpo da requisição: esta rota aceita mais que o limite geral.
 app.use('/api/importacao', express.json({ limit: '3mb' }), importacao);
