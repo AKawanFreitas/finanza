@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
-import { today } from '../../utils/formatters';
+import { today, fmt } from '../../utils/formatters';
 import Select from '../../components/Select';
 import {
   AlignLeft, Tag, Calendar, MessageSquare, Wallet,
@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 const EMPTY = (cats, contas) => ({
-  desc: '', valor: '', tipo: 'saida', cat: cats[0]?.nome || '',
+  desc: '', valor: '', tipo: 'saida', cat: cats[0]?.nome || '', parcelas: '1',
   conta_id: contas.find(c => !c.arquivada)?.id ?? null, data: today(), obs: '',
 });
 
@@ -29,7 +29,11 @@ export default function TransactionForm() {
 
   async function handleSubmit() {
     if (!form.desc || !form.valor || !form.data) return;
+    // Parcelamento só existe ao criar uma compra no cartão; ao editar, cada parcela é um lançamento independente.
+    const parcelas = Number(form.parcelas) || 1;
     const data = { ...form, valor: parseFloat(form.valor) };
+    delete data.parcelas;
+    if (!editing && permiteParcelas && parcelas > 1) data.parcelas = parcelas;
     const ok = editing
       ? await updateTransaction(editing.id, data)
       : await addTransaction(data);
@@ -44,6 +48,10 @@ export default function TransactionForm() {
     .filter(c => !c.arquivada || c.id === form.conta_id)
     .map(c => ({ value: c.id, label: c.nome, color: c.cor }));
   const isEntrada  = form.tipo === 'entrada';
+  const contaEscolhida = contas.find(c => c.id === form.conta_id);
+  const permiteParcelas = contaEscolhida?.tipo === 'cartao' && !isEntrada;
+  const nParcelas = Math.max(1, Math.min(48, Number(form.parcelas) || 1));
+  const valorParcela = parseFloat(form.valor) > 0 ? parseFloat(form.valor) / nParcelas : 0;
 
   return (
     <div className="form-wrap">
@@ -128,6 +136,20 @@ export default function TransactionForm() {
             prefix={<Wallet size={14} strokeWidth={2} />}
           />
         </div>
+
+        {permiteParcelas && !editing && (
+          <div className="form-group">
+            <label className="form-label">Parcelas</label>
+            <input
+              className="form-control" type="number" min="1" max="48" step="1"
+              value={form.parcelas} onChange={e => set('parcelas', e.target.value)}
+              aria-label="Número de parcelas"
+            />
+            {nParcelas > 1 && valorParcela > 0 && (
+              <span className="parcelas-info">{nParcelas}x de ~{fmt(valorParcela)}, uma por fatura</span>
+            )}
+          </div>
+        )}
 
         <div className="form-group">
           <label className="form-label">Data</label>
