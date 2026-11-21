@@ -4,32 +4,13 @@ import { fmt, fmtDate, dueDate, getCatColor } from '../../utils/formatters';
 
 export default function RecorrenteList() {
   const {
-    recorrentes, categorias, transactions, delRecorrente, editingRec, setEditingRec,
-    addTransaction, showToast,
+    recorrentes, categorias, delRecorrente, editingRec, setEditingRec,
+    lancarRecorrente, lancarPendentes,
   } = useFinance();
   const total = recorrentes.reduce((a, r) => a + r.valor, 0);
 
-  const month = dueDate(1).slice(0, 7);
-  const isLaunched = r => transactions.some(t =>
-    t.desc === r.nome && t.cat === r.cat && t.tipo === 'saida' && t.data.startsWith(month));
-  const pending = recorrentes.filter(r => !isLaunched(r));
-
-  const toTransaction = r => ({
-    desc: r.nome, valor: r.valor, tipo: 'saida', cat: r.cat,
-    data: dueDate(r.dia), obs: r.obs || '',
-  });
-
-  function launch(r) {
-    addTransaction(toTransaction(r));
-  }
-
-  async function launchAll() {
-    let done = 0;
-    for (const r of pending) {
-      if (await addTransaction(toTransaction(r), { silent: true })) done++;
-    }
-    if (done) showToast(`${done} ${done === 1 ? 'recorrente lançado' : 'recorrentes lançados'} ✓`);
-  }
+  // `lancado` vem do servidor: o recorrente já gerou um lançamento neste mês.
+  const pending = recorrentes.filter(r => !r.lancado);
 
   return (
     <div className="hist-wrap">
@@ -46,7 +27,7 @@ export default function RecorrenteList() {
               : `${pending.length} ${pending.length === 1 ? 'pendente' : 'pendentes'} neste mês.`}
           </span>
           {pending.length > 0 && (
-            <button className="btn" onClick={launchAll}>
+            <button className="btn" onClick={lancarPendentes}>
               <CalendarPlus size={14} strokeWidth={2} />
               Lançar pendentes
             </button>
@@ -73,12 +54,12 @@ export default function RecorrenteList() {
                 </div>
               </div>
               <div className="rec-right">
-                {isLaunched(r) ? (
+                {r.lancado ? (
                   <span className="launched" title={`Lançado em ${fmtDate(dueDate(r.dia))}`}>
                     <Check size={13} strokeWidth={2.5} /> Lançado
                   </span>
                 ) : (
-                  <button className="btn btn-sm" onClick={() => launch(r)} title={`Lançar em ${fmtDate(dueDate(r.dia))}`}>
+                  <button className="btn btn-sm" onClick={() => lancarRecorrente(r.id)} title={`Lançar em ${fmtDate(dueDate(r.dia))}`}>
                     <CalendarPlus size={13} strokeWidth={2} />
                     Lançar
                   </button>
