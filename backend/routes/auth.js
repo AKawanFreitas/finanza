@@ -58,6 +58,7 @@ router.post('/registrar', (req, res) => {
     ).run(nome.value, email.value, auth.hashSenha(senha.value), 'user', 'ativo', new Date().toISOString());
     const id = Number(lastInsertRowid);
     db.seedCategorias(id);
+    db.seedContas(id);
     return id;
   });
 
