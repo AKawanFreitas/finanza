@@ -42,6 +42,9 @@ Sem `--senha`, o comando mostra uma senha provisória e pede a troca no primeiro
 | `API_PORT` | front   | `4747`                  | Porta da API para onde o Vite encaminha |
 | `NODE_ENV` | backend | —                       | Com `production`, o cookie de sessão exige HTTPS |
 | `CORS_ORIGIN` | backend | —                    | Origens liberadas quando o front não passa pelo proxy |
+| `APP_URL`  | backend | `http://localhost:5173` | Endereço do front, usado nos links dos e-mails |
+| `SMTP_URL` | backend | —                       | Servidor de e-mail, ex.: `smtps://usuario:senha@smtp.exemplo.com`. Sem ele, os e-mails aparecem no console da API |
+| `EMAIL_FROM` | backend | `Finanza <nao-responda@finanza.local>` | Remetente dos e-mails |
 
 Se a porta 4747 já estiver ocupada na sua máquina:
 
@@ -71,7 +74,10 @@ No `backend/`: `npm start`, `npm run dev` (reinicia ao salvar), `npm test` (test
 - **Lançamentos:** criar, editar e excluir entradas e saídas, cada uma numa conta. A lista é paginada no servidor e filtra por texto (sem diferenciar acento nem maiúsculas), tipo, categoria, conta e mês, mostrando o saldo de tudo o que está filtrado.
 - **Contas:** carteiras, bancos, poupança e investimentos, com saldo calculado (inicial + lançamentos + transferências). Transferências entre contas não contam como receita nem gasto. Conta com movimentações é arquivada, não excluída.
 - **Importar extrato:** OFX (conta e cartão) e CSV (separador, aspas e formatos de data e valor brasileiros detectados sozinhos). Mostra uma prévia com categoria sugerida (a que você já usou para a mesma descrição), marca o que já foi importado ou parece duplicado e só grava o que você confirmar. Importar o mesmo arquivo duas vezes não duplica.
-- **Recorrentes:** cadastro de despesas mensais (fixas ou variáveis). Cada uma pode ser lançada como gasto do mês atual, uma a uma ou todas as pendentes. O servidor liga o lançamento ao recorrente, então nunca duplica.
+- **Recorrentes:** cadastro de despesas mensais (fixas ou variáveis). Cada uma pode ser lançada como gasto do mês atual, uma a uma ou todas as pendentes. O servidor liga o lançamento ao recorrente, então nunca duplica. Marcando **lançar automaticamente**, o servidor faz o lançamento sozinho no vencimento, na conta escolhida (se ficou fora do ar, recupera na volta, com a data certa).
+- **Orçamentos:** limite mensal por categoria, com barra de progresso (verde, amarelo a partir de 80%, vermelho a partir de 100%) no dashboard e numa tela própria. Por e-mail, avisa quando a categoria chega a 80% e a 100%, uma vez por nível a cada mês.
+- **Exportar:** o histórico de lançamentos sai em CSV (abre direto no Excel em português) ou XLSX (com aba de resumo por categoria), respeitando os filtros da tela.
+- **E-mail:** recuperação de senha (link de uso único, válido por 1 hora), confirmação de e-mail, alertas de orçamento e resumo do mês anterior nos primeiros dias do mês. Os avisos só vão para quem confirmou o e-mail e podem ser desligados em Configurações.
 - **Contas:** criar conta com e-mail e senha, entrar e sair. A sessão fica num cookie `httpOnly` e vale 30 dias. Cada conta vê apenas os próprios dados.
 - **Configurações:** alterar nome, e-mail e senha, e excluir a conta com tudo o que há nela.
 - **Administração (super admin):** listar e buscar contas, suspender e reativar, redefinir senha com uma provisória de uso único e excluir contas, além dos números de uso do sistema.
@@ -83,7 +89,7 @@ Base: `/api`. Erros de validação voltam como `{ "error": "mensagem" }` com sta
 
 | Recurso             | Rotas                                    |
 | ------------------- | ---------------------------------------- |
-| `/api/auth`         | `POST /registrar`, `POST /login`, `POST /logout`, `GET /eu`, `PATCH /perfil`, `POST /senha`, `DELETE /conta` |
+| `/api/auth`         | `POST /registrar`, `POST /login`, `POST /logout`, `GET /eu`, `PATCH /perfil`, `PATCH /preferencias`, `POST /senha`, `DELETE /conta`, `POST /esqueci-senha`, `POST /redefinir-senha`, `POST /verificar-email`, `POST /reenviar-verificacao` |
 | `/api/admin`        | `GET /usuarios`, `GET /metricas`, `PATCH /usuarios/:id/status`, `POST /usuarios/:id/senha`, `DELETE /usuarios/:id` |
 | `/api/transactions` | `GET` (filtros e paginação), `POST`, `PUT /:id`, `DELETE /:id` |
 | `/api/resumo`       | `GET ?mes=AAAA-MM` (dados do dashboard) |
@@ -91,6 +97,8 @@ Base: `/api`. Erros de validação voltam como `{ "error": "mensagem" }` com sta
 | `/api/transferencias` | `GET`, `POST`, `DELETE /:id` |
 | `/api/recorrentes`  | `GET ?mes=`, `POST`, `PUT /:id`, `DELETE /:id`, `POST /:id/lancar`, `POST /lancar-pendentes` |
 | `/api/importacao`   | `POST /previa`, `POST /confirmar` |
+| `/api/orcamentos`   | `GET ?mes=`, `PUT /:categoriaId`, `DELETE /:categoriaId` |
+| `/api/exportacao`   | `GET /lancamentos?formato=csv\|xlsx` (+ filtros da listagem) |
 | `/api/categorias`   | `GET`, `POST`, `PUT /:id`, `DELETE /:id` |
 
 Formatos:
@@ -98,9 +106,10 @@ Formatos:
 - **transactions:** `{ desc, valor, tipo: "entrada" | "saida", categoria_id | cat, conta_id?, data: "AAAA-MM-DD", obs? }` (sem `conta_id`, vai para a conta principal)
 - **GET /transactions:** `?mes=AAAA-MM&tipo=&categoria_id=&conta_id=&q=&pagina=1&limite=20` (máx. 100) devolve `{ itens, total, pagina, paginas, limite, totais: { entradas, saidas, saldo } }`; os totais valem para todo o filtro, não só para a página
 - **contas:** `{ nome, tipo: "corrente" | "poupanca" | "carteira" | "investimento", saldo_inicial?, cor?, arquivada? }`
+- **orcamentos:** `PUT { limite }` em reais; `GET` devolve `{ mes, itens: [{ categoria_id, cat, limite, gasto, restante, percentual, status: "ok" | "atencao" | "estourado" }], totais }`
 - **transferencias:** `{ origem_id, destino_id, valor, data, descricao? }`
 - **importação:** `previa { conta_id, conteudo }` devolve os itens com `categoria_id` sugerida e `duplicada` (`"importada"` ou `"provavel"`); `confirmar { conta_id, itens }` grava e devolve `{ importados, ignorados }`
-- **recorrentes:** `{ nome, valor, tipo: "fixo" | "recorrente", categoria_id | cat, dia: 1–31, obs? }`
+- **recorrentes:** `{ nome, valor, tipo: "fixo" | "recorrente", categoria_id | cat, dia: 1–31, automatico?, conta_id?, obs? }`
 - **categorias:** `{ nome, cor: "#RRGGBB" }`
 
 Dinheiro é guardado em **centavos inteiros** (`valor_centavos`) e a API fala em reais com até 2 casas (`19.99`); a conversão acontece só na borda (`backend/lib/money.js`). Lançamentos e recorrentes apontam para a categoria por **`categoria_id`** (FK). As respostas trazem `categoria_id` e também `cat` (o nome); ao gravar, vale enviar qualquer um dos dois, sempre dentro das categorias da própria conta. Tudo pertence a um usuário (`user_id`). Fora `/api/auth`, todas as rotas exigem sessão; as de `/api/admin` exigem papel de super admin. As senhas são guardadas como hash scrypt com sal.
@@ -111,16 +120,18 @@ Dinheiro é guardado em **centavos inteiros** (`valor_centavos`) e a API fala em
 backend/
   app.js, server.js      App Express (testável) e processo que abre a porta
   db.js                  Conexão SQLite, backup antes de migrar, categorias padrão
-  migrations/            Schema versionado (PRAGMA user_version): 001 baseline, 002 centavos e categoria_id, 003 contas e vínculos
+  migrations/            Schema versionado (PRAGMA user_version): 001 baseline, 002 centavos e categoria_id, 003 contas e vínculos, 004 automação, orçamentos e e-mail
   lib/                   auth (senhas, sessões), money (centavos), schemas (zod), categorias
   routes/                auth, admin, transactions, resumo, contas, transferencias, recorrentes, importacao, categorias
   lib/importacao/        Leitores de OFX e CSV, ids de deduplicação e sugestão de categoria
+  lib/agendador.js       Tarefas por hora: recorrentes automáticos, resumo mensal, limpeza (idempotentes)
+  lib/email.js, templates.js, tokens.js, notificar.js   E-mail (SMTP ou console), textos, links de uso único e envio sem repetir
   scripts/create-admin   Cria ou promove o super admin
   tests/                 Testes com node:test + supertest (banco em memória)
 .github/workflows/       CI: testes do backend, lint e build do front
 src/
   context/               Sessão (AuthContext) e dados financeiros (FinanceContext)
-  sections/              Auth, Dashboard, Lancamentos, Contas, Importar, Recorrentes, Categorias, Configuracoes, Admin
+  sections/              Auth, Dashboard, Lancamentos, Contas, Importar, Orçamentos, Recorrentes, Categorias, Configuracoes, Admin
   components/            Sidebar, MonthStepper, Select, Toast
   utils/                 Formatadores e funções de período
   index.css              Estilos
@@ -139,3 +150,11 @@ cd backend && npm test
 ```
 
 Cobrem as migrações (inclusive a partir de um banco legado), conversão de dinheiro, autenticação, CRUD e, principalmente, o isolamento entre contas. A CI roda isso (Node 22 e 24) e também o lint e o build do front a cada push.
+
+## E-mail em desenvolvimento
+
+Sem `SMTP_URL`, nada é enviado: o conteúdo de cada e-mail (inclusive o link de redefinir senha ou confirmar e-mail) aparece no console da API. Para testar de verdade, aponte `SMTP_URL` para qualquer provedor SMTP e defina `APP_URL` com o endereço do front.
+
+## Tarefas agendadas
+
+A API roda, ao subir e a cada hora, os recorrentes automáticos e o resumo mensal. Tudo é idempotente (cada lançamento ou e-mail tem uma chave de controle), então reiniciar ou ter mais de uma instância não duplica nada. Ao escalar para várias instâncias, o ideal é rodar o agendador em um único processo.
