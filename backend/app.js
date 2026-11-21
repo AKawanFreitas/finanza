@@ -20,6 +20,7 @@ const resumo       = require('./routes/resumo');
 const importacao   = require('./routes/importacao');
 const orcamentos   = require('./routes/orcamentos');
 const exportacao   = require('./routes/exportacao');
+const metas        = require('./routes/metas');
 
 const app = express();
 
@@ -75,6 +76,7 @@ app.use('/api/transferencias', transferencias);
 app.use('/api/resumo',       resumo);
 app.use('/api/orcamentos',   orcamentos);
 app.use('/api/exportacao',   exportacao);
+app.use('/api/metas',        metas);
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
 

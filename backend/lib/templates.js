@@ -51,6 +51,16 @@ function alertaOrcamento({ nome, categoria, limite, gasto, percentual, mes }) {
   };
 }
 
+function metaAtingida({ nome, meta, valor }) {
+  const assunto = `Meta atingida: ${meta}`;
+  const frase = `Parabéns! Você chegou a ${brl(valor)} e atingiu a meta "${meta}".`;
+  return {
+    assunto,
+    texto: `Olá, ${primeiroNome(nome)}!\n\n${frase}\n\nVeja em ${urlApp()}`,
+    html: moldura(assunto, `<p>Olá, ${esc(primeiroNome(nome))}!</p><p>${esc(frase)}</p>`, { url: urlApp(), rotulo: 'Abrir o Finanza' }),
+  };
+}
+
 function resumoMensal({ nome, mes, resumo }) {
   const topo = resumo.porCategoria.slice(0, 3);
   const linhas = topo.map(c => `• ${c.cat}: ${brl(c.valor)}`).join('\n');
@@ -70,4 +80,4 @@ function resumoMensal({ nome, mes, resumo }) {
   };
 }
 
-module.exports = { redefinirSenha, verificarEmail, alertaOrcamento, resumoMensal };
+module.exports = { redefinirSenha, verificarEmail, alertaOrcamento, metaAtingida, resumoMensal };

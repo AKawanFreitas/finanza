@@ -112,6 +112,38 @@ const pagamentoFatura = z.object({
   data: dataISO.optional(),
 });
 
+const meta = z.object({
+  nome: texto('o nome da meta', 60),
+  valor_alvo: z.union([z.number(), z.string()], { error: 'O valor da meta deve ser maior que zero.' })
+    .transform((v, ctx) => {
+      const c = paraCentavos(v);
+      if (c === null) ctx.addIssue({ code: 'custom', message: 'O valor da meta deve ser maior que zero.' });
+      return c;
+    }),
+  prazo: dataISO.nullable().optional(),
+  cor: COR.optional().default('#22a84a'),
+  valor_inicial: z.union([z.number(), z.string()]).optional()
+    .transform((v, ctx) => {
+      if (v === undefined || v === '') return undefined;
+      const c = paraCentavos(v);
+      if (c === null) ctx.addIssue({ code: 'custom', message: 'O valor inicial deve ser maior que zero.' });
+      return c;
+    }),
+  arquivada: z.boolean().optional(),
+});
+
+const aporte = z.object({
+  valor: z.union([z.number(), z.string()], { error: 'O valor deve ser maior que zero.' })
+    .transform((v, ctx) => {
+      const c = paraCentavos(v);
+      if (c === null) ctx.addIssue({ code: 'custom', message: 'O valor deve ser maior que zero.' });
+      return c;
+    }),
+  tipo: z.enum(['aporte', 'retirada'], { error: 'O tipo deve ser "aporte" ou "retirada".' }).optional().default('aporte'),
+  data: dataISO.optional(),
+  obs: z.string().max(200, 'A observação deve ter até 200 caracteres.').optional().default(''),
+});
+
 const categoriaInput = z.object({
   nome: texto('o nome da categoria', 40),
   cor: COR,
@@ -133,4 +165,4 @@ function validar(schema, body) {
   return { error: r.error.issues[0]?.message || 'Dados inválidos.' };
 }
 
-module.exports = { transacao, recorrente, categoriaInput, conta, cartao, pagamentoFatura, transferencia, orcamento, dataISO, validar };
+module.exports = { transacao, recorrente, categoriaInput, conta, cartao, pagamentoFatura, meta, aporte, transferencia, orcamento, dataISO, validar };
