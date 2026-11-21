@@ -59,7 +59,7 @@ test('edita e exclui', async () => {
   assert.equal(put.body.valor, 12.5);
   assert.equal(put.body.cat, 'Lazer');
   await u.agente.delete(`/api/transactions/${body.id}`);
-  assert.equal((await u.agente.get('/api/transactions')).body.length, 0);
+  assert.equal((await u.agente.get('/api/transactions')).body.itens.length, 0);
 });
 
 test('editar lançamento inexistente dá 404', async () => {
@@ -72,7 +72,7 @@ test('renomear categoria reflete nos lançamentos sem UPDATE em cascata', async 
   await u.agente.post('/api/transactions').send(base());
   const cat = await categoriaDe(u.agente, 'Alimentação');
   await u.agente.put(`/api/categorias/${cat.id}`).send({ nome: 'Comida', cor: cat.cor });
-  const lista = (await u.agente.get('/api/transactions')).body;
+  const lista = (await u.agente.get('/api/transactions')).body.itens;
   assert.equal(lista[0].cat, 'Comida');
   assert.equal(lista[0].categoria_id, cat.id);
 });

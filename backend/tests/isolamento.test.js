@@ -14,7 +14,7 @@ async function cenario() {
 
 test('listagens de B não trazem nada de A', async () => {
   const { b } = await cenario();
-  assert.deepEqual((await b.agente.get('/api/transactions')).body, []);
+  assert.deepEqual((await b.agente.get('/api/transactions')).body.itens, []);
   assert.deepEqual((await b.agente.get('/api/recorrentes')).body, []);
   const catsB = (await b.agente.get('/api/categorias')).body;
   assert.equal(catsB.length, 8);
@@ -26,7 +26,7 @@ test('B não consegue editar nem apagar lançamento de A', async () => {
   const dados = { desc: 'Invadido', valor: 1, tipo: 'saida', categoria_id: catB.id, data: '2026-03-01' };
   assert.equal((await b.agente.put(`/api/transactions/${tx.id}`).send(dados)).status, 404);
   await b.agente.delete(`/api/transactions/${tx.id}`);
-  const doA = (await a.agente.get('/api/transactions')).body;
+  const doA = (await a.agente.get('/api/transactions')).body.itens;
   assert.equal(doA.length, 1);
   assert.equal(doA[0].desc, 'Segredo de A');
 });
