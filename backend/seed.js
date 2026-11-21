@@ -9,6 +9,7 @@ const path = require('path');
 process.env.DB_PATH = process.env.DB_PATH || path.join(__dirname, 'demo.db');
 const db = require('./db');
 const { hashSenha } = require('./lib/auth');
+const { contaPadrao } = require('./lib/contas');
 
 const emailArg = (() => {
   const i = process.argv.indexOf('--email');
@@ -33,6 +34,7 @@ function contaAlvo() {
   ).run('Conta demo', 'demo@finanza.local', hashSenha('demo1234'), 'user', 'ativo', new Date().toISOString());
   const id = Number(lastInsertRowid);
   db.seedCategorias(id);
+  db.seedContas(id);
   console.log('Conta de demonstração criada: demo@finanza.local / demo1234');
   return db.prepare('SELECT * FROM users WHERE id = ?').get(id);
 }
@@ -126,6 +128,7 @@ const tx = db.transaction(() => {
   db.prepare('DELETE FROM transactions WHERE user_id = ?').run(dono.id);
   db.prepare('DELETE FROM recorrentes  WHERE user_id = ?').run(dono.id);
   db.seedCategorias(dono.id);
+  const contaId = contaPadrao(dono.id);
 
   const idDe = Object.fromEntries(
     db.prepare('SELECT id, nome FROM categorias WHERE user_id = ?').all(dono.id).map(c => [c.nome, c.id])
@@ -136,11 +139,19 @@ const tx = db.transaction(() => {
   );
   const centavos = v => Math.round(v * 100);
 
-  const insT = db.prepare('INSERT INTO transactions (user_id, descricao, valor_centavos, tipo, categoria_id, data, obs) VALUES (?, ?, ?, ?, ?, ?, ?)');
-  for (const [desc, valor, tipo, cat, data, obs] of rows) insT.run(dono.id, desc, centavos(valor), tipo, categoriaId(cat), data, obs);
+  const insT = db.prepare('INSERT INTO transactions (user_id, conta_id, descricao, valor_centavos, tipo, categoria_id, data, obs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+  for (const [desc, valor, tipo, cat, data, obs] of rows) insT.run(dono.id, contaId, desc, centavos(valor), tipo, categoriaId(cat), data, obs);
 
   const insR = db.prepare('INSERT INTO recorrentes (user_id, nome, valor_centavos, tipo, categoria_id, dia, obs) VALUES (?, ?, ?, ?, ?, ?, ?)');
   for (const r of recorrentes) insR.run(dono.id, r.nome, centavos(r.valor), r.tipo, categoriaId(r.cat), r.dia, r.obs);
+
+  // Liga cada lançamento mensal ao recorrente que o originou (é o que marca "lançado" na tela).
+  db.prepare(`
+    UPDATE transactions SET recorrente_id = (
+      SELECT r.id FROM recorrentes r
+      WHERE r.user_id = transactions.user_id AND r.nome = transactions.descricao AND r.categoria_id = transactions.categoria_id)
+    WHERE user_id = ? AND tipo = 'saida'
+  `).run(dono.id);
 });
 tx();
 
