@@ -7,6 +7,10 @@ const adminRoutes  = require('./routes/admin');
 const transactions = require('./routes/transactions');
 const recorrentes  = require('./routes/recorrentes');
 const categorias   = require('./routes/categorias');
+const contas       = require('./routes/contas');
+const transferencias = require('./routes/transferencias');
+const resumo       = require('./routes/resumo');
+const importacao   = require('./routes/importacao');
 
 const app = express();
 
@@ -20,6 +24,9 @@ if (process.env.CORS_ORIGIN) {
   app.use(cors());
 }
 
+// O arquivo do extrato vai no corpo da requisição: esta rota aceita mais que o limite geral.
+app.use('/api/importacao', express.json({ limit: '3mb' }), importacao);
+
 app.use(express.json({ limit: '100kb' }));
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
@@ -29,6 +36,9 @@ app.use('/api/admin',        adminRoutes);
 app.use('/api/transactions', transactions);
 app.use('/api/recorrentes',  recorrentes);
 app.use('/api/categorias',   categorias);
+app.use('/api/contas',       contas);
+app.use('/api/transferencias', transferencias);
+app.use('/api/resumo',       resumo);
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
 
