@@ -4,11 +4,15 @@ import { useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
 import Toast from './components/Toast';
 import Entrar from './sections/Auth/Entrar';
+import AcaoPorLink from './sections/Auth/AcaoPorLink';
+import { lerAcaoDaUrl } from './utils/acaoDaUrl';
+import AvisoEmail from './components/AvisoEmail';
 import TrocarSenha from './sections/Auth/TrocarSenha';
 import Dashboard from './sections/Dashboard/Dashboard';
 import Lancamentos from './sections/Lancamentos/Lancamentos';
 import Contas from './sections/Contas/Contas';
 import Importar from './sections/Importar/Importar';
+import Orcamentos from './sections/Orcamentos/Orcamentos';
 import Recorrentes from './sections/Recorrentes/Recorrentes';
 import Categorias from './sections/Categorias/Categorias';
 import Configuracoes from './sections/Configuracoes/Configuracoes';
@@ -17,7 +21,10 @@ import { currentYM } from './utils/period';
 
 export default function App() {
   const { user, carregando } = useAuth();
+  const [acao, setAcao] = useState(lerAcaoDaUrl);
 
+  // Links de e-mail (redefinir senha, confirmar e-mail) abrem antes de qualquer outra tela.
+  if (acao) return <AcaoPorLink acao={acao} onConcluir={() => setAcao(null)} />;
   if (carregando) return <div className="tela-carregando">Carregando...</div>;
   if (!user) return <Entrar />;
   if (user.trocar_senha) return <TrocarSenha />;
@@ -36,10 +43,12 @@ function AppLogado() {
       <div className="shell">
         <Sidebar active={section} onNavigate={setSection} />
         <main className="page">
+          <AvisoEmail />
           {section === 'dashboard'     && <Dashboard ym={ym} onYmChange={setYm} onNavigate={setSection} />}
           {section === 'lancamento'    && <Lancamentos />}
           {section === 'contas'        && <Contas />}
           {section === 'importar'      && <Importar onNavigate={setSection} />}
+          {section === 'orcamentos'    && <Orcamentos ym={ym} onYmChange={setYm} />}
           {section === 'recorrentes'   && <Recorrentes />}
           {section === 'categorias'    && <Categorias />}
           {section === 'configuracoes' && <Configuracoes />}
