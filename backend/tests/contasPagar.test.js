@@ -177,3 +177,43 @@ test('excluir o usuário com contas a pagar (pagas e abertas) não esbarra nas F
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM contas_pagar WHERE user_id = ?').get(u.id).n, 0);
 });
 
+/* ── Próximos vencimentos (contas + faturas) ──────── */
+
+async function comCartaoEVencimentos() {
+  const u = await novoUsuario();
+  // Cartão que fechou há 10 dias e vence em 5 (datas montadas a partir de hoje).
+  const hoje = new Date(Date.parse(`${hojeBR()}T00:00:00Z`));
+  const fecha = new Date(hoje.getTime() - 10 * 864e5).getUTCDate();
+  const vence = new Date(hoje.getTime() + 5 * 864e5).getUTCDate();
+  const cartao = (await u.agente.post('/api/cartoes').send({ nome: 'Roxinho', limite: 3000, dia_fechamento: fecha, dia_vencimento: vence })).body;
+  await u.agente.post('/api/transactions').send({ desc: 'Compra', valor: 300, tipo: 'saida', cat: 'Outros', data: dia(-20), conta_id: cartao.id });
+  await criar(u, { descricao: 'Internet', vencimento: dia(2) });
+  await criar(u, { descricao: 'Aluguel', vencimento: dia(-4) });
+  return { u, cartao };
+}
+
+test('vencimentos em aberto juntam contas e faturas fechadas, do mais antigo ao mais novo', async () => {
+  const { u } = await comCartaoEVencimentos();
+  const itens = vencimentosEmAberto(u.id);
+  assert.deepEqual(itens.map(i => i.tipo), ['conta', 'conta', 'fatura']);
+  assert.deepEqual(itens.map(i => i.titulo.split(' ')[0]), ['Aluguel', 'Internet', 'Fatura']);
+  assert.equal(itens[0].atrasada, true);
+  assert.equal(itens[2].valor, 300);
+});
+
+test('o resumo do dashboard traz os próximos vencimentos', async () => {
+  const { u } = await comCartaoEVencimentos();
+  const r = (await u.agente.get('/api/resumo')).body;
+  assert.equal(r.vencimentos.length, 3);
+});
+
+test('fatura quitada e conta paga saem dos vencimentos', async () => {
+  const { u, cartao } = await comCartaoEVencimentos();
+  const principal = (await u.agente.get('/api/contas')).body.find(c => c.tipo === 'corrente');
+  const mes = (await u.agente.get(`/api/cartoes/${cartao.id}/faturas`)).body[0].mes;
+  await u.agente.post(`/api/cartoes/${cartao.id}/faturas/${mes}/pagar`).send({ origem_id: principal.id });
+  const aluguel = (await listar(u)).itens.find(i => i.descricao === 'Aluguel');
+  await u.agente.post(`/api/contas-pagar/${aluguel.id}/pagar`).send({});
+  assert.deepEqual(vencimentosEmAberto(u.id).map(i => i.titulo), ['Internet']);
+});
+
