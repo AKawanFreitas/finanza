@@ -180,3 +180,70 @@ test('preferência de avisos por e-mail', async () => {
   assert.equal((await u.agente.patch('/api/auth/preferencias').send({ notificacoes_email: 'não' })).status, 400);
 });
 
+/* ── Resumo mensal ───────────────────────────────── */
+
+async function comMovimento({ verificado = true } = {}) {
+  const u = await novoUsuario();
+  if (verificado) confirmarEmail(u.id);
+  await u.agente.post('/api/transactions').send({ desc: 'Salário', valor: 5000, tipo: 'entrada', cat: 'Renda', data: '2026-02-05' });
+  await u.agente.post('/api/transactions').send({ desc: 'Mercado', valor: 800, tipo: 'saida', cat: 'Alimentação', data: '2026-02-10' });
+  await u.agente.post('/api/transactions').send({ desc: 'Cinema', valor: 60, tipo: 'saida', cat: 'Lazer', data: '2026-02-12' });
+  return u;
+}
+
+const resumos = u => emailsPara(u.email).filter(e => /resumo/i.test(e.assunto));
+
+test('resumo mensal: manda o do mês anterior com os números certos', async () => {
+  const u = await comMovimento();
+  enviarResumosMensais(new Date('2026-03-02T12:00:00Z'));
+  const [e] = resumos(u);
+  assert.ok(e, 'recebeu o resumo');
+  assert.match(e.assunto, /fevereiro de 2026/);
+  assert.match(e.texto, /Receitas: R\$ 5\.000,00/);
+  assert.match(e.texto, /Gastos: R\$ 860,00/);
+  assert.match(e.texto, /Saldo do mês: R\$ 4\.140,00/);
+  assert.match(e.texto, /Alimentação: R\$ 800,00/);
+});
+
+test('resumo mensal: uma vez por mês, mesmo com várias execuções', async () => {
+  const u = await comMovimento();
+  enviarResumosMensais(new Date('2026-03-01T12:00:00Z'));
+  enviarResumosMensais(new Date('2026-03-01T18:00:00Z'));
+  enviarResumosMensais(new Date('2026-03-03T12:00:00Z'));
+  assert.equal(resumos(u).length, 1);
+});
+
+test('resumo mensal: não manda depois do dia 5, sem e-mail confirmado, com avisos desligados ou sem movimento', async () => {
+  const tarde = await comMovimento();
+  const naoConfirmou = await comMovimento({ verificado: false });
+  const optOut = await comMovimento();
+  await optOut.agente.patch('/api/auth/preferencias').send({ notificacoes_email: false });
+  const vazio = await novoUsuario(); confirmarEmail(vazio.id);
+
+  enviarResumosMensais(new Date('2026-03-20T12:00:00Z'));
+  assert.equal(resumos(tarde).length, 0, 'fora da janela de 5 dias');
+
+  enviarResumosMensais(new Date('2026-03-02T12:00:00Z'));
+  assert.equal(resumos(naoConfirmou).length, 0);
+  assert.equal(resumos(optOut).length, 0);
+  assert.equal(resumos(vazio).length, 0);
+  assert.equal(resumos(tarde).length, 1);
+});
+
+test('resumo mensal: nunca mistura dados de outra conta', async () => {
+  const a = await comMovimento();
+  const b = await novoUsuario(); confirmarEmail(b.id);
+  await b.agente.post('/api/transactions').send({ desc: 'x', valor: 1, tipo: 'saida', cat: 'Lazer', data: '2026-02-01' });
+  enviarResumosMensais(new Date('2026-03-02T12:00:00Z'));
+  assert.match(resumos(b)[0].texto, /Gastos: R\$ 1,00/);
+  assert.doesNotMatch(resumos(b)[0].texto, /860/);
+  assert.match(resumos(a)[0].texto, /860,00/);
+});
+
+test('nome com HTML é escapado no e-mail', async () => {
+  const u = await comMovimento();
+  db.prepare('UPDATE users SET nome = ? WHERE id = ?').run('<script>alert(1)</script> Ana', u.id);
+  enviarResumosMensais(new Date('2026-03-02T12:00:00Z'));
+  const e = resumos(u)[0];
+  assert.doesNotMatch(e.html, /<script>/);
+});
