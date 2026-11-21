@@ -5,13 +5,20 @@ const AuthContext = createContext(null);
 
 // A sessão vive num cookie httpOnly: o front nunca lê nem guarda o token.
 async function pedir(caminho, { method = 'GET', body } = {}) {
-  const res = await fetch(`${API}${caminho}`, {
-    method,
-    credentials: 'same-origin',
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(`${API}${caminho}`, {
+      method,
+      credentials: 'same-origin',
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new Error('Não consegui falar com o servidor. Confira se a API está rodando.');
+  }
   const dados = await res.json().catch(() => ({}));
+  // Com a API parada, o proxy do Vite responde um 5xx sem corpo JSON.
+  if (res.status >= 500 && !dados.error) throw new Error('Não consegui falar com o servidor. Confira se a API está rodando.');
   if (!res.ok) throw new Error(dados.error || 'Não foi possível concluir. Tente de novo.');
   return dados;
 }

@@ -46,9 +46,10 @@ export function FinanceProvider({ children }) {
   useEffect(() => {
     Promise.all([api('/categorias'), api('/recorrentes?mes=' + currentYM()), api('/contas')])
       .then(([cats, recs, cts]) => {
-        setCategorias(cats.data ?? []);
-        setRecorrentes(recs.data ?? []);
-        setContas(cts.data ?? []);
+        // Se algum pedido falhar (ex.: API parada), a tela abre vazia em vez de quebrar.
+        setCategorias(cats.ok ? cats.data : []);
+        setRecorrentes(recs.ok ? recs.data : []);
+        setContas(cts.ok ? cts.data : []);
         setLoading(false);
       });
   }, []);
