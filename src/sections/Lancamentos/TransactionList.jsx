@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pencil, Trash2, Search, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import Select from '../../components/Select';
+import ExcluirParcelas from '../../components/ExcluirParcelas';
 import { useFinance } from '../../context/FinanceContext';
 import { api, query } from '../../utils/api';
 import { fmt, fmtDate, getCatColor } from '../../utils/formatters';
@@ -17,6 +18,7 @@ export default function TransactionList() {
   const [erro, setErro] = useState('');
   const pedido = useRef(0);
   const buscaRef = useRef('');
+  const [excluindo, setExcluindo] = useState(null); // lançamento parcelado aguardando a escolha
 
   const setFilter = (field, value) => {
     setFilters(f => ({ ...f, [field]: value }));
@@ -143,7 +145,7 @@ export default function TransactionList() {
               <span className="dot" style={{ background: color }} />
               <div>
                 <div className="hist-desc">{t.desc}</div>
-                <div className="hist-obs">{[t.conta, t.obs].filter(Boolean).join(' · ')}</div>
+                <div className="hist-obs">{[t.conta, t.fatura && `fatura ${t.fatura.slice(5)}/${t.fatura.slice(0, 4)}`, t.obs].filter(Boolean).join(' · ')}</div>
               </div>
             </div>
             <div><span className="cat-badge">{t.cat}</span></div>
@@ -155,13 +157,21 @@ export default function TransactionList() {
               <button className="del-btn" onClick={() => { setEditing(t); window.scrollTo({ top: 0, behavior: 'smooth' }); }} title="Editar">
                 <Pencil size={13} strokeWidth={2} />
               </button>
-              <button className="del-btn" onClick={() => delTransaction(t.id)} title="Excluir">
+              <button className="del-btn" onClick={() => (t.parcela ? setExcluindo(t) : delTransaction(t.id))} title="Excluir">
                 <Trash2 size={13} strokeWidth={2} />
               </button>
             </div>
           </div>
         );
       })}
+
+      {excluindo && (
+        <ExcluirParcelas
+          lancamento={excluindo}
+          onCancelar={() => setExcluindo(null)}
+          onEscolher={modo => { delTransaction(excluindo.id, modo); setExcluindo(null); }}
+        />
+      )}
 
       {resultado && resultado.paginas > 1 && (
         <nav className="pager" aria-label="Paginação">
