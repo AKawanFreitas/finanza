@@ -6,6 +6,7 @@ const tokens  = require('../lib/tokens');
 const templates = require('../lib/templates');
 const { enviarEmail } = require('../lib/email');
 const { permitir }    = require('../lib/limite');
+const logger  = require('../lib/logger');
 
 const EMAIL_RE  = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const SENHA_MIN = 8;
@@ -17,7 +18,7 @@ const publico = u => ({
 });
 
 // E-mails são disparados sem esperar: a resposta da API não depende do provedor de e-mail.
-const semEsperar = (promessa, rotulo) => promessa.catch(err => console.error(`[email] falha em ${rotulo}: ${err.message}`));
+const semEsperar = (promessa, rotulo) => promessa.catch(err => logger.error({ err, rotulo }, 'falha ao enviar e-mail'));
 
 function enviarVerificacao(user) {
   const { token } = tokens.criarToken(user.id, 'verificar_email');
