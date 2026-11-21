@@ -217,3 +217,88 @@ test('fatura quitada e conta paga saem dos vencimentos', async () => {
   assert.deepEqual(vencimentosEmAberto(u.id).map(i => i.titulo), ['Internet']);
 });
 
+/* ── Lembretes por e-mail ─────────────────────────── */
+
+const AGORA = new Date('2026-03-10T15:00:00Z'); // 12h em Brasília
+const lembretes = u => emailsPara(u.email).filter(e => /vence|atrasad/i.test(e.assunto));
+const dataRel = n => new Date(Date.parse('2026-03-10T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
+
+async function comLembretes(contas) {
+  const u = await novoUsuario();
+  confirmarEmail(u.id);
+  for (const c of contas) await criar(u, c);
+  return u;
+}
+
+test('lembrete: um e-mail só com tudo que vence em até 3 dias, e depois não repete', async () => {
+  const u = await comLembretes([
+    { descricao: 'Luz', vencimento: dataRel(1) }, { descricao: 'Água', vencimento: dataRel(3) },
+    { descricao: 'Longe', vencimento: dataRel(4) }, { descricao: 'Hoje', vencimento: dataRel(0) },
+  ]);
+  assert.equal(enviarLembretes(AGORA) >= 3, true);
+  const [e] = lembretes(u);
+  assert.equal(lembretes(u).length, 1, 'um único e-mail');
+  assert.match(e.assunto, /3 contas vencem/);
+  assert.match(e.texto, /Luz/); assert.match(e.texto, /Água/); assert.match(e.texto, /Hoje/);
+  assert.doesNotMatch(e.texto, /Longe/);
+  enviarLembretes(AGORA);
+  enviarLembretes(new Date('2026-03-10T20:00:00Z'));
+  assert.equal(lembretes(u).length, 1, 'sem repetição no mesmo dia');
+});
+
+test('atrasadas viram um segundo aviso, uma vez; muito antigas não são cobradas', async () => {
+  const u = await comLembretes([{ descricao: 'Luz', vencimento: dataRel(1) }, { descricao: 'Velha', vencimento: dataRel(-40) }]);
+  enviarLembretes(AGORA);
+  assert.equal(lembretes(u).length, 1);
+  const depois = new Date('2026-03-13T15:00:00Z'); // a Luz venceu há 2 dias
+  enviarLembretes(depois);
+  const avisos = lembretes(u);
+  assert.equal(avisos.length, 2);
+  assert.match(avisos[1].assunto, /atrasada/i);
+  assert.doesNotMatch(avisos[1].texto, /Velha/);
+  enviarLembretes(new Date('2026-03-14T15:00:00Z'));
+  assert.equal(lembretes(u).length, 2, 'a cobrança de atraso é uma vez só');
+});
+
+test('fatura de cartão também gera lembrete', async () => {
+  const u = await novoUsuario();
+  confirmarEmail(u.id);
+  const cartao = (await u.agente.post('/api/cartoes').send({ nome: 'Roxinho', limite: 3000, dia_fechamento: 5, dia_vencimento: 12 })).body;
+  await u.agente.post('/api/transactions').send({ desc: 'Compra', valor: 480, tipo: 'saida', cat: 'Outros', data: '2026-03-02', conta_id: cartao.id });
+  enviarLembretes(AGORA); // fatura de mar/2026: fechou dia 5, vence dia 12 (em 2 dias)
+  const [e] = lembretes(u);
+  assert.ok(e, 'recebeu o lembrete');
+  assert.match(e.texto, /Fatura Roxinho/);
+  assert.match(e.texto, /480,00/);
+});
+
+test('não manda de madrugada, sem e-mail confirmado ou com avisos desligados', async () => {
+  const u = await comLembretes([{ descricao: 'Luz', vencimento: dataRel(1) }]);
+  enviarLembretes(new Date('2026-03-10T08:00:00Z')); // 05h em Brasília
+  assert.equal(lembretes(u).length, 0);
+
+  const sem = await novoUsuario();
+  await criar(sem, { descricao: 'Luz', vencimento: dataRel(1) });
+  const off = await comLembretes([{ descricao: 'Luz', vencimento: dataRel(1) }]);
+  await off.agente.patch('/api/auth/preferencias').send({ notificacoes_email: false });
+  enviarLembretes(AGORA);
+  assert.equal(lembretes(sem).length, 0);
+  assert.equal(lembretes(off).length, 0);
+  assert.equal(lembretes(u).length, 1, 'e o primeiro recebe depois das 7h');
+});
+
+test('conta paga não gera lembrete', async () => {
+  const u = await comLembretes([{ descricao: 'Luz', vencimento: dataRel(1) }]);
+  const cp = (await listar(u)).itens[0];
+  await u.agente.post(`/api/contas-pagar/${cp.id}/pagar`).send({});
+  enviarLembretes(AGORA);
+  assert.equal(lembretes(u).length, 0);
+});
+
+test('o lembrete de um usuário nunca mostra contas de outro', async () => {
+  const a = await comLembretes([{ descricao: 'Segredo da Ana', vencimento: dataRel(1) }]);
+  const b = await comLembretes([{ descricao: 'Da Bia', vencimento: dataRel(1) }]);
+  enviarLembretes(AGORA);
+  assert.doesNotMatch(lembretes(b)[0].texto, /Ana/);
+  assert.doesNotMatch(lembretes(a)[0].texto, /Bia/);
+});
