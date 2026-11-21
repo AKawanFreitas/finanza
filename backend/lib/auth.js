@@ -117,25 +117,25 @@ function exigirAdmin(req, res, next) {
 }
 
 /* ── Limite de tentativas de login ──────────────────── */
+// Guardado no banco (lib/limite): não zera quando a API reinicia. Duas chaves:
+// o e-mail (8 falhas / 15 min) e o IP (30 falhas / 15 min, para quem tenta muitos e-mails).
 
-const tentativas = new Map(); // chave -> { n, ate }
+const limite = require('./limite');
+
 const JANELA = 15 * 60e3;
-const MAX    = 8;
+const MAX_EMAIL = 8;
+const MAX_IP = 30;
 
-function bloqueado(chave) {
-  const reg = tentativas.get(chave);
-  if (!reg) return 0;
-  if (reg.ate < Date.now()) { tentativas.delete(chave); return 0; }
-  return reg.n >= MAX ? Math.ceil((reg.ate - Date.now()) / 60e3) : 0;
+const bloqueado = (email, ip) =>
+  Math.max(limite.minutosBloqueado(`login:${email}`, MAX_EMAIL), ip ? limite.minutosBloqueado(`login-ip:${ip}`, MAX_IP) : 0);
+
+function registrarFalha(email, ip) {
+  limite.registrar(`login:${email}`, JANELA);
+  if (ip) limite.registrar(`login-ip:${ip}`, JANELA);
 }
 
-function registrarFalha(chave) {
-  const reg = tentativas.get(chave);
-  if (reg && reg.ate > Date.now()) reg.n += 1;
-  else tentativas.set(chave, { n: 1, ate: Date.now() + JANELA });
-}
-
-const limparTentativas = chave => tentativas.delete(chave);
+// Login certo zera só o contador do e-mail; o do IP continua (um IP não "se limpa" acertando uma conta).
+const limparTentativas = email => limite.limpar(`login:${email}`);
 
 module.exports = {
   hashSenha, conferirSenha, senhaProvisoria,

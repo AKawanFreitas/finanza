@@ -6,6 +6,7 @@ const { executarAutomaticos } = require('./recorrentes');
 const { enviarResumosMensais } = require('./resumoMensal');
 const { limparExpiradas } = require('./auth');
 const { backupDoDia } = require('./backup');
+const { limparExpirados } = require('./limite');
 const logger = require('./logger');
 
 const INTERVALO_MS = 60 * 60e3;
@@ -16,6 +17,7 @@ function rodarTarefas(agora = new Date()) {
 
   tentar('sessões', limparExpiradas);
   tentar('tokens', () => db.prepare('DELETE FROM tokens WHERE expira_em < ? OR usado_em IS NOT NULL').run(agora.toISOString()));
+  tentar('limites', limparExpirados);
   resultado.lancados = tentar('recorrentes automáticos', () => executarAutomaticos(agora));
   resultado.resumos  = tentar('resumo mensal', () => enviarResumosMensais(agora));
   const feito = tentar('backup', () => backupDoDia(agora));

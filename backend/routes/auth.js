@@ -88,13 +88,13 @@ router.post('/login', (req, res) => {
   const senha = typeof req.body?.senha === 'string' ? req.body.senha : '';
   if (!email || !senha) return res.status(400).json({ error: 'Informe o e-mail e a senha.' });
 
-  const minutos = auth.bloqueado(email);
+  const minutos = auth.bloqueado(email, req.ip);
   if (minutos) return res.status(429).json({ error: `Muitas tentativas. Tente de novo em ${minutos} min.` });
 
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
   // Mesma mensagem para e-mail inexistente e senha errada: não revela quem tem conta.
   if (!user || !auth.conferirSenha(senha, user.senha_hash)) {
-    auth.registrarFalha(email);
+    auth.registrarFalha(email, req.ip);
     return res.status(401).json({ error: 'E-mail ou senha incorretos.' });
   }
   if (user.status !== 'ativo') {
