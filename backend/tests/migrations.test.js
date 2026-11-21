@@ -35,7 +35,7 @@ function bancoLegado() {
 
 test('banco novo chega na última versão', () => {
   const db = new Database(':memory:');
-  assert.deepEqual(migrar(db), [1, 2, 3, 4, 5]);
+  assert.deepEqual(migrar(db), [1, 2, 3, 4, 5, 6]);
   assert.equal(versaoAtual(db), ultimaVersao);
 });
 
@@ -113,6 +113,46 @@ test('banco legado: lançamentos de recorrentes são ligados, um por mês', () =
   migrar(db);
   const ligados = db.prepare('SELECT substr(data, 1, 7) AS mes, COUNT(*) AS n FROM transactions WHERE recorrente_id IS NOT NULL GROUP BY mes ORDER BY mes').all();
   assert.deepEqual(ligados, [{ mes: '2026-03', n: 1 }, { mes: '2026-04', n: 1 }]);
+});
+
+test('006: contas ganha o tipo cartão sem perder dados nem quebrar as FKs', () => {
+  const db = bancoLegado();
+  migrar(db);
+  const antes = db.prepare('SELECT id, user_id, nome FROM contas ORDER BY id').all();
+  const txAntes = db.prepare('SELECT COUNT(*) AS n FROM transactions').get().n;
+  assert.deepEqual(db.pragma('foreign_key_check'), []);
+  assert.equal(db.pragma('foreign_keys', { simple: true }), 1, 'FKs religadas depois da migração');
+  assert.doesNotThrow(() => db.prepare("INSERT INTO contas (user_id, nome, tipo, criado_em) VALUES (1, 'Nubank', 'cartao', 'x')").run());
+  assert.throws(() => db.prepare("INSERT INTO contas (user_id, nome, tipo, criado_em) VALUES (1, 'X', 'inexistente', 'x')").run());
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM transactions').get().n, txAntes);
+  assert.deepEqual(db.prepare('SELECT id, user_id, nome FROM contas WHERE nome <> ? ORDER BY id').all('Nubank'), antes);
+});
+
+test('006: as tabelas filhas continuam apontando para contas (e a exclusão em cascata funciona)', () => {
+  const db = bancoLegado();
+  migrar(db);
+  const fks = tabela => db.pragma(`foreign_key_list(${tabela})`).map(f => f.table);
+  assert.ok(fks('transactions').includes('contas'));
+  assert.ok(fks('transferencias').includes('contas'));
+  assert.ok(!db.prepare("SELECT name FROM sqlite_master WHERE name = 'contas_nova'").get());
+  db.prepare('DELETE FROM users WHERE id = 1').run();
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM contas WHERE user_id = 1').get().n, 0);
+});
+
+test('006: migração que deixaria uma FK quebrada é desfeita e as FKs voltam a valer', () => {
+  const db = new Database(':memory:');
+  migrar(db, {});
+  // Simula uma migração futura defeituosa com o mesmo mecanismo.
+  const { migrations } = require('../migrations');
+  const ruim = { version: 999, name: 'ruim', reconstroiTabelaPai: true, up(d) { d.exec("INSERT INTO transactions (user_id, conta_id, descricao, valor_centavos, tipo, categoria_id, data) VALUES (1, 9999, 'x', 1, 'saida', 9999, '2026-01-01')"); } };
+  migrations.push(ruim);
+  try {
+    assert.throws(() => migrar(db), /chave\(s\) estrangeira/);
+  } finally {
+    migrations.pop();
+  }
+  assert.equal(db.pragma('foreign_keys', { simple: true }), 1);
+  assert.equal(db.pragma('user_version', { simple: true }), 6, 'a versão não avançou');
 });
 
 test('migração que falha desfaz tudo e não avança a versão', () => {
