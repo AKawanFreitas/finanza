@@ -1,4 +1,4 @@
-import { Pencil, Trash2, CalendarClock, CalendarPlus, Check } from 'lucide-react';
+import { Pencil, Trash2, CalendarClock, CalendarPlus, Check, Zap } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { fmt, fmtDate, dueDate, getCatColor } from '../../utils/formatters';
 
@@ -50,6 +50,7 @@ export default function RecorrenteList() {
                     <CalendarClock size={11} strokeWidth={2} />
                     vence dia {r.dia}
                     {r.obs ? ` · ${r.obs}` : ''}
+                    {r.automatico && <span className="tag-auto" title="Lançado sozinho no vencimento"><Zap size={10} strokeWidth={2.5} /> automático</span>}
                   </div>
                 </div>
               </div>

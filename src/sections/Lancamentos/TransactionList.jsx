@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Pencil, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Pencil, Trash2, Search, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import Select from '../../components/Select';
 import { useFinance } from '../../context/FinanceContext';
 import { api, query } from '../../utils/api';
@@ -50,6 +50,12 @@ export default function TransactionList() {
     });
   }, [buscaAplicada, filters.tipo, filters.categoria_id, filters.conta_id, filters.mes, pagina, versao]);
 
+  // Exporta tudo o que o filtro atual mostra (não só a página). O download usa o cookie de sessão.
+  const urlExportacao = formato => `/api/exportacao/lancamentos${query({
+    formato, q: buscaAplicada, tipo: filters.tipo, categoria_id: filters.categoria_id,
+    conta_id: filters.conta_id, mes: filters.mes,
+  })}`;
+
   const hasFilters = Object.values(filters).some(Boolean);
   const itens = resultado?.itens ?? [];
   const total = resultado?.total ?? 0;
@@ -76,6 +82,13 @@ export default function TransactionList() {
         <div className="card-sub">
           {total} {total === 1 ? 'registro' : 'registros'}
           {hasFilters && total > 0 && <> · saldo {saldo < 0 ? '-' : ''}{fmt(Math.abs(saldo))}</>}
+          {total > 0 && (
+            <span className="exportar">
+              <Download size={12} strokeWidth={2.5} />
+              <a href={urlExportacao('csv')} download>CSV</a>
+              <a href={urlExportacao('xlsx')} download>Excel</a>
+            </span>
+          )}
         </div>
       </div>
 

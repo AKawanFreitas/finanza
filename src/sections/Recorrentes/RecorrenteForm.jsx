@@ -3,19 +3,19 @@ import { useFinance } from '../../context/FinanceContext';
 import Select from '../../components/Select';
 import {
   AlignLeft, Tag, CalendarClock, MessageSquare,
-  RefreshCw, Zap, Plus, Check, X
+  RefreshCw, Zap, Plus, Check, X, Wallet
 } from 'lucide-react';
 
-const EMPTY = (cats) => ({ nome: '', valor: '', tipo: 'fixo', cat: cats[0]?.nome || '', dia: '', obs: '' });
+const EMPTY = (cats) => ({ nome: '', valor: '', tipo: 'fixo', cat: cats[0]?.nome || '', dia: '', obs: '', automatico: false, conta_id: null });
 
 export default function RecorrenteForm() {
-  const { categorias, addRecorrente, updateRecorrente, editingRec, setEditingRec } = useFinance();
+  const { categorias, contas, addRecorrente, updateRecorrente, editingRec, setEditingRec } = useFinance();
   const [form, setForm] = useState(EMPTY(categorias));
 
   useEffect(() => {
     if (editingRec) {
-      const { nome, valor, tipo, cat, dia, obs } = editingRec;
-      setForm({ nome, valor: String(valor), tipo, cat, dia: String(dia), obs: obs || '' });
+      const { nome, valor, tipo, cat, dia, obs, automatico, conta_id } = editingRec;
+      setForm({ nome, valor: String(valor), tipo, cat, dia: String(dia), obs: obs || '', automatico: !!automatico, conta_id: conta_id ?? null });
     } else {
       setForm(EMPTY(categorias));
     }
@@ -25,7 +25,9 @@ export default function RecorrenteForm() {
 
   async function handleSubmit() {
     if (!form.nome || !form.valor || !form.dia) return;
-    const data = { ...form, valor: parseFloat(form.valor), dia: parseInt(form.dia) };
+    const { conta_id, ...resto } = form;
+    // Sem conta escolhida, o lançamento automático usa a conta principal.
+    const data = { ...resto, valor: parseFloat(form.valor), dia: parseInt(form.dia), ...(conta_id ? { conta_id } : {}) };
     const ok = editingRec
       ? await updateRecorrente(editingRec.id, data)
       : await addRecorrente(data);
@@ -35,6 +37,10 @@ export default function RecorrenteForm() {
   }
 
   const catOptions = categorias.map(c => ({ value: c.nome, label: c.nome, color: c.cor }));
+  const contaOptions = [
+    { value: 0, label: 'Conta principal' },
+    ...contas.filter(c => !c.arquivada || c.id === form.conta_id).map(c => ({ value: c.id, label: c.nome, color: c.cor })),
+  ];
 
   return (
     <div className="form-wrap">
@@ -124,6 +130,27 @@ export default function RecorrenteForm() {
               onChange={e => set('dia', e.target.value)}
             />
           </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Conta do lançamento</label>
+          <Select
+            value={form.conta_id ?? 0}
+            onChange={v => set('conta_id', v || null)}
+            options={contaOptions}
+            prefix={<Wallet size={14} strokeWidth={2} />}
+          />
+        </div>
+
+        <div className="form-group">
+          <span className="form-label">Lançamento</span>
+          <label className="opcao-check opcao-compacta">
+            <input type="checkbox" checked={form.automatico} onChange={e => set('automatico', e.target.checked)} />
+            <span>
+              <strong>Lançar automaticamente</strong>
+              <small>No dia do vencimento, sem você precisar clicar.</small>
+            </span>
+          </label>
         </div>
 
         <div className="form-group form-span-2">
