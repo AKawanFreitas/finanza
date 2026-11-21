@@ -12,6 +12,7 @@ import Dashboard from './sections/Dashboard/Dashboard';
 import Lancamentos from './sections/Lancamentos/Lancamentos';
 import Contas from './sections/Contas/Contas';
 import Importar from './sections/Importar/Importar';
+import Cartoes from './sections/Cartoes/Cartoes';
 import Orcamentos from './sections/Orcamentos/Orcamentos';
 import Recorrentes from './sections/Recorrentes/Recorrentes';
 import Categorias from './sections/Categorias/Categorias';
@@ -47,6 +48,7 @@ function AppLogado() {
           {section === 'dashboard'     && <Dashboard ym={ym} onYmChange={setYm} onNavigate={setSection} />}
           {section === 'lancamento'    && <Lancamentos />}
           {section === 'contas'        && <Contas />}
+          {section === 'cartoes'       && <Cartoes />}
           {section === 'importar'      && <Importar onNavigate={setSection} />}
           {section === 'orcamentos'    && <Orcamentos ym={ym} onYmChange={setYm} />}
           {section === 'recorrentes'   && <Recorrentes />}
