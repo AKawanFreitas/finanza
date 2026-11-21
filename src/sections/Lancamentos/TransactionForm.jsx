@@ -12,7 +12,7 @@ const EMPTY = (cats, contas) => ({
   conta_id: contas.find(c => !c.arquivada)?.id ?? null, data: today(), obs: '',
 });
 
-export default function TransactionForm() {
+export default function TransactionForm({ onSalvo }) {
   const { categorias, contas, addTransaction, updateTransaction, editing, setEditing } = useFinance();
   const [form, setForm] = useState(EMPTY(categorias, contas));
 
@@ -27,7 +27,8 @@ export default function TransactionForm() {
 
   function set(field, value) { setForm(f => ({ ...f, [field]: value })); }
 
-  async function handleSubmit() {
+  async function handleSubmit(e) {
+    e.preventDefault();
     if (!form.desc || !form.valor || !form.data) return;
     // Parcelamento só existe ao criar uma compra no cartão; ao editar, cada parcela é um lançamento independente.
     const parcelas = Number(form.parcelas) || 1;
@@ -40,6 +41,7 @@ export default function TransactionForm() {
     if (!ok) return;
     if (editing) setEditing(null);
     else setForm(EMPTY(categorias, contas));
+    onSalvo?.();
   }
 
   const catOptions = categorias.map(c => ({ value: c.nome, label: c.nome, color: c.cor }));
@@ -54,7 +56,7 @@ export default function TransactionForm() {
   const valorParcela = parseFloat(form.valor) > 0 ? parseFloat(form.valor) / nParcelas : 0;
 
   return (
-    <div className="form-wrap">
+    <form className="form-wrap" onSubmit={handleSubmit} noValidate>
       <div className="form-header">
         <div className="form-header-text">
           <div className="form-header-title">{editing ? 'Editar lançamento' : 'Novo lançamento'}</div>
@@ -71,6 +73,7 @@ export default function TransactionForm() {
           <div className="tipo-toggle">
             <button
               type="button"
+              aria-pressed={!isEntrada}
               className={`tipo-btn ${!isEntrada ? 'active-saida' : ''}`}
               onClick={() => set('tipo', 'saida')}
             >
@@ -79,6 +82,7 @@ export default function TransactionForm() {
             </button>
             <button
               type="button"
+              aria-pressed={isEntrada}
               className={`tipo-btn ${isEntrada ? 'active-entrada' : ''}`}
               onClick={() => set('tipo', 'entrada')}
             >
@@ -95,6 +99,8 @@ export default function TransactionForm() {
             <input
               className="form-control"
               placeholder="Ex: Supermercado"
+              required
+              autoComplete="off"
               value={form.desc}
               onChange={e => set('desc', e.target.value)}
             />
@@ -108,6 +114,7 @@ export default function TransactionForm() {
             <input
               className="form-control"
               type="number"
+              inputMode="decimal"
               placeholder="0,00"
               min="0"
               step="0.01"
@@ -180,25 +187,27 @@ export default function TransactionForm() {
       </div>
 
       <div className="form-actions">
-        <button className="btn btn-primary btn-full" onClick={handleSubmit}>
+        <button type="submit" className="btn btn-primary btn-full">
           {editing ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
           {editing ? 'Salvar alterações' : 'Adicionar lançamento'}
         </button>
         {editing ? (
-          <button className="btn btn-ghost" onClick={() => setEditing(null)}>
+          <button type="button" className="btn btn-ghost" onClick={() => setEditing(null)}>
             <X size={14} strokeWidth={2} />
             Cancelar
           </button>
         ) : (
           <button
+            type="button"
             className="btn btn-ghost"
             onClick={() => setForm(EMPTY(categorias, contas))}
             title="Limpar formulário"
+            aria-label="Limpar formulário"
           >
             <RotateCcw size={14} strokeWidth={2} />
           </button>
         )}
       </div>
-    </div>
+    </form>
   );
 }

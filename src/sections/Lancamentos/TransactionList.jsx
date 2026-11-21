@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pencil, Trash2, Search, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import Select from '../../components/Select';
+import { useConfirmar } from '../../components/useConfirmar';
 import ExcluirParcelas from '../../components/ExcluirParcelas';
 import { useFinance } from '../../context/FinanceContext';
 import { api, query } from '../../utils/api';
@@ -18,6 +19,7 @@ export default function TransactionList() {
   const [erro, setErro] = useState('');
   const pedido = useRef(0);
   const buscaRef = useRef('');
+  const [pedirConfirmacao, dialogoConfirmar] = useConfirmar();
   const [excluindo, setExcluindo] = useState(null); // lançamento parcelado aguardando a escolha
 
   const setFilter = (field, value) => {
@@ -145,6 +147,7 @@ export default function TransactionList() {
               <span className="dot" style={{ background: color }} />
               <div>
                 <div className="hist-desc">{t.desc}</div>
+                <div className="hist-meta-mobile">{t.cat} · {fmtDate(t.data)}</div>
                 <div className="hist-obs">{[t.conta, t.fatura && `fatura ${t.fatura.slice(5)}/${t.fatura.slice(0, 4)}`, t.obs].filter(Boolean).join(' · ')}</div>
               </div>
             </div>
@@ -154,10 +157,10 @@ export default function TransactionList() {
               {isIn ? '+' : '−'} {fmt(t.valor)}
             </div>
             <div className="hist-actions">
-              <button className="del-btn" onClick={() => { setEditing(t); window.scrollTo({ top: 0, behavior: 'smooth' }); }} title="Editar">
+              <button className="del-btn" onClick={() => { setEditing(t); window.scrollTo({ top: 0, behavior: 'smooth' }); }} title="Editar" aria-label={`Editar ${t.desc}`}>
                 <Pencil size={13} strokeWidth={2} />
               </button>
-              <button className="del-btn" onClick={() => (t.parcela ? setExcluindo(t) : delTransaction(t.id))} title="Excluir">
+              <button className="del-btn" onClick={() => (t.parcela ? setExcluindo(t) : pedirConfirmacao({ titulo: 'Excluir lançamento?', texto: `“${t.desc}” de ${fmt(t.valor)} será removido.` }, () => delTransaction(t.id)))} title="Excluir" aria-label={`Excluir ${t.desc}`}>
                 <Trash2 size={13} strokeWidth={2} />
               </button>
             </div>
@@ -165,6 +168,7 @@ export default function TransactionList() {
         );
       })}
 
+      {dialogoConfirmar}
       {excluindo && (
         <ExcluirParcelas
           lancamento={excluindo}

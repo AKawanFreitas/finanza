@@ -3,7 +3,9 @@ import { Pencil, Trash2, CheckCircle2, Undo2 } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api, query } from '../../utils/api';
 import { fmt, fmtDate } from '../../utils/formatters';
+import { useConfirmar } from '../../components/useConfirmar';
 import PagarConta from '../../components/PagarConta';
+import Recolhivel from '../../components/Recolhivel';
 import ContaPagarForm from './ContaPagarForm';
 import { ROTULO, CLASSE, descreverPrazo } from './status';
 
@@ -11,6 +13,7 @@ const ABAS = [['abertas', 'Em aberto'], ['atrasada', 'Atrasadas'], ['paga', 'Pag
 
 export default function ContasPagar() {
   const { versao, invalidar, showToast } = useFinance();
+  const [pedirConfirmacao, dialogoConfirmar] = useConfirmar();
   const [aba, setAba] = useState('abertas');
   const [dados, setDados] = useState(null);
   const [editando, setEditando] = useState(null);
@@ -52,8 +55,8 @@ export default function ContasPagar() {
     <div className="section-enter">
       <div className="page-header">
         <div>
-          <div className="page-title">Contas a pagar</div>
-          <div className="page-subtitle">Boletos e contas com vencimento, e o que já foi pago</div>
+          <h1 className="page-title">Contas a pagar</h1>
+          <p className="page-subtitle">Boletos e contas com vencimento, e o que já foi pago</p>
         </div>
         {t && (
           <div className="saldo-total">
@@ -63,7 +66,9 @@ export default function ContasPagar() {
         )}
       </div>
 
-      <ContaPagarForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={() => { setEditando(null); atualizar(); }} />
+      <Recolhivel rotulo="Nova conta a pagar" forcarAberto={Boolean(editando)}>
+        <ContaPagarForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={() => { setEditando(null); atualizar(); }} />
+      </Recolhivel>
 
       <div className="hist-wrap">
         <div className="card-head">
@@ -99,15 +104,16 @@ export default function ContasPagar() {
               )}
               <div className="hist-actions">
                 {c.status !== 'paga' && (
-                  <button className="del-btn" title="Editar" onClick={() => { setEditando(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={13} strokeWidth={2} /></button>
+                  <button className="del-btn" aria-label="Editar" title="Editar" onClick={() => { setEditando(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={13} strokeWidth={2} /></button>
                 )}
-                <button className="del-btn" title="Excluir" onClick={() => excluir(c)}><Trash2 size={13} strokeWidth={2} /></button>
+                <button className="del-btn" aria-label="Excluir" title="Excluir" onClick={() => pedirConfirmacao({ titulo: 'Excluir conta a pagar?', texto: `“${c.descricao}” de ${fmt(c.valor)} será removida.` }, () => excluir(c))}><Trash2 size={13} strokeWidth={2} /></button>
               </div>
             </div>
           </div>
         ))}
       </div>
 
+      {dialogoConfirmar}
       {pagando && <PagarConta conta={pagando} onConfirmar={confirmarPagamento} onCancelar={() => setPagando(null)} />}
     </div>
   );

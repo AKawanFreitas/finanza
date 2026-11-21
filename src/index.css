@@ -73,10 +73,12 @@ button { font-family: inherit }
 .brand-text strong { font-size: 22px; font-weight: 700; letter-spacing: -0.02em }
 .brand-text small { font-size: 10.5px; color: #8fa3bd; margin-top: 3px; letter-spacing: 0.01em }
 
-.side-nav { display: flex; flex-direction: column; gap: 2px; padding: 18px 12px }
+.side-nav { display: flex; flex-direction: column; gap: 14px; padding: 16px 12px; flex: 1; overflow-y: auto; overscroll-behavior: contain }
+.side-grupo { display: flex; flex-direction: column; gap: 2px }
+.side-grupo-nome { padding: 0 14px 4px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6f84a1 }
 .side-link {
   display: flex; align-items: center; gap: 12px;
-  padding: 11px 14px; border-radius: 6px; border: none; background: none; cursor: pointer;
+  padding: 9px 14px; border-radius: 6px; border: none; background: none; cursor: pointer;
   color: #a9b8cc; font-size: 14.5px; font-weight: 500; text-align: left;
   position: relative; transition: background var(--ease), color var(--ease);
 }
@@ -319,7 +321,7 @@ button { font-family: inherit }
   width: 100%; display: flex; align-items: center; gap: 9px; padding: 9px 12px;
   background: transparent; border: none; color: var(--ink); font-size: 14.5px; cursor: pointer; text-align: left;
 }
-.cselect-option:hover { background: var(--green-bg) }
+.cselect-option:hover, .cselect-option.destaque { background: var(--green-bg) }
 .cselect-option.selected { font-weight: 700 }
 .cselect-check { color: var(--green); flex-shrink: 0 }
 
@@ -383,21 +385,11 @@ button { font-family: inherit }
 }
 
 @media (max-width: 860px) {
-  .page { margin-left: 0; padding: 18px 14px 96px }
-  .sidebar { inset: auto 0 0 0; width: auto; flex-direction: row; border-right: none; border-top: 1px solid #000 }
-  .sidebar::after { display: none }
-  .brand { display: none }
-  .side-nav { flex-direction: row; width: 100%; padding: 6px 8px; gap: 4px }
-  .side-link { flex: 1; flex-direction: column; gap: 3px; padding: 8px 4px; font-size: 11.5px; justify-content: center; text-align: center }
-  .side-link.active::before { left: 18%; right: 18%; top: -6px; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px }
+  .page { margin-left: 0; padding: 16px 14px calc(88px + env(safe-area-inset-bottom)) }
+  .sidebar { display: none }
   .page-bar { flex-wrap: wrap }
   .form-grid { grid-template-columns: 1fr }
   .form-span-2 { grid-column: span 1 }
-  .filters { grid-template-columns: 1fr 1fr }
-  .hist-head, .hist-row { grid-template-columns: 2fr 1fr 64px }
-  .hist-head > :nth-child(2), .hist-row > :nth-child(2),
-  .hist-head > :nth-child(3), .hist-row > :nth-child(3) { display: none }
-  .table th:nth-child(3), .table td:nth-child(3) { display: none }
   .rec-card { flex-wrap: wrap }
 }
 
@@ -497,7 +489,6 @@ button { font-family: inherit }
 .conta-texto { display: flex; flex-direction: column; min-width: 0; line-height: 1.25 }
 .conta-texto strong { font-size: 14px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 .conta-texto small { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-.conta-engrenagem { flex-shrink: 0; opacity: .7 }
 
 @media (max-width: 860px) {
   .entrar { grid-template-columns: 1fr }
@@ -507,12 +498,6 @@ button { font-family: inherit }
   .entrar-marca p { font-size: 14px }
   .entrar-ilustracao { display: none }
   .form-duplo { grid-template-columns: 1fr }
-  /* Na barra inferior, a conta vira só o avatar. */
-  .conta { margin: 0; width: auto; flex-shrink: 0; border-top: none; padding: 6px 12px 6px 4px }
-  .conta-texto, .conta-engrenagem { display: none }
-  .conta.active .conta-avatar { box-shadow: 0 0 0 2px var(--green-300) }
-  .table th:nth-child(4), .table td:nth-child(4),
-  .table th:nth-child(5), .table td:nth-child(5) { display: none }
 }
 
 /* ── Marco 2: paginação, contas e importação ───────── */
@@ -641,3 +626,113 @@ button { font-family: inherit }
 .venc-item:hover { background: var(--green-bg) }
 .venc-titulo { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
 .venc-valor { font-weight: 800; color: var(--navy) }
+
+/* ── Revisão de UX: navegação, diálogos, toque e celular ── */
+.tabbar, .fab, .recolhivel-botao, .btn-so-celular { display: none }
+.recolhivel-botao[hidden] { display: none !important }
+.hist-meta-mobile, .mov-cat { display: none }
+.skeleton { background: linear-gradient(90deg, var(--head) 25%, #e8edf2 50%, var(--head) 75%); background-size: 200% 100%; animation: brilho 1.3s linear infinite; border-radius: 6px }
+@keyframes brilho { to { background-position: -200% 0 } }
+.skel-kpi { height: 112px }
+.skel-painel { height: 220px; margin-bottom: 18px }
+.btn-perigo:focus-visible { outline-color: var(--red) }
+
+.modal-fundo { overscroll-behavior: contain }
+.mais-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px }
+.mais-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 76px; padding: 10px 6px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--head); color: var(--navy); font-size: 13px; font-weight: 600; text-align: center; cursor: pointer;
+}
+.mais-item.active { background: var(--green-bg); border-color: var(--green-500); color: var(--green-700) }
+.mais-conta { display: flex; align-items: center; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line) }
+.mais-conta .conta-texto strong { color: var(--navy) }
+.mais-conta .conta-texto small { color: var(--muted) }
+
+@media (max-width: 860px) {
+  /* Barra inferior: 4 abas + "Mais", respeitando a área segura do iPhone */
+  .tabbar {
+    display: flex; position: fixed; inset: auto 0 0 0; z-index: 60;
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    background: var(--navy-950); border-top: 1px solid #000;
+  }
+  .tab {
+    flex: 1; min-width: 0; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    border: none; background: none; border-radius: 8px; color: #a9b8cc; font-size: 11.5px; font-weight: 600; cursor: pointer; position: relative;
+  }
+  .tab span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+  .tab.active { color: #fff; background: rgba(127,211,95,.14) }
+  .tab.active svg { color: var(--green-300) }
+
+  .fab {
+    display: flex; align-items: center; justify-content: center; position: fixed; z-index: 55;
+    right: 16px; bottom: calc(76px + env(safe-area-inset-bottom)); width: 56px; height: 56px; border: none; border-radius: 50%;
+    background: var(--brand-grad); color: #fff; box-shadow: 0 6px 18px rgba(15,32,56,.35); cursor: pointer;
+  }
+  .toast { bottom: calc(80px + env(safe-area-inset-bottom)); right: 16px; left: 16px; max-width: none }
+
+  /* Diálogo vira folha presa à base */
+  .modal-folha { align-items: flex-end; padding: 0 }
+  .modal-folha .modal { max-width: none; border-radius: 16px 16px 0 0; padding: 20px 18px calc(18px + env(safe-area-inset-bottom)); max-height: 90vh; overflow-y: auto }
+
+  /* 16px evita o zoom automático do iOS ao focar um campo */
+  .form-control, .cselect-trigger, .cselect-option, .import-cat, .btn, .tipo-btn { font-size: 16px }
+  .page-title { font-size: 22px }
+
+  /* Alvos de toque de 44px */
+  .del-btn { width: 44px; height: 44px }
+  .month-stepper button { width: 44px; height: 44px }
+  .btn { min-height: 44px; justify-content: center }
+  .btn-sm { min-height: 40px }
+  .aba { min-height: 38px; padding: 6px 14px }
+  .form-control, .cselect-trigger { min-height: 46px }
+  .cselect-option { min-height: 46px }
+  .link-btn { padding: 8px 0 }
+  .form-actions { flex-wrap: wrap }
+  .btn-so-celular { display: inline-flex }
+  .recolhivel-botao { display: inline-flex; width: 100%; margin-bottom: 14px }
+  .recolhivel:not(.aberto) .recolhivel-corpo { display: none }
+
+  /* Lista de lançamentos: descrição, valor e ações; categoria e data descem para a linha de baixo */
+  .hist-head { display: none }
+  .hist-row { grid-template-columns: minmax(0, 1fr) auto auto; padding-left: 14px; padding-right: 8px }
+  .hist-row > :nth-child(2), .hist-row > :nth-child(3) { display: none }
+  .hist-meta-mobile { display: block; font-size: 13px; color: var(--muted) }
+  .hist-actions { gap: 0 }
+  .card-head { flex-wrap: wrap }
+  .filters, .filters-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 14px }
+  .filters > .btn { grid-column: 1 / -1 }
+  .filters input[type="month"] { min-width: 0 }
+
+  /* Linhas de cadastro (recorrentes, contas, categorias, contas a pagar): empilham */
+  .rec-card { flex-direction: column; align-items: stretch; gap: 10px; padding: 14px }
+  .rec-right { flex-wrap: wrap; justify-content: space-between; gap: 10px }
+  .rec-right .hist-actions { margin-left: auto }
+  .cat-admin-row { padding: 6px 8px 6px 14px }
+
+  /* Tabela do resumo: a categoria passa para baixo da descrição */
+  .table-mov th:nth-child(3), .table-mov td:nth-child(3) { display: none }
+  .table-mov .mov-cat { display: block; font-size: 12.5px; font-weight: 400; color: var(--muted) }
+  .table th, .table td { padding-left: 14px; padding-right: 14px }
+
+  .orc-linha { padding: 14px }
+  .orc-editar { width: 100%; flex-wrap: wrap }
+  .orc-editar .form-control { width: 100% }
+  .orc-editar .form-input-wrap { flex: 1 }
+  .meta-valor { width: 100% }
+  .cartao-linha { flex-wrap: wrap; padding-right: 8px }
+  .cartao-corpo { padding: 14px }
+  .fatura-resumo { gap: 16px }
+  .fatura-resumo .chip { margin-left: 0 }
+  .month-stepper-label { min-width: 0; flex: 1; padding: 0 8px }
+  .page-bar .month-stepper { width: 100% }
+  .donut-legend li { grid-template-columns: 9px 1fr auto }
+  .legend-pct { display: none }
+  .legend-val { min-width: 0 }
+  .venc-item { padding: 12px 14px; min-height: 48px }
+}
+
+@media (max-width: 520px) {
+  .fatura-pagar { grid-template-columns: 1fr }
+  .mais-grade { grid-template-columns: repeat(2, 1fr) }
+  .history { gap: 6px }
+}

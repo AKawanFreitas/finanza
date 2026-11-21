@@ -8,7 +8,7 @@ export default function MovementsTable({ transactions, categorias, limit = 8 }) 
   if (recent.length === 0) return <p className="empty">Nenhuma movimentação neste mês.</p>;
 
   return (
-    <table className="table">
+    <table className="table table-mov">
       <thead>
         <tr>
           <th>Data</th>
@@ -21,7 +21,7 @@ export default function MovementsTable({ transactions, categorias, limit = 8 }) 
         {recent.map(t => (
           <tr key={t.id}>
             <td className="muted">{fmtDate(t.data).slice(0, 5)}</td>
-            <td className="strong">{t.desc}</td>
+            <td className="strong">{t.desc}<span className="mov-cat">{t.cat}</span></td>
             <td>
               <span className="tag-chip">
                 <span className="dot" style={{ background: getCatColor(categorias, t.cat) }} />

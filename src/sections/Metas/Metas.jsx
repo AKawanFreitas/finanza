@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import { fmt } from '../../utils/formatters';
+import Recolhivel from '../../components/Recolhivel';
 import MetaForm from './MetaForm';
 import MetaCard from './MetaCard';
 
@@ -25,15 +26,17 @@ export default function Metas() {
     <div className="section-enter">
       <div className="page-header">
         <div>
-          <div className="page-title">Metas</div>
-          <div className="page-subtitle">Reservas e objetivos, com quanto guardar por mês</div>
+          <h1 className="page-title">Metas</h1>
+          <p className="page-subtitle">Reservas e objetivos, com quanto guardar por mês</p>
         </div>
         {ativas.length > 0 && (
           <div className="saldo-total"><small>Guardado nas metas</small><strong>{fmt(guardado)}</strong></div>
         )}
       </div>
 
-      <MetaForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={() => { setEditando(null); atualizar(); }} />
+      <Recolhivel rotulo="Nova meta" forcarAberto={Boolean(editando)}>
+        <MetaForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={() => { setEditando(null); atualizar(); }} />
+      </Recolhivel>
 
       <div className="hist-wrap">
         <div className="card-head">

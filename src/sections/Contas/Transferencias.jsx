@@ -3,6 +3,7 @@ import { ArrowRight, ArrowLeftRight, Calendar, AlignLeft, Trash2 } from 'lucide-
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import { fmt, fmtDate, today } from '../../utils/formatters';
+import { useConfirmar } from '../../components/useConfirmar';
 import Select from '../../components/Select';
 
 // origem_id e destino_id ficam nulos até a pessoa escolher; o padrão é calculado a cada render,
@@ -11,6 +12,7 @@ const VAZIO = () => ({ origem_id: null, destino_id: null, valor: '', data: today
 
 export default function Transferencias() {
   const { contas, versao, addTransferencia, delTransferencia } = useFinance();
+  const [pedirConfirmacao, dialogoConfirmar] = useConfirmar();
   // Pagar fatura de cartão é feito na tela de Cartões; aqui só entre contas comuns.
   const ativas = contas.filter(c => !c.arquivada && c.tipo !== 'cartao');
   const [form, setForm] = useState(VAZIO);
@@ -112,7 +114,7 @@ export default function Transferencias() {
                 <div className="rec-right">
                   <div className="rec-amount">{fmt(t.valor)}</div>
                   <div className="hist-actions">
-                    <button className="del-btn" title="Excluir" onClick={() => delTransferencia(t.id)}>
+                    <button className="del-btn" aria-label="Excluir" title="Excluir" onClick={() => pedirConfirmacao({ titulo: 'Excluir transferência?', texto: `${t.origem} → ${t.destino}, ${fmt(t.valor)}. Os saldos das duas contas voltam ao que eram.` }, () => delTransferencia(t.id))}>
                       <Trash2 size={13} strokeWidth={2} />
                     </button>
                   </div>
@@ -122,6 +124,7 @@ export default function Transferencias() {
           </div>
         </div>
       )}
+      {dialogoConfirmar}
     </>
   );
 }

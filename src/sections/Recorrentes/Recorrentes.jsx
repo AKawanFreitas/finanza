@@ -1,16 +1,19 @@
+import { useFinance } from '../../context/FinanceContext';
+import Recolhivel from '../../components/Recolhivel';
 import RecorrenteForm from './RecorrenteForm';
 import RecorrenteList from './RecorrenteList';
 
 export default function Recorrentes() {
+  const { editingRec } = useFinance();
   return (
     <div className="section-enter">
       <div className="page-header">
         <div>
-          <div className="page-title">Recorrentes</div>
-          <div className="page-subtitle">Gastos fixos e recorrentes mensais</div>
+          <h1 className="page-title">Recorrentes</h1>
+          <p className="page-subtitle">Gastos fixos e recorrentes mensais</p>
         </div>
       </div>
-      <RecorrenteForm />
+      <Recolhivel rotulo="Novo recorrente" forcarAberto={Boolean(editingRec)}><RecorrenteForm /></Recolhivel>
       <RecorrenteList />
     </div>
   );

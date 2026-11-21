@@ -3,13 +3,16 @@ import { Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import { fmt, fmtDate } from '../../utils/formatters';
+import { useConfirmar } from '../../components/useConfirmar';
 import BarraOrcamento from '../../components/BarraOrcamento';
+import Recolhivel from '../../components/Recolhivel';
 import CartaoForm from './CartaoForm';
 import FaturaDetalhe from './FaturaDetalhe';
 import { ROTULO_FATURA, CLASSE_FATURA, statusDeUso } from './status';
 
 export default function Cartoes() {
   const { versao, invalidar, showToast } = useFinance();
+  const [pedirConfirmacao, dialogoConfirmar] = useConfirmar();
   const [cartoes, setCartoes] = useState(null);
   const [selecionado, setSelecionado] = useState(null);
   const [editando, setEditando] = useState(null);
@@ -44,12 +47,14 @@ export default function Cartoes() {
     <div className="section-enter">
       <div className="page-header">
         <div>
-          <div className="page-title">Cartões</div>
-          <div className="page-subtitle">Limite, faturas e parcelas dos seus cartões de crédito</div>
+          <h1 className="page-title">Cartões</h1>
+          <p className="page-subtitle">Limite, faturas e parcelas dos seus cartões de crédito</p>
         </div>
       </div>
 
-      <CartaoForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={c => { setEditando(null); setSelecionado(c.id); invalidar(); }} />
+      <Recolhivel rotulo="Novo cartão" forcarAberto={Boolean(editando)}>
+        <CartaoForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={c => { setEditando(null); setSelecionado(c.id); invalidar(); }} />
+      </Recolhivel>
 
       <div className="hist-wrap">
         <div className="card-head">
@@ -77,17 +82,18 @@ export default function Cartoes() {
                 </div>
               </button>
               <div className="hist-actions">
-                <button className="del-btn" title="Editar" onClick={() => { setEditando(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={13} strokeWidth={2} /></button>
-                <button className="del-btn" title={c.arquivada ? 'Reativar' : 'Arquivar'} onClick={() => alternarArquivo(c)}>
+                <button className="del-btn" aria-label="Editar" title="Editar" onClick={() => { setEditando(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={13} strokeWidth={2} /></button>
+                <button className="del-btn" aria-label={c.arquivada ? 'Reativar' : 'Arquivar'} title={c.arquivada ? 'Reativar' : 'Arquivar'} onClick={() => alternarArquivo(c)}>
                   {c.arquivada ? <ArchiveRestore size={13} strokeWidth={2} /> : <Archive size={13} strokeWidth={2} />}
                 </button>
-                <button className="del-btn" title="Excluir (só cartões sem movimentações)" onClick={() => excluir(c)}><Trash2 size={13} strokeWidth={2} /></button>
+                <button className="del-btn" aria-label="Excluir" title="Excluir (só cartões sem movimentações)" onClick={() => pedirConfirmacao({ titulo: 'Excluir cartão?', texto: `“${c.nome}” será removido. Só é possível se ele não tiver movimentações.` }, () => excluir(c))}><Trash2 size={13} strokeWidth={2} /></button>
               </div>
             </div>
           );
         })}
       </div>
 
+      {dialogoConfirmar}
       {ativo && <FaturaDetalhe cartao={ativo} />}
     </div>
   );

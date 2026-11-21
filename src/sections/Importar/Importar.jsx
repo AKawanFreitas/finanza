@@ -83,8 +83,8 @@ export default function Importar({ onNavigate }) {
     <div className="section-enter">
       <div className="page-header">
         <div>
-          <div className="page-title">Importar extrato</div>
-          <div className="page-subtitle">Traga lançamentos do seu banco em OFX ou CSV</div>
+          <h1 className="page-title">Importar extrato</h1>
+          <p className="page-subtitle">Traga lançamentos do seu banco em OFX ou CSV</p>
         </div>
       </div>
 

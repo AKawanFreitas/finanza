@@ -25,15 +25,44 @@ function delta(atual, anterior, mesAnterior, goodWhenUp) {
 export default function Dashboard({ ym, onYmChange, onNavigate }) {
   const { recorrentes, categorias, versao } = useFinance();
   const [resumo, setResumo] = useState(null);
+  const [erro, setErro] = useState(false);
+  const [tentativa, setTentativa] = useState(0);
 
   // Os números vêm prontos do servidor. Mantém o resumo anterior na tela enquanto o novo carrega.
   useEffect(() => {
     let cancelado = false;
-    api(`/resumo?mes=${ym}`).then(({ ok, data }) => { if (ok && !cancelado) setResumo(data); });
+    api(`/resumo?mes=${ym}`).then(({ ok, data }) => {
+      if (cancelado) return;
+      setErro(!ok);
+      if (ok) setResumo(data);
+    });
     return () => { cancelado = true; };
-  }, [ym, versao]);
+  }, [ym, versao, tentativa]);
 
-  if (!resumo) return null;
+  if (!resumo) {
+    return (
+      <div aria-busy={!erro}>
+        <header className="page-bar">
+          <div>
+            <h1 className="page-title">Resumo</h1>
+            <p className="page-subtitle">{erro ? 'Não foi possível carregar o resumo.' : 'Carregando…'}</p>
+          </div>
+          <MonthStepper ym={ym} onChange={onYmChange} />
+        </header>
+        {erro ? (
+          <section className="panel"><div className="panel-body empty-state">
+            <p>Verifique sua conexão e tente de novo.</p>
+            <button className="btn btn-primary" onClick={() => setTentativa(n => n + 1)}>Tentar de novo</button>
+          </div></section>
+        ) : (
+          <>
+            <div className="kpis">{[0, 1, 2, 3].map(i => <div key={i} className="skeleton skel-kpi" />)}</div>
+            <div className="skeleton skel-painel" />
+          </>
+        )}
+      </div>
+    );
+  }
 
   const rec = resumo.entradas, gas = resumo.saidas;
   const prevRec = resumo.anterior.entradas, prevGas = resumo.anterior.saidas;

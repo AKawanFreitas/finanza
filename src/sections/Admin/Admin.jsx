@@ -205,7 +205,7 @@ export default function Admin() {
                       </div>
                     ) : (
                       <div className="linha-acoes">
-                        <button className="del-btn" title="Redefinir senha" onClick={() => redefinirSenha(u)}>
+                        <button className="del-btn" aria-label="Redefinir senha" title="Redefinir senha" onClick={() => redefinirSenha(u)}>
                           <KeyRound size={14} strokeWidth={2} />
                         </button>
                         <button
@@ -217,7 +217,7 @@ export default function Admin() {
                             ? <Ban size={14} strokeWidth={2} />
                             : <CheckCircle2 size={14} strokeWidth={2} />}
                         </button>
-                        <button className="del-btn" title="Excluir conta" onClick={() => setConfirmando(u.id)}>
+                        <button className="del-btn" aria-label="Excluir conta" title="Excluir conta" onClick={() => setConfirmando(u.id)}>
                           <Trash2 size={14} strokeWidth={2} />
                         </button>
                       </div>

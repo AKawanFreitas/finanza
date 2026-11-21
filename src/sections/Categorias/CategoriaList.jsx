@@ -1,8 +1,11 @@
 import { Pencil, Trash2 } from 'lucide-react';
+import { useConfirmar } from '../../components/useConfirmar';
 import { useFinance } from '../../context/FinanceContext';
 
 export default function CategoriaList() {
   const { categorias, delCategoria, editingCat, setEditingCat } = useFinance();
+
+  const [pedirConfirmacao, dialogoConfirmar] = useConfirmar();
 
   return (
     <div className="hist-wrap">
@@ -17,10 +20,10 @@ export default function CategoriaList() {
               <span className="dot" style={{ background: c.cor }} />
               <div className="cat-admin-name">{c.nome}</div>
               <div className="hist-actions">
-                <button className="del-btn" onClick={() => { setEditingCat(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }} title="Editar">
+                <button className="del-btn" aria-label="Editar" onClick={() => { setEditingCat(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }} title="Editar">
                   <Pencil size={13} strokeWidth={2} />
                 </button>
-                <button className="del-btn" onClick={() => delCategoria(c.id)} title="Excluir">
+                <button className="del-btn" aria-label="Excluir" onClick={() => pedirConfirmacao({ titulo: 'Excluir categoria?', texto: `“${c.nome}” será removida. Só é possível se não houver lançamentos nela.` }, () => delCategoria(c.id))} title="Excluir">
                   <Trash2 size={13} strokeWidth={2} />
                 </button>
               </div>
@@ -28,6 +31,7 @@ export default function CategoriaList() {
           );
         })}
       </div>
+      {dialogoConfirmar}
     </div>
   );
 }

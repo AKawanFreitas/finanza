@@ -3,6 +3,7 @@ import { Pencil, Trash2, Archive, ArchiveRestore, History, ArrowUpFromLine, Arro
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import { fmt, fmtDate } from '../../utils/formatters';
+import { useConfirmar } from '../../components/useConfirmar';
 import BarraOrcamento from '../../components/BarraOrcamento';
 
 const STATUS = {
@@ -13,6 +14,7 @@ const STATUS = {
 
 export default function MetaCard({ meta, onEditar, onMudou }) {
   const { showToast } = useFinance();
+  const [pedirConfirmacao, dialogoConfirmar] = useConfirmar();
   const [valor, setValor] = useState('');
   const [aberto, setAberto] = useState(false);
   const [historico, setHistorico] = useState([]);
@@ -48,8 +50,7 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
     onMudou();
   }
 
-  async function excluir() {
-    if (!window.confirm(`Excluir a meta "${meta.nome}" e todo o histórico de aportes?`)) return;
+  async function excluirMeta() {
     const { ok, data } = await api(`/metas/${meta.id}`, { method: 'DELETE' });
     if (!ok) return showToast(data?.error || 'Não foi possível excluir.', 'err');
     showToast('Meta removida', 'err');
@@ -86,12 +87,12 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
         <button className="btn btn-sm btn-primary" disabled={!(Number(valor) > 0)} onClick={() => movimentar('aporte')}><ArrowDownToLine size={13} strokeWidth={2.5} /> Guardar</button>
         <button className="btn btn-sm" disabled={!(Number(valor) > 0) || meta.atual <= 0} onClick={() => movimentar('retirada')}><ArrowUpFromLine size={13} strokeWidth={2.5} /> Retirar</button>
         <span className="meta-icones">
-          <button className="del-btn" title="Histórico" aria-expanded={aberto} onClick={() => setAberto(a => !a)}><History size={13} strokeWidth={2} /></button>
-          <button className="del-btn" title="Editar" onClick={() => onEditar(meta)}><Pencil size={13} strokeWidth={2} /></button>
-          <button className="del-btn" title={meta.arquivada ? 'Reativar' : 'Arquivar'} onClick={alternarArquivo}>
+          <button className="del-btn" aria-label="Histórico" title="Histórico" aria-expanded={aberto} onClick={() => setAberto(a => !a)}><History size={13} strokeWidth={2} /></button>
+          <button className="del-btn" aria-label="Editar" title="Editar" onClick={() => onEditar(meta)}><Pencil size={13} strokeWidth={2} /></button>
+          <button className="del-btn" aria-label={meta.arquivada ? 'Reativar' : 'Arquivar'} title={meta.arquivada ? 'Reativar' : 'Arquivar'} onClick={alternarArquivo}>
             {meta.arquivada ? <ArchiveRestore size={13} strokeWidth={2} /> : <Archive size={13} strokeWidth={2} />}
           </button>
-          <button className="del-btn" title="Excluir" onClick={excluir}><Trash2 size={13} strokeWidth={2} /></button>
+          <button className="del-btn" aria-label="Excluir" title="Excluir" onClick={() => pedirConfirmacao({ titulo: 'Excluir meta?', texto: `“${meta.nome}” e todo o histórico de aportes serão removidos.` }, excluirMeta)}><Trash2 size={13} strokeWidth={2} /></button>
         </span>
       </div>
 
@@ -101,11 +102,12 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
             <li key={a.id}>
               <span>{fmtDate(a.data)}{a.obs ? ` · ${a.obs}` : ''}</span>
               <span className={a.tipo === 'aporte' ? 'pos' : 'neg'}>{a.tipo === 'aporte' ? '+' : '−'} {fmt(a.valor)}</span>
-              <button className="del-btn" title="Remover" onClick={() => removerAporte(a.id)}><Trash2 size={12} strokeWidth={2} /></button>
+              <button className="del-btn" aria-label="Remover" title="Remover" onClick={() => pedirConfirmacao({ titulo: 'Remover aporte?', texto: `${fmt(a.valor)} em ${fmtDate(a.data)}. O saldo da meta será ajustado.`, rotulo: 'Remover' }, () => removerAporte(a.id))}><Trash2 size={12} strokeWidth={2} /></button>
             </li>
           ))}
         </ul>
       )}
+      {dialogoConfirmar}
     </div>
   );
 }

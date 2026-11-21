@@ -6,11 +6,14 @@ import { fmt } from '../../utils/formatters';
 import { MONTH_NAMES } from '../../utils/period';
 import MonthStepper from '../../components/MonthStepper';
 import Select from '../../components/Select';
+import Recolhivel from '../../components/Recolhivel';
+import { useConfirmar } from '../../components/useConfirmar';
 import BarraOrcamento from '../../components/BarraOrcamento';
 
 const ROTULO_STATUS = { ok: 'Dentro do limite', atencao: 'Perto do limite', estourado: 'Limite estourado' };
 
 function Linha({ item, onSalvar, onRemover }) {
+  const [pedirConfirmacao, dialogoConfirmar] = useConfirmar();
   const [limite, setLimite] = useState(String(item.limite));
   useEffect(() => { setLimite(String(item.limite)); }, [item.limite]);
   const mudou = Number(limite) !== item.limite;
@@ -44,11 +47,12 @@ function Linha({ item, onSalvar, onRemover }) {
           <button className="btn btn-sm" disabled={!mudou || !(Number(limite) > 0)} onClick={() => onSalvar(item.categoria_id, Number(limite))}>
             <Check size={13} strokeWidth={2.5} /> Salvar
           </button>
-          <button className="del-btn" title="Remover orçamento" onClick={() => onRemover(item)}>
+          <button className="del-btn" title="Remover orçamento" aria-label="Remover orçamento" onClick={() => pedirConfirmacao({ titulo: 'Remover orçamento?', texto: `O limite de “${item.cat}” deixa de existir. Os lançamentos não mudam.`, rotulo: 'Remover' }, () => onRemover(item))}>
             <Trash2 size={13} strokeWidth={2} />
           </button>
         </span>
       </div>
+      {dialogoConfirmar}
     </div>
   );
 }
@@ -101,6 +105,7 @@ export default function Orcamentos({ ym, onYmChange }) {
         <MonthStepper ym={ym} onChange={onYmChange} />
       </header>
 
+      <Recolhivel rotulo="Novo orçamento">
       <div className="form-wrap">
         <div className="form-header">
           <div className="form-header-text">
@@ -141,6 +146,7 @@ export default function Orcamentos({ ym, onYmChange }) {
           </>
         )}
       </div>
+      </Recolhivel>
 
       <div className="hist-wrap">
         <div className="card-head">

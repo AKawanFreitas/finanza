@@ -194,9 +194,7 @@ export function FinanceProvider({ children }) {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#8b90a0', fontSize: '0.9rem' }}>
-        Carregando...
-      </div>
+      <div className="tela-carregando" role="status">Carregando...</div>
     );
   }
 

@@ -1,11 +1,12 @@
 import { useFinance } from '../../context/FinanceContext';
 import { fmt } from '../../utils/formatters';
+import Recolhivel from '../../components/Recolhivel';
 import ContaForm from './ContaForm';
 import ContaList from './ContaList';
 import Transferencias from './Transferencias';
 
 export default function Contas() {
-  const { contas } = useFinance();
+  const { contas, editingConta } = useFinance();
   const total = contas.filter(c => !c.arquivada).reduce((a, c) => a + c.saldo, 0);
   const temCartao = contas.some(c => c.tipo === 'cartao' && !c.arquivada);
 
@@ -13,15 +14,15 @@ export default function Contas() {
     <div className="section-enter">
       <div className="page-header">
         <div>
-          <div className="page-title">Contas</div>
-          <div className="page-subtitle">Carteiras, bancos e transferências entre elas</div>
+          <h1 className="page-title">Contas</h1>
+          <p className="page-subtitle">Carteiras, bancos e transferências entre elas</p>
         </div>
         <div className="saldo-total">
           <small>Saldo total{temCartao ? ' (já descontando os cartões)' : ''}</small>
           <strong className={total < 0 ? 'neg' : ''}>{total < 0 ? '−' : ''}{fmt(Math.abs(total))}</strong>
         </div>
       </div>
-      <ContaForm />
+      <Recolhivel rotulo="Nova conta" forcarAberto={Boolean(editingConta)}><ContaForm /></Recolhivel>
       <ContaList />
       <Transferencias />
     </div>

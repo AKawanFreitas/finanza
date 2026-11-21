@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRota } from './utils/useRota';
 import { FinanceProvider } from './context/FinanceContext';
 import { useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
@@ -38,7 +39,7 @@ export default function App() {
 
 function AppLogado() {
   const { ehAdmin } = useAuth();
-  const [section, setSection] = useState('dashboard');
+  const [section, setSection, param] = useRota();
   const [ym, setYm] = useState(currentYM());
 
   return (
@@ -48,7 +49,7 @@ function AppLogado() {
         <main className="page">
           <AvisoEmail />
           {section === 'dashboard'     && <Dashboard ym={ym} onYmChange={setYm} onNavigate={setSection} />}
-          {section === 'lancamento'    && <Lancamentos />}
+          {section === 'lancamento'    && <Lancamentos novo={param === 'novo'} />}
           {section === 'contas'        && <Contas />}
           {section === 'contas-pagar'  && <ContasPagar />}
           {section === 'cartoes'       && <Cartoes />}

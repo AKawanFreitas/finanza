@@ -1,4 +1,5 @@
 import { Pencil, Trash2, CalendarClock, CalendarPlus, Check, Zap } from 'lucide-react';
+import { useConfirmar } from '../../components/useConfirmar';
 import { useFinance } from '../../context/FinanceContext';
 import { fmt, fmtDate, dueDate, getCatColor } from '../../utils/formatters';
 
@@ -7,6 +8,7 @@ export default function RecorrenteList() {
     recorrentes, categorias, delRecorrente, editingRec, setEditingRec,
     lancarRecorrente, lancarPendentes,
   } = useFinance();
+  const [pedirConfirmacao, dialogoConfirmar] = useConfirmar();
   const total = recorrentes.reduce((a, r) => a + r.valor, 0);
 
   // `lancado` vem do servidor: o recorrente já gerou um lançamento neste mês.
@@ -70,10 +72,10 @@ export default function RecorrenteList() {
                 </span>
                 <div className="rec-amount">{fmt(r.valor)}</div>
                 <div className="hist-actions">
-                  <button className="del-btn" onClick={() => { setEditingRec(r); window.scrollTo({ top: 0, behavior: 'smooth' }); }} title="Editar">
+                  <button className="del-btn" aria-label="Editar" onClick={() => { setEditingRec(r); window.scrollTo({ top: 0, behavior: 'smooth' }); }} title="Editar">
                     <Pencil size={13} strokeWidth={2} />
                   </button>
-                  <button className="del-btn" onClick={() => delRecorrente(r.id)} title="Excluir">
+                  <button className="del-btn" aria-label="Excluir" onClick={() => pedirConfirmacao({ titulo: 'Excluir recorrente?', texto: `“${r.nome}” deixa de ser lançado todo mês. Lançamentos já feitos continuam.` }, () => delRecorrente(r.id))} title="Excluir">
                     <Trash2 size={13} strokeWidth={2} />
                   </button>
                 </div>
@@ -82,6 +84,7 @@ export default function RecorrenteList() {
           );
         })}
       </div>
+      {dialogoConfirmar}
     </div>
   );
 }
