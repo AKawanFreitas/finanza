@@ -429,6 +429,10 @@ button { font-family: inherit }
   content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: 4px; background: var(--brand-grad);
 }
 .entrar-logo { width: 64px; height: 64px; object-fit: contain }
+.entrar-ilustracao {
+  width: calc(100% + 2 * clamp(32px, 6vw, 72px)); max-width: none; margin: 24px calc(-1 * clamp(32px, 6vw, 72px)) calc(-1 * clamp(32px, 6vw, 72px));
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22%); mask-image: linear-gradient(180deg, transparent 0, #000 22%);
+}
 .entrar-marca h1 { font-size: clamp(32px, 4vw, 44px); font-weight: 800; letter-spacing: -0.03em }
 .entrar-marca p { color: #a9b8cc; max-width: 30ch; font-size: 16px }
 
@@ -501,6 +505,7 @@ button { font-family: inherit }
   .entrar-marca::after { top: auto; left: 0; right: 0; height: 4px; width: auto }
   .entrar-logo { width: 44px; height: 44px }
   .entrar-marca p { font-size: 14px }
+  .entrar-ilustracao { display: none }
   .form-duplo { grid-template-columns: 1fr }
   /* Na barra inferior, a conta vira só o avatar. */
   .conta { margin: 0; width: auto; flex-shrink: 0; border-top: none; padding: 6px 12px 6px 4px }
