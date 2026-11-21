@@ -30,8 +30,8 @@ function contaAlvo() {
   if (primeiro) return primeiro;
 
   const { lastInsertRowid } = db.prepare(
-    'INSERT INTO users (nome, email, senha_hash, papel, status, criado_em) VALUES (?, ?, ?, ?, ?, ?)'
-  ).run('Conta demo', 'demo@finanza.local', hashSenha('demo1234'), 'user', 'ativo', new Date().toISOString());
+    'INSERT INTO users (nome, email, senha_hash, papel, status, criado_em, email_verificado_em) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).run('Conta demo', 'demo@finanza.local', hashSenha('demo1234'), 'user', 'ativo', new Date().toISOString(), new Date().toISOString());
   const id = Number(lastInsertRowid);
   db.seedCategorias(id);
   db.seedContas(id);

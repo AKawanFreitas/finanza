@@ -80,7 +80,8 @@ function apagarCookie(res) {
 /* ── Usuário da requisição ──────────────────────────── */
 
 const SELECT_USER = `
-  SELECT u.id, u.nome, u.email, u.papel, u.status, u.trocar_senha, u.criado_em, u.ultimo_acesso
+  SELECT u.id, u.nome, u.email, u.papel, u.status, u.trocar_senha, u.criado_em, u.ultimo_acesso,
+         u.email_verificado_em, u.notificacoes_email
   FROM sessions s JOIN users u ON u.id = s.user_id
   WHERE s.token_hash = ? AND s.expira_em > ?
 `;
