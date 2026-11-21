@@ -87,8 +87,9 @@ export function FinanceProvider({ children }) {
     return true;
   }
 
-  async function delTransaction(id) {
-    if (!await remover(`/transactions/${id}`, 'Não foi possível remover.')) return;
+  // `parcelas`: 'todas' ou 'futuras' para compras parceladas; sem ele, só o lançamento.
+  async function delTransaction(id, parcelas) {
+    if (!await remover(`/transactions/${id}${parcelas ? `?parcelas=${parcelas}` : ''}`, 'Não foi possível remover.')) return;
     setEditing(e => (e?.id === id ? null : e));
     invalidar();
     showToast('Removido', 'err');
