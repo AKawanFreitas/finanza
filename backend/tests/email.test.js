@@ -111,3 +111,72 @@ test('e-mail malformado dá 400', async () => {
   assert.equal((await pedirReset('isso-nao-e-email')).status, 400);
 });
 
+/* ── Verificação de e-mail ───────────────────────── */
+
+test('cadastro manda e-mail de verificação; o link confirma o endereço', async () => {
+  const u = await novoUsuario();
+  assert.equal((await u.agente.get('/api/auth/eu')).body.user.email_verificado, false);
+  const email = ultimoEmail(u.email);
+  assert.match(email.assunto, /Confirme/);
+  assert.equal((await request(app).post('/api/auth/verificar-email').send({ token: tokenDoEmail(email, 'verificar') })).status, 200);
+  assert.equal((await u.agente.get('/api/auth/eu')).body.user.email_verificado, true);
+});
+
+test('o link de verificação não serve duas vezes nem como link de senha', async () => {
+  const u = await novoUsuario();
+  const token = tokenDoEmail(ultimoEmail(u.email), 'verificar');
+  assert.equal((await redefinir(token, 'senha-nova-123')).status, 400, 'tipo errado');
+  assert.equal((await request(app).post('/api/auth/verificar-email').send({ token })).status, 200);
+  assert.equal((await request(app).post('/api/auth/verificar-email').send({ token })).status, 400);
+});
+
+test('reenviar verificação: manda novo link, invalida o antigo e tem limite', async () => {
+  const u = await novoUsuario();
+  const antigo = tokenDoEmail(ultimoEmail(u.email), 'verificar');
+  assert.equal((await u.agente.post('/api/auth/reenviar-verificacao')).status, 200);
+  const novo = tokenDoEmail(ultimoEmail(u.email), 'verificar');
+  assert.notEqual(antigo, novo);
+  assert.equal((await request(app).post('/api/auth/verificar-email').send({ token: antigo })).status, 400);
+  await u.agente.post('/api/auth/reenviar-verificacao');
+  await u.agente.post('/api/auth/reenviar-verificacao');
+  assert.equal((await u.agente.post('/api/auth/reenviar-verificacao')).status, 429);
+});
+
+test('quem já confirmou não recebe outro e-mail', async () => {
+  const u = await novoUsuario();
+  confirmarEmail(u.id);
+  const antes = emailsPara(u.email).length;
+  const r = await u.agente.post('/api/auth/reenviar-verificacao');
+  assert.equal(r.body.ja_verificado, true);
+  assert.equal(emailsPara(u.email).length, antes);
+});
+
+test('trocar o e-mail do perfil volta a pedir confirmação, no endereço novo', async () => {
+  const u = await novoUsuario();
+  confirmarEmail(u.id);
+  const novo = `novo-${u.email}`;
+  const r = await u.agente.patch('/api/auth/perfil').send({ nome: 'Fulana', email: novo });
+  assert.equal(r.body.user.email_verificado, false);
+  assert.match(ultimoEmail(novo).assunto, /Confirme/);
+
+  const mesmo = await u.agente.patch('/api/auth/perfil').send({ nome: 'Fulana Silva', email: novo });
+  assert.equal(mesmo.status, 200);
+  assert.equal(emailsPara(novo).length, 1, 'mudar só o nome não reenvia');
+});
+
+test('redefinir a senha pelo e-mail também confirma o endereço', async () => {
+  const u = await novoUsuario();
+  await pedirReset(u.email);
+  await redefinir(tokenDoEmail(ultimoEmail(u.email), 'redefinir'), 'senha-nova-123');
+  const eu = await login(u.email, 'senha-nova-123');
+  assert.equal(eu.body.user.email_verificado, true);
+});
+
+test('preferência de avisos por e-mail', async () => {
+  const u = await novoUsuario();
+  assert.equal((await u.agente.get('/api/auth/eu')).body.user.notificacoes_email, true);
+  const r = await u.agente.patch('/api/auth/preferencias').send({ notificacoes_email: false });
+  assert.equal(r.body.user.notificacoes_email, false);
+  assert.equal((await u.agente.patch('/api/auth/preferencias').send({ notificacoes_email: 'não' })).status, 400);
+});
+
