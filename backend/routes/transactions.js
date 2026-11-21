@@ -8,6 +8,8 @@ const { transacao, validar } = require('../lib/schemas');
 const { resolverCategoria }  = require('../lib/categorias');
 const { resolverConta }      = require('../lib/contas');
 const { aposLancamentos }    = require('../lib/orcamentos');
+const { dividirParcelas, dataDaParcela } = require('../lib/parcelas');
+const crypto = require('crypto');
 
 router.use(exigirLogin);
 
@@ -59,9 +61,35 @@ router.get('/', (req, res) => {
   });
 });
 
+// Compra parcelada: N lançamentos (um por mês, cada um na fatura correspondente) que somam exatamente o total.
+const inserirParcelas = db.transaction((userId, d) => {
+  const grupo = crypto.randomUUID();
+  const valores = dividirParcelas(d.valor, d.parcelas);
+  const stmt = db.prepare(`
+    INSERT INTO transactions (user_id, conta_id, descricao, valor_centavos, tipo, categoria_id, data, obs, grupo_parcelas, parcela_numero, parcela_total)
+    VALUES (?, ?, ?, ?, 'saida', ?, ?, ?, ?, ?, ?)
+  `);
+  return valores.map((v, i) => {
+    const sufixo = ` (${i + 1}/${d.parcelas})`;
+    const data = dataDaParcela(d.data, i);
+    const id = Number(stmt.run(userId, d.conta_id, d.desc.slice(0, 120 - sufixo.length) + sufixo, v, d.categoria_id, data, d.obs, grupo, i + 1, d.parcelas).lastInsertRowid);
+    return { id, data };
+  });
+});
+
 router.post('/', (req, res) => {
   const { dados, error, status } = preparar(req);
   if (error) return res.status(status).json({ error });
+
+  if (dados.parcelas > 1) {
+    const conta = db.prepare('SELECT tipo FROM contas WHERE id = ?').get(dados.conta_id);
+    if (conta.tipo !== 'cartao' || dados.tipo !== 'saida') {
+      return res.status(400).json({ error: 'Só é possível parcelar compras (saídas) em um cartão de crédito.' });
+    }
+    const criadas = inserirParcelas(req.user.id, dados);
+    aposLancamentos(req.user.id, criadas.map(c => ({ tipo: 'saida', data: c.data, categoria_id: dados.categoria_id })));
+    return res.status(201).json({ ...buscar(criadas[0].id, req.user.id), parcelas_criadas: criadas.length });
+  }
 
   const r = db.prepare(`
     INSERT INTO transactions (user_id, conta_id, descricao, valor_centavos, tipo, categoria_id, data, obs)
@@ -75,6 +103,7 @@ router.put('/:id', (req, res) => {
   const id = Number(req.params.id);
   const { dados, error, status } = preparar(req);
   if (error) return res.status(status).json({ error });
+  if (dados.parcelas > 1) return res.status(400).json({ error: 'Não é possível parcelar um lançamento que já existe. Crie a compra parcelada de novo.' });
 
   const r = db.prepare(`
     UPDATE transactions SET conta_id = ?, descricao = ?, valor_centavos = ?, tipo = ?, categoria_id = ?, data = ?, obs = ?
@@ -85,9 +114,22 @@ router.put('/:id', (req, res) => {
   res.json(buscar(id, req.user.id));
 });
 
+// DELETE /api/transactions/:id            apaga só este lançamento
+//        /api/transactions/:id?parcelas=todas     apaga todas as parcelas da compra
+//        /api/transactions/:id?parcelas=futuras   apaga esta parcela e as seguintes
 router.delete('/:id', (req, res) => {
-  db.prepare('DELETE FROM transactions WHERE id = ? AND user_id = ?').run(Number(req.params.id), req.user.id);
-  res.json({ ok: true });
+  const id = Number(req.params.id);
+  const modo = req.query.parcelas;
+  const t = db.prepare('SELECT grupo_parcelas, parcela_numero FROM transactions WHERE id = ? AND user_id = ?').get(id, req.user.id);
+
+  if (t?.grupo_parcelas && (modo === 'todas' || modo === 'futuras')) {
+    const r = db.prepare(`DELETE FROM transactions WHERE user_id = ? AND grupo_parcelas = ? ${modo === 'futuras' ? 'AND parcela_numero >= ?' : ''}`)
+      .run(...[req.user.id, t.grupo_parcelas, ...(modo === 'futuras' ? [t.parcela_numero] : [])]);
+    return res.json({ ok: true, removidos: r.changes });
+  }
+
+  db.prepare('DELETE FROM transactions WHERE id = ? AND user_id = ?').run(id, req.user.id);
+  res.json({ ok: true, removidos: t ? 1 : 0 });
 });
 
 module.exports = router;
