@@ -1,5 +1,6 @@
 // Faz um backup agora.   npm run backup            (usa BACKUP_DIR)
 //                        npm run backup -- --dir /caminho
+require('../lib/env').carregarEnv(); // DB_PATH / BACKUP_DIR do .env, se houver
 const path = require('path');
 const i = process.argv.indexOf('--dir');
 if (i >= 0 && process.argv[i + 1]) process.env.BACKUP_DIR = path.resolve(process.argv[i + 1]);

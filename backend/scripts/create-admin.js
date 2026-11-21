@@ -5,6 +5,7 @@
 //
 // Sem --senha, o comando gera uma provisória e pede a troca no primeiro acesso.
 // Em um banco que já tinha dados sem dono, eles passam para esta conta.
+require('../lib/env').carregarEnv(); // DB_PATH / BACKUP_DIR do .env, se houver
 const readline = require('readline');
 const db   = require('../db');
 const auth = require('../lib/auth');
