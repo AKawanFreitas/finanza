@@ -3,27 +3,13 @@ const router  = express.Router();
 const db      = require('../db');
 const { exigirLogin } = require('../lib/auth');
 const { paraReais }   = require('../lib/money');
-const { mesValido }   = require('../lib/datas');
+const { SELECT, paraApi, filtros, inteiroPositivo } = require('../lib/transacoes');
 const { transacao, validar } = require('../lib/schemas');
 const { resolverCategoria }  = require('../lib/categorias');
 const { resolverConta }      = require('../lib/contas');
+const { aposLancamentos }    = require('../lib/orcamentos');
 
 router.use(exigirLogin);
-
-// Formato da API: `valor` em reais e `cat`/`conta` com os nomes (além dos ids).
-const SELECT = `
-  SELECT t.id, t.descricao, t.valor_centavos, t.tipo, t.categoria_id, c.nome AS cat,
-         t.conta_id, ct.nome AS conta, t.recorrente_id, t.data, t.obs
-  FROM transactions t
-  JOIN categorias c  ON c.id  = t.categoria_id
-  JOIN contas     ct ON ct.id = t.conta_id
-`;
-
-const paraApi = r => ({
-  id: r.id, desc: r.descricao, valor: paraReais(r.valor_centavos), tipo: r.tipo,
-  cat: r.cat, categoria_id: r.categoria_id, conta: r.conta, conta_id: r.conta_id,
-  recorrente_id: r.recorrente_id, data: r.data, obs: r.obs,
-});
 
 const buscar = (id, userId) => {
   const r = db.prepare(`${SELECT} WHERE t.id = ? AND t.user_id = ?`).get(id, userId);
@@ -39,34 +25,6 @@ function preparar(req) {
   const conta_id = resolverConta(req.user.id, value.conta_id);
   if (!conta_id) return { status: 400, error: 'Conta não encontrada ou arquivada.' };
   return { dados: { ...value, categoria_id: categoria.id, conta_id } };
-}
-
-const inteiroPositivo = (v, padrao) => {
-  const n = Number.parseInt(v, 10);
-  return Number.isInteger(n) && n > 0 ? n : padrao;
-};
-
-// Filtros da listagem: mes (AAAA-MM), tipo, categoria_id, conta_id, q (descrição/observação, sem acento).
-function filtros(query, userId) {
-  const onde = ['t.user_id = ?'];
-  const args = [userId];
-
-  if (query.mes !== undefined && query.mes !== '') {
-    if (!mesValido(query.mes)) return { error: 'O mês deve estar no formato AAAA-MM.' };
-    onde.push("substr(t.data, 1, 7) = ?"); args.push(query.mes);
-  }
-  if (query.tipo) {
-    if (query.tipo !== 'entrada' && query.tipo !== 'saida') return { error: 'O tipo deve ser "entrada" ou "saida".' };
-    onde.push('t.tipo = ?'); args.push(query.tipo);
-  }
-  if (query.categoria_id) { onde.push('t.categoria_id = ?'); args.push(inteiroPositivo(query.categoria_id, -1)); }
-  if (query.conta_id)     { onde.push('t.conta_id = ?');     args.push(inteiroPositivo(query.conta_id, -1)); }
-  if (typeof query.q === 'string' && query.q.trim()) {
-    const termo = db.normalizar(query.q.trim()).replace(/[\\%_]/g, m => `\\${m}`);
-    onde.push("(normalizar(t.descricao) LIKE ? ESCAPE '\\' OR normalizar(t.obs) LIKE ? ESCAPE '\\')");
-    args.push(`%${termo}%`, `%${termo}%`);
-  }
-  return { where: onde.join(' AND '), args };
 }
 
 // GET /api/transactions?mes=&tipo=&categoria_id=&conta_id=&q=&pagina=1&limite=20
@@ -109,6 +67,7 @@ router.post('/', (req, res) => {
     INSERT INTO transactions (user_id, conta_id, descricao, valor_centavos, tipo, categoria_id, data, obs)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `).run(req.user.id, dados.conta_id, dados.desc, dados.valor, dados.tipo, dados.categoria_id, dados.data, dados.obs);
+  aposLancamentos(req.user.id, [dados]);
   res.status(201).json(buscar(Number(r.lastInsertRowid), req.user.id));
 });
 
@@ -122,6 +81,7 @@ router.put('/:id', (req, res) => {
     WHERE id = ? AND user_id = ?
   `).run(dados.conta_id, dados.desc, dados.valor, dados.tipo, dados.categoria_id, dados.data, dados.obs, id, req.user.id);
   if (r.changes === 0) return res.status(404).json({ error: 'Lançamento não encontrado.' });
+  aposLancamentos(req.user.id, [dados]);
   res.json(buscar(id, req.user.id));
 });
 
@@ -131,5 +91,3 @@ router.delete('/:id', (req, res) => {
 });
 
 module.exports = router;
-module.exports.SELECT = SELECT;
-module.exports.paraApi = paraApi;

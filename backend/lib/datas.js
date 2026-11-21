@@ -25,10 +25,11 @@ function dataValida(s) {
   return !Number.isNaN(d.getTime()) && d.toISOString().startsWith(s);
 }
 
-// Mês corrente no fuso do Brasil (o servidor costuma rodar em UTC).
-function mesAtual(agora = new Date()) {
-  const br = new Date(agora.getTime() - 3 * 3600e3);
-  return `${br.getUTCFullYear()}-${String(br.getUTCMonth() + 1).padStart(2, '0')}`;
+// Data de hoje (AAAA-MM-DD) no fuso do Brasil: o servidor costuma rodar em UTC.
+function hojeBR(agora = new Date()) {
+  return new Date(agora.getTime() - 3 * 3600e3).toISOString().slice(0, 10);
 }
 
-module.exports = { mesValido, diasNoMes, deslocarMes, dataVencimento, dataValida, mesAtual };
+const mesAtual = (agora = new Date()) => hojeBR(agora).slice(0, 7);
+
+module.exports = { mesValido, diasNoMes, deslocarMes, dataVencimento, dataValida, hojeBR, mesAtual };
