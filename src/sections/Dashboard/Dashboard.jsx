@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
+import { api } from '../../utils/api';
 import { fmt } from '../../utils/formatters';
-import { MONTH_NAMES, shiftYM, daysInMonth } from '../../utils/period';
+import { MONTH_NAMES } from '../../utils/period';
 import MonthStepper from '../../components/MonthStepper';
 import Kpi from './Kpi';
 import DailyBars from './DailyBars';
@@ -10,8 +11,6 @@ import CategoryDonut from './CategoryDonut';
 import MovementsTable from './MovementsTable';
 
 const HISTORY_MONTHS = 6;
-
-const sum = (list, tipo) => list.filter(t => t.tipo === tipo).reduce((a, t) => a + t.valor, 0);
 
 // Variação em relação ao mês anterior, como chip. `goodWhenUp` define a cor.
 function delta(atual, anterior, mesAnterior, goodWhenUp) {
@@ -23,35 +22,23 @@ function delta(atual, anterior, mesAnterior, goodWhenUp) {
 }
 
 export default function Dashboard({ ym, onYmChange, onNavigate }) {
-  const { transactions, recorrentes, categorias } = useFinance();
+  const { recorrentes, categorias, versao } = useFinance();
+  const [resumo, setResumo] = useState(null);
 
-  const data = useMemo(() => {
-    const byMonth = m => transactions.filter(t => t.data.startsWith(m));
-    const month   = byMonth(ym);
-    const prev    = byMonth(shiftYM(ym, -1));
+  // Os números vêm prontos do servidor. Mantém o resumo anterior na tela enquanto o novo carrega.
+  useEffect(() => {
+    let cancelado = false;
+    api(`/resumo?mes=${ym}`).then(({ ok, data }) => { if (ok && !cancelado) setResumo(data); });
+    return () => { cancelado = true; };
+  }, [ym, versao]);
 
-    const days = Array(daysInMonth(ym)).fill(0);
-    const catMap = {};
-    month.filter(t => t.tipo === 'saida').forEach(t => {
-      days[Number(t.data.slice(8)) - 1] += t.valor;
-      catMap[t.cat] = (catMap[t.cat] || 0) + t.valor;
-    });
+  if (!resumo) return null;
 
-    const history = Array.from({ length: HISTORY_MONTHS }, (_, i) => {
-      const m = shiftYM(ym, i - (HISTORY_MONTHS - 1));
-      const list = byMonth(m);
-      return { ym: m, rec: sum(list, 'entrada'), gas: sum(list, 'saida') };
-    });
-
-    return {
-      month, days, history,
-      rec: sum(month, 'entrada'), gas: sum(month, 'saida'),
-      prevRec: sum(prev, 'entrada'), prevGas: sum(prev, 'saida'),
-      sorted: Object.entries(catMap).sort((a, b) => b[1] - a[1]),
-    };
-  }, [transactions, ym]);
-
-  const { month, rec, gas, prevRec, prevGas, history } = data;
+  const rec = resumo.entradas, gas = resumo.saidas;
+  const prevRec = resumo.anterior.entradas, prevGas = resumo.anterior.saidas;
+  const history = resumo.historico.map(h => ({ ym: h.mes, rec: h.entradas, gas: h.saidas }));
+  const sorted = resumo.porCategoria.map(c => [c.cat, c.valor]);
+  const totalMes = resumo.qtd.total;
   const saldo = rec - gas;
   const [anoStr, mesStr] = ym.split('-');
   const mesNome     = MONTH_NAMES[Number(mesStr) - 1];
@@ -65,11 +52,11 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
     : { label: 'Saudável', cls: 'good' };
 
   return (
-    <div>
+    <div style={{ opacity: resumo.mes === ym ? 1 : 0.5, transition: 'opacity .15s' }}>
       <header className="page-bar">
         <div>
           <h1 className="page-title">Resumo</h1>
-          <p className="page-subtitle">{mesNome} de {anoStr}, {month.length} {month.length === 1 ? 'movimentação' : 'movimentações'}</p>
+          <p className="page-subtitle">{mesNome} de {anoStr}, {totalMes} {totalMes === 1 ? 'movimentação' : 'movimentações'}</p>
         </div>
         <MonthStepper ym={ym} onChange={onYmChange} />
       </header>
@@ -83,13 +70,13 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
         <Kpi
           label="Receitas" value={fmt(rec)}
           chip={delta(rec, prevRec, mesAnterior, true)}
-          note={`${month.filter(t => t.tipo === 'entrada').length} entradas`}
+          note={`${resumo.qtd.entradas} ${resumo.qtd.entradas === 1 ? 'entrada' : 'entradas'}`}
           spark={history.map(h => h.rec)}
         />
         <Kpi
           label="Gastos" value={fmt(gas)}
           chip={delta(gas, prevGas, mesAnterior, false)}
-          note={`${month.filter(t => t.tipo === 'saida').length} saídas`}
+          note={`${resumo.qtd.saidas} ${resumo.qtd.saidas === 1 ? 'saída' : 'saídas'}`}
           spark={history.map(h => h.gas)}
         />
         <Kpi
@@ -98,7 +85,7 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
         />
       </section>
 
-      {month.length === 0 ? (
+      {totalMes === 0 ? (
         <section className="panel">
           <div className="panel-head"><h2>Nenhum lançamento em {mesNome.toLowerCase()}</h2></div>
           <div className="panel-body empty-state">
@@ -111,22 +98,22 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
           <div className="dash-col">
             <section className="panel">
               <div className="panel-head"><h2>Gastos por dia</h2></div>
-              <div className="panel-body"><DailyBars days={data.days} ym={ym} /></div>
+              <div className="panel-body"><DailyBars days={resumo.porDia} ym={ym} /></div>
             </section>
 
             <section className="panel">
               <div className="panel-head">
                 <h2>Últimas movimentações</h2>
-                {month.length > 8 && <button className="link-btn" onClick={() => onNavigate('lancamento')}>Ver todas</button>}
+                {totalMes > 8 && <button className="link-btn" onClick={() => onNavigate('lancamento')}>Ver todas</button>}
               </div>
-              <MovementsTable transactions={month} categorias={categorias} />
+              <MovementsTable transactions={resumo.ultimas} categorias={categorias} />
             </section>
           </div>
 
           <div className="dash-col">
             <section className="panel">
               <div className="panel-head"><h2>Gastos por categoria</h2></div>
-              <div className="panel-body"><CategoryDonut sorted={data.sorted} categorias={categorias} /></div>
+              <div className="panel-body"><CategoryDonut sorted={sorted} categorias={categorias} /></div>
             </section>
 
             {health && (

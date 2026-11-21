@@ -7,8 +7,10 @@ export function getCatColor(categorias, name) {
   return c ? c.cor : '#9aa3b2';
 }
 
+// Data de hoje no fuso do navegador (toISOString usaria UTC e viraria o dia à noite no Brasil).
 export function today() {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 export function fmtDate(iso) {
