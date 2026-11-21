@@ -30,6 +30,9 @@ function hojeBR(agora = new Date()) {
   return new Date(agora.getTime() - 3 * 3600e3).toISOString().slice(0, 10);
 }
 
+// Dias do dia `a` até o dia `b` (negativo se b é anterior), ambos AAAA-MM-DD.
+const diasEntre = (a, b) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 864e5);
+
 const mesAtual = (agora = new Date()) => hojeBR(agora).slice(0, 7);
 
-module.exports = { mesValido, diasNoMes, deslocarMes, dataVencimento, dataValida, hojeBR, mesAtual };
+module.exports = { mesValido, diasNoMes, deslocarMes, dataVencimento, dataValida, hojeBR, diasEntre, mesAtual };

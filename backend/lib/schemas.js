@@ -132,6 +132,19 @@ const meta = z.object({
   arquivada: z.boolean().optional(),
 });
 
+const contaPagar = z.object({
+  descricao: texto('a descrição', 120),
+  valor,
+  vencimento: dataISO,
+  obs,
+  ...categoria,
+}).refine(exigeCategoria, msgCategoria);
+
+const pagarConta = z.object({
+  data: dataISO.optional(),
+  conta_id: z.number().int().positive().optional(),
+});
+
 const aporte = z.object({
   valor: z.union([z.number(), z.string()], { error: 'O valor deve ser maior que zero.' })
     .transform((v, ctx) => {
@@ -165,4 +178,4 @@ function validar(schema, body) {
   return { error: r.error.issues[0]?.message || 'Dados inválidos.' };
 }
 
-module.exports = { transacao, recorrente, categoriaInput, conta, cartao, pagamentoFatura, meta, aporte, transferencia, orcamento, dataISO, validar };
+module.exports = { transacao, recorrente, categoriaInput, conta, cartao, pagamentoFatura, meta, aporte, contaPagar, pagarConta, transferencia, orcamento, dataISO, validar };
