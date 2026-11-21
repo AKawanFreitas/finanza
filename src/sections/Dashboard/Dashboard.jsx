@@ -9,6 +9,7 @@ import DailyBars from './DailyBars';
 import MonthHistory from './MonthHistory';
 import CategoryDonut from './CategoryDonut';
 import MovementsTable from './MovementsTable';
+import BarraOrcamento from '../../components/BarraOrcamento';
 
 const HISTORY_MONTHS = 6;
 
@@ -128,6 +129,27 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
                     <div className={`meter-fill ${health.cls}`} style={{ width: `${spentPct}%` }} />
                   </div>
                   <p className="meter-note">da receita do mês já foi gasto</p>
+                </div>
+              </section>
+            )}
+
+            {resumo.orcamentos.length > 0 && (
+              <section className="panel">
+                <div className="panel-head">
+                  <h2>Orçamentos</h2>
+                  <button className="link-btn" onClick={() => onNavigate('orcamentos')}>Ver todos</button>
+                </div>
+                <div className="panel-body orc-mini">
+                  {resumo.orcamentos.slice(0, 4).map(o => (
+                    <div key={o.categoria_id} className="orc-mini-item">
+                      <div className="orc-mini-topo">
+                        <span><span className="dot" style={{ background: o.cor }} /> {o.cat}</span>
+                        <span className={`orc-mini-pct ${o.status}`}>{o.percentual}%</span>
+                      </div>
+                      <BarraOrcamento item={o} />
+                      <small>{fmt(o.gasto)} de {fmt(o.limite)}</small>
+                    </div>
+                  ))}
                 </div>
               </section>
             )}

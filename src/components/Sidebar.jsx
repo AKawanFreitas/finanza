@@ -1,4 +1,4 @@
-import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp, Target } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const NAV = [
@@ -6,6 +6,7 @@ const NAV = [
   { id: 'lancamento',  label: 'Lançamentos', Icon: ArrowLeftRight },
   { id: 'contas',      label: 'Contas',      Icon: Wallet },
   { id: 'importar',    label: 'Importar',    Icon: FileUp },
+  { id: 'orcamentos',  label: 'Orçamentos',  Icon: Target },
   { id: 'recorrentes', label: 'Recorrentes', Icon: Repeat },
   { id: 'categorias',  label: 'Categorias',  Icon: Tags },
 ];

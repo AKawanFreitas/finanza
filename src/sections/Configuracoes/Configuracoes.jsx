@@ -28,7 +28,7 @@ function useAcao(showToast) {
 }
 
 export default function Configuracoes() {
-  const { user, salvarPerfil, trocarSenha, excluirConta, sair } = useAuth();
+  const { user, salvarPerfil, trocarSenha, excluirConta, sair, salvarPreferencias } = useAuth();
   const { showToast } = useFinance();
 
   const [perfil, setPerfil] = useState({ nome: user.nome, email: user.email });
@@ -39,6 +39,7 @@ export default function Configuracoes() {
   const acaoPerfil  = useAcao(showToast);
   const acaoSenha   = useAcao(showToast);
   const acaoExcluir = useAcao(showToast);
+  const acaoAvisos  = useAcao(showToast);
 
   const perfilMudou = perfil.nome !== user.nome || perfil.email !== user.email;
 
@@ -105,6 +106,26 @@ export default function Configuracoes() {
             </button>
           </div>
         </form>
+      </section>
+
+      <section className="panel">
+        <div className="panel-head"><h2>Avisos por e-mail</h2></div>
+        <div className="panel-body">
+          {acaoAvisos.erro && <p className="aviso-erro" role="alert">{acaoAvisos.erro}</p>}
+          <label className="opcao-check">
+            <input
+              type="checkbox" checked={user.notificacoes_email} disabled={acaoAvisos.ocupado}
+              onChange={e => acaoAvisos.executar(() => salvarPreferencias(e.target.checked), e.target.checked ? 'Avisos ativados' : 'Avisos desativados')}
+            />
+            <span>
+              <strong>Alertas de orçamento e resumo mensal</strong>
+              <small>
+                Avisamos quando uma categoria chega a 80% e a 100% do limite, e mandamos um resumo do mês nos primeiros dias do mês seguinte.
+                {!user.email_verificado && ' Os avisos só são enviados depois que você confirmar o e-mail.'}
+              </small>
+            </span>
+          </label>
+        </div>
       </section>
 
       <section className="panel">
