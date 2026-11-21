@@ -4,7 +4,9 @@ import { fmt } from '../../utils/formatters';
 import { rotuloTipo } from './tipos';
 
 export default function ContaList() {
-  const { contas, editingConta, setEditingConta, updateConta, delConta } = useFinance();
+  const { contas: todas, editingConta, setEditingConta, updateConta, delConta } = useFinance();
+  // Cartões de crédito têm tela própria (limite, fatura, parcelas).
+  const contas = todas.filter(c => c.tipo !== 'cartao');
 
   const alternarArquivo = c => updateConta(c.id, {
     nome: c.nome, tipo: c.tipo, cor: c.cor, saldo_inicial: c.saldo_inicial, arquivada: !c.arquivada,
