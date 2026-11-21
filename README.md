@@ -22,7 +22,19 @@ npm run dev
 
 Abra http://localhost:5173. O Vite encaminha as chamadas `/api` para o backend.
 
-### Primeiro acesso
+### Contas de teste (jeito rápido)
+
+Crie um `.env` (o `.env.example` explica cada variável) com as contas que quer ter. Ao subir, a API cria sozinha um super admin e um usuário com 5 meses de dados de exemplo, já com o e-mail confirmado:
+
+```bash
+cp .env.example .env
+# edite o .env: descomente as linhas BOOTSTRAP_* e escolha as senhas (8+ caracteres)
+cd backend && npm run dev     # e, na raiz, npm run dev para o front
+```
+
+As contas só são **criadas**: se o e-mail já existe, nada é alterado (reiniciar não desfaz uma senha trocada nem apaga dados). O `.env` não vai para o git, então as senhas ficam só na sua máquina. Em um servidor de verdade, não use `BOOTSTRAP_*`.
+
+### Primeiro acesso (manual)
 
 Qualquer pessoa pode criar a própria conta pela tela de entrada. O super admin, porém, só é criado pelo terminal:
 
@@ -51,6 +63,8 @@ Sem `--senha`, o comando mostra uma senha provisória e pede a troca no primeiro
 | `STATIC_DIR` | backend | `../dist` | Onde está o front compilado; se existir, a própria API o serve |
 | `COOKIE_SECURE` | backend | `true` em produção | `false` permite o build de produção em `http://localhost` |
 | `TRUST_PROXY` | backend | — | Atrás de um proxy reverso, `1` faz o IP dos limites de tentativa ser o do cliente |
+| `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_SENHA`, `BOOTSTRAP_ADMIN_NOME` | backend | — | Cria um super admin ao subir, se o e-mail não existir (senha com 8+ caracteres) |
+| `BOOTSTRAP_DEMO`, `BOOTSTRAP_DEMO_EMAIL`, `BOOTSTRAP_DEMO_SENHA` | backend | `false`, `demo@finanza.local`, `demo1234` | Com `BOOTSTRAP_DEMO=true`, cria um usuário com 5 meses de dados de exemplo |
 
 Se a porta 4747 já estiver ocupada na sua máquina:
 
