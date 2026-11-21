@@ -1,5 +1,5 @@
 const { z } = require('zod');
-const { paraCentavos } = require('./money');
+const { paraCentavos, paraCentavosComSinal } = require('./money');
 
 const texto = (rotulo, max = 120) =>
   z.string({ error: `Informe ${rotulo}.` }).trim().min(1, `Informe ${rotulo}.`).max(max, `Máximo de ${max} caracteres.`);
@@ -15,6 +15,7 @@ const obs = z.string().max(500, 'A observação deve ter até 500 caracteres.').
 
 // A categoria vem por id (preferido) ou, por compatibilidade, pelo nome.
 const categoria = {
+  conta_id: z.number().int().positive().optional(),
   categoria_id: z.number().int().positive().optional(),
   cat: z.string().trim().min(1).optional(),
 };
@@ -49,9 +50,32 @@ const recorrente = z.object({
   ...categoria,
 }).refine(exigeCategoria, msgCategoria);
 
+const COR = z.string({ error: 'A cor deve estar no formato #RRGGBB.' }).regex(/^#[0-9a-fA-F]{6}$/, 'A cor deve estar no formato #RRGGBB.');
+
+const conta = z.object({
+  nome: texto('o nome da conta', 40),
+  tipo: z.enum(['corrente', 'poupanca', 'carteira', 'investimento'], { error: 'Tipo de conta inválido.' }),
+  cor: COR.optional().default('#4d9fff'),
+  saldo_inicial: z.union([z.number(), z.string()]).optional().default(0)
+    .transform((v, ctx) => {
+      const c = paraCentavosComSinal(v);
+      if (c === null) ctx.addIssue({ code: 'custom', message: 'Saldo inicial inválido.' });
+      return c;
+    }),
+  arquivada: z.boolean().optional(),
+});
+
+const transferencia = z.object({
+  origem_id: z.number({ error: 'Escolha a conta de origem.' }).int().positive('Escolha a conta de origem.'),
+  destino_id: z.number({ error: 'Escolha a conta de destino.' }).int().positive('Escolha a conta de destino.'),
+  valor,
+  data: dataISO,
+  descricao: z.string().trim().max(120, 'A descrição deve ter até 120 caracteres.').optional().default(''),
+}).refine(v => v.origem_id !== v.destino_id, { message: 'Origem e destino devem ser contas diferentes.', path: ['destino_id'] });
+
 const categoriaInput = z.object({
   nome: texto('o nome da categoria', 40),
-  cor: z.string({ error: 'A cor deve estar no formato #RRGGBB.' }).regex(/^#[0-9a-fA-F]{6}$/, 'A cor deve estar no formato #RRGGBB.'),
+  cor: COR,
 });
 
 // Devolve { value } ou { error } com a primeira mensagem, no formato que as rotas já usavam.
@@ -61,4 +85,4 @@ function validar(schema, body) {
   return { error: r.error.issues[0]?.message || 'Dados inválidos.' };
 }
 
-module.exports = { transacao, recorrente, categoriaInput, validar };
+module.exports = { transacao, recorrente, categoriaInput, conta, transferencia, dataISO, validar };

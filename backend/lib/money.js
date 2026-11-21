@@ -12,6 +12,15 @@ function paraCentavos(valor) {
   return centavos >= 1 && centavos <= MAX_CENTAVOS ? centavos : null;
 }
 
+// Para saldos, que podem ser zero ou negativos (conta no vermelho).
+function paraCentavosComSinal(valor) {
+  if (typeof valor === 'string' && valor.trim() === '') return null;
+  const n = Number(valor);
+  if (!Number.isFinite(n)) return null;
+  const centavos = Math.round(Number((n * 100).toPrecision(15)));
+  return Math.abs(centavos) <= MAX_CENTAVOS ? centavos : null;
+}
+
 const paraReais = centavos => centavos / 100;
 
-module.exports = { paraCentavos, paraReais, MAX_CENTAVOS };
+module.exports = { paraCentavos, paraCentavosComSinal, paraReais, MAX_CENTAVOS };
