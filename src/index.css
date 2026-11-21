@@ -628,3 +628,16 @@ button { font-family: inherit }
 .meta-historico li span:first-child { flex: 1 }
 .meta-historico .pos { color: var(--green); font-weight: 700 }
 .meta-historico .neg { color: var(--red); font-weight: 700 }
+
+/* ── Contas a pagar e vencimentos ──────────────────── */
+.abas { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--line2); border-radius: 6px; background: var(--surface) }
+.aba { padding: 5px 12px; border: none; border-radius: 4px; background: transparent; color: var(--muted); font-size: 13.5px; font-weight: 600; cursor: pointer }
+.aba:hover { color: var(--navy) }
+.aba.ativa { background: var(--navy); color: #fff }
+
+.venc-lista { list-style: none }
+.venc-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 20px; background: none; border: none; border-bottom: 1px solid var(--line); text-align: left; cursor: pointer; font: inherit; color: inherit }
+.venc-lista li:last-child .venc-item { border-bottom: none }
+.venc-item:hover { background: var(--green-bg) }
+.venc-titulo { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.venc-valor { font-weight: 800; color: var(--navy) }
