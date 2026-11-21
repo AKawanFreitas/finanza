@@ -1,10 +1,11 @@
-import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp, Target, CreditCard, PiggyBank } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp, Target, CreditCard, PiggyBank, CalendarCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const NAV = [
   { id: 'dashboard',   label: 'Resumo',      Icon: LayoutDashboard },
   { id: 'lancamento',  label: 'Lançamentos', Icon: ArrowLeftRight },
   { id: 'contas',      label: 'Contas',      Icon: Wallet },
+  { id: 'contas-pagar', label: 'Contas a pagar', Icon: CalendarCheck },
   { id: 'cartoes',     label: 'Cartões',     Icon: CreditCard },
   { id: 'importar',    label: 'Importar',    Icon: FileUp },
   { id: 'orcamentos',  label: 'Orçamentos',  Icon: Target },
