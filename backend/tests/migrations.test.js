@@ -35,7 +35,7 @@ function bancoLegado() {
 
 test('banco novo chega na última versão', () => {
   const db = new Database(':memory:');
-  assert.deepEqual(migrar(db), [1, 2]);
+  assert.deepEqual(migrar(db), [1, 2, 3]);
   assert.equal(versaoAtual(db), ultimaVersao);
 });
 
@@ -90,6 +90,31 @@ test('as FKs ficam íntegras e o isolamento por usuário é mantido', () => {
   assert.equal(cruzado, 0);
 });
 
+test('banco legado: cada usuário ganha uma conta e os lançamentos vão para ela', () => {
+  const db = bancoLegado();
+  migrar(db);
+  const contas = db.prepare('SELECT user_id, nome FROM contas ORDER BY id').all();
+  assert.deepEqual(contas.filter(c => c.user_id !== null).map(c => c.nome), ['Conta principal', 'Conta principal']);
+  assert.equal(contas.filter(c => c.user_id === null).length, 1, 'os lançamentos órfãos ganham uma conta órfã');
+  const fora = db.prepare('SELECT COUNT(*) AS n FROM transactions t JOIN contas c ON c.id = t.conta_id WHERE c.user_id IS NOT t.user_id').get().n;
+  assert.equal(fora, 0);
+  assert.deepEqual(db.pragma('foreign_key_check'), []);
+});
+
+test('banco legado: lançamentos de recorrentes são ligados, um por mês', () => {
+  const db = bancoLegado();
+  // Mesmo nome e categoria do recorrente 'Aluguel' (Mercado, usuário 1): dois no mesmo mês e um em outro.
+  db.exec(`
+    INSERT INTO transactions (user_id, desc, valor, tipo, cat, data) VALUES
+      (1, 'Aluguel', 2200.5, 'saida', 'Mercado', '2026-03-05'),
+      (1, 'Aluguel', 2200.5, 'saida', 'Mercado', '2026-03-06'),
+      (1, 'Aluguel', 2200.5, 'saida', 'Mercado', '2026-04-05');
+  `);
+  migrar(db);
+  const ligados = db.prepare('SELECT substr(data, 1, 7) AS mes, COUNT(*) AS n FROM transactions WHERE recorrente_id IS NOT NULL GROUP BY mes ORDER BY mes').all();
+  assert.deepEqual(ligados, [{ mes: '2026-03', n: 1 }, { mes: '2026-04', n: 1 }]);
+});
+
 test('migração que falha desfaz tudo e não avança a versão', () => {
   const db = bancoLegado();
   db.prepare("INSERT INTO transactions (user_id, desc, valor, tipo, cat, data) VALUES (1, 'Ruim', 5, 'saida', 'Mercado', 'ontem')").run();
@@ -104,8 +129,9 @@ test('CHECKs barram dados inválidos direto no banco', () => {
   migrar(db);
   db.prepare("INSERT INTO users (nome, email, senha_hash, criado_em) VALUES ('A','a@x.com','h','2026-01-01')").run();
   db.prepare("INSERT INTO categorias (user_id, nome, cor) VALUES (1, 'X', '#000000')").run();
+  db.prepare("INSERT INTO contas (user_id, nome, tipo, criado_em) VALUES (1, 'C', 'corrente', '2026-01-01')").run();
   const ins = (valor, tipo, data) => () => db.prepare(
-    'INSERT INTO transactions (user_id, descricao, valor_centavos, tipo, categoria_id, data) VALUES (1, ?, ?, ?, 1, ?)'
+    'INSERT INTO transactions (user_id, conta_id, descricao, valor_centavos, tipo, categoria_id, data) VALUES (1, 1, ?, ?, ?, 1, ?)'
   ).run('t', valor, tipo, data);
   assert.throws(ins(0, 'saida', '2026-01-01'));
   assert.throws(ins(100, 'outro', '2026-01-01'));
