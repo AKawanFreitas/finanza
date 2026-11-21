@@ -5,4 +5,4 @@ export const TIPOS_CONTA = [
   { value: 'investimento', label: 'Investimentos' },
 ];
 
-export const rotuloTipo = tipo => TIPOS_CONTA.find(t => t.value === tipo)?.label ?? tipo;
+export const rotuloTipo = tipo => (tipo === 'cartao' ? 'Cartão de crédito' : TIPOS_CONTA.find(t => t.value === tipo)?.label ?? tipo);
