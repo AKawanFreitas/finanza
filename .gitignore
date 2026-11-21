@@ -33,3 +33,9 @@ backend/*.db.backup-*
 
 # Backups do banco (npm run backup)
 backend/backups/
+
+# Variáveis de ambiente locais (podem ter senhas): copie de .env.example
+.env
+.env.*
+!.env.example
+backend/.env
