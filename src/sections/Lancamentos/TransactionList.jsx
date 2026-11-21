@@ -1,26 +1,59 @@
-import { useState } from 'react';
-import { Pencil, Trash2, Search } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Pencil, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import Select from '../../components/Select';
 import { useFinance } from '../../context/FinanceContext';
+import { api, query } from '../../utils/api';
 import { fmt, fmtDate, getCatColor } from '../../utils/formatters';
 
-const NO_FILTERS = { busca: '', tipo: '', cat: '', mes: '' };
+const NO_FILTERS = { busca: '', tipo: '', categoria_id: '', conta_id: '', mes: '' };
+const POR_PAGINA = 20;
 
 export default function TransactionList() {
-  const { transactions, categorias, delTransaction, editing, setEditing } = useFinance();
+  const { categorias, contas, versao, delTransaction, editing, setEditing } = useFinance();
   const [filters, setFilters] = useState(NO_FILTERS);
-  const setFilter = (field, value) => setFilters(f => ({ ...f, [field]: value }));
+  const [buscaAplicada, setBuscaAplicada] = useState('');
+  const [pagina, setPagina] = useState(1);
+  const [resultado, setResultado] = useState(null);
+  const [erro, setErro] = useState('');
+  const pedido = useRef(0);
+  const buscaRef = useRef('');
 
-  const query = filters.busca.trim().toLowerCase();
-  const sorted = transactions
-    .filter(t => !query || t.desc.toLowerCase().includes(query) || (t.obs || '').toLowerCase().includes(query))
-    .filter(t => !filters.tipo || t.tipo === filters.tipo)
-    .filter(t => !filters.cat  || t.cat === filters.cat)
-    .filter(t => !filters.mes  || t.data.startsWith(filters.mes))
-    .sort((a, b) => b.data.localeCompare(a.data) || b.id - a.id);
+  const setFilter = (field, value) => {
+    setFilters(f => ({ ...f, [field]: value }));
+    if (field !== 'busca') setPagina(1);
+  };
+
+  // A busca por texto espera a pessoa parar de digitar antes de ir ao servidor.
+  // Só volta à página 1 se o texto realmente mudou (senão o timer de abertura desfaria a navegação).
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const novo = filters.busca.trim();
+      if (novo === buscaRef.current) return;
+      buscaRef.current = novo;
+      setBuscaAplicada(novo);
+      setPagina(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [filters.busca]);
+
+  useEffect(() => {
+    const id = ++pedido.current;
+    api(`/transactions${query({
+      q: buscaAplicada, tipo: filters.tipo, categoria_id: filters.categoria_id,
+      conta_id: filters.conta_id, mes: filters.mes, pagina, limite: POR_PAGINA,
+    })}`).then(({ ok, data }) => {
+      if (id !== pedido.current) return; // chegou uma resposta mais nova, esta é descartada
+      if (!ok) return setErro(data?.error || 'Não foi possível carregar os lançamentos.');
+      setErro('');
+      setResultado(data);
+      if (data.pagina !== pagina) setPagina(data.pagina); // a página saiu do intervalo (ex.: apagou o último item dela)
+    });
+  }, [buscaAplicada, filters.tipo, filters.categoria_id, filters.conta_id, filters.mes, pagina, versao]);
 
   const hasFilters = Object.values(filters).some(Boolean);
-  const saldo = sorted.reduce((sum, t) => sum + (t.tipo === 'entrada' ? t.valor : -t.valor), 0);
+  const itens = resultado?.itens ?? [];
+  const total = resultado?.total ?? 0;
+  const saldo = resultado?.totais.saldo ?? 0;
 
   const tipoOptions = [
     { value: '',        label: 'Todos os tipos' },
@@ -29,7 +62,11 @@ export default function TransactionList() {
   ];
   const catOptions = [
     { value: '', label: 'Todas as categorias' },
-    ...categorias.map(c => ({ value: c.nome, label: c.nome, color: c.cor })),
+    ...categorias.map(c => ({ value: String(c.id), label: c.nome, color: c.cor })),
+  ];
+  const contaOptions = [
+    { value: '', label: 'Todas as contas' },
+    ...contas.map(c => ({ value: String(c.id), label: c.arquivada ? `${c.nome} (arquivada)` : c.nome, color: c.cor })),
   ];
 
   return (
@@ -37,12 +74,12 @@ export default function TransactionList() {
       <div className="card-head" style={{ marginBottom: '0.75rem' }}>
         <div className="card-title">Histórico de lançamentos</div>
         <div className="card-sub">
-          {sorted.length} {sorted.length === 1 ? 'registro' : 'registros'}
-          {hasFilters && sorted.length > 0 && <> · saldo {saldo < 0 ? '-' : ''}{fmt(Math.abs(saldo))}</>}
+          {total} {total === 1 ? 'registro' : 'registros'}
+          {hasFilters && total > 0 && <> · saldo {saldo < 0 ? '-' : ''}{fmt(Math.abs(saldo))}</>}
         </div>
       </div>
 
-      <div className="filters">
+      <div className="filters filters-4">
         <div className="form-input-wrap filters-search">
           <span className="form-prefix"><Search size={14} strokeWidth={2} /></span>
           <input
@@ -54,7 +91,8 @@ export default function TransactionList() {
           />
         </div>
         <Select value={filters.tipo} onChange={v => setFilter('tipo', v)} options={tipoOptions} />
-        <Select value={filters.cat}  onChange={v => setFilter('cat', v)}  options={catOptions} />
+        <Select value={filters.categoria_id} onChange={v => setFilter('categoria_id', v)} options={catOptions} />
+        <Select value={filters.conta_id} onChange={v => setFilter('conta_id', v)} options={contaOptions} />
         <input
           className="form-control"
           type="month"
@@ -63,7 +101,7 @@ export default function TransactionList() {
           onChange={e => setFilter('mes', e.target.value)}
         />
         {hasFilters && (
-          <button className="btn btn-ghost" onClick={() => setFilters(NO_FILTERS)}>Limpar filtros</button>
+          <button className="btn btn-ghost" onClick={() => { setFilters(NO_FILTERS); setPagina(1); }}>Limpar filtros</button>
         )}
       </div>
 
@@ -75,20 +113,24 @@ export default function TransactionList() {
         <div />
       </div>
 
-      {sorted.length === 0 ? (
+      {erro ? (
+        <div className="empty">{erro}</div>
+      ) : !resultado ? (
+        <div className="empty">Carregando...</div>
+      ) : itens.length === 0 ? (
         <div className="empty">
           {hasFilters ? 'Nenhum lançamento corresponde aos filtros.' : 'Nenhum lançamento ainda. Use o formulário acima para adicionar o primeiro.'}
         </div>
-      ) : sorted.map(t => {
-        const color   = getCatColor(categorias, t.cat);
-        const isIn    = t.tipo === 'entrada';
+      ) : itens.map(t => {
+        const color = getCatColor(categorias, t.cat);
+        const isIn  = t.tipo === 'entrada';
         return (
           <div key={t.id} className={`hist-row ${editing?.id === t.id ? 'editing' : ''}`}>
             <div className="hist-desc-wrap">
               <span className="dot" style={{ background: color }} />
               <div>
                 <div className="hist-desc">{t.desc}</div>
-                {t.obs && <div className="hist-obs">{t.obs}</div>}
+                <div className="hist-obs">{[t.conta, t.obs].filter(Boolean).join(' · ')}</div>
               </div>
             </div>
             <div><span className="cat-badge">{t.cat}</span></div>
@@ -107,6 +149,18 @@ export default function TransactionList() {
           </div>
         );
       })}
+
+      {resultado && resultado.paginas > 1 && (
+        <nav className="pager" aria-label="Paginação">
+          <button className="btn btn-sm" disabled={pagina <= 1} onClick={() => setPagina(p => p - 1)}>
+            <ChevronLeft size={14} strokeWidth={2} /> Anterior
+          </button>
+          <span>Página {resultado.pagina} de {resultado.paginas}</span>
+          <button className="btn btn-sm" disabled={pagina >= resultado.paginas} onClick={() => setPagina(p => p + 1)}>
+            Próxima <ChevronRight size={14} strokeWidth={2} />
+          </button>
+        </nav>
+      )}
     </div>
   );
 }

@@ -3,24 +3,27 @@ import { useFinance } from '../../context/FinanceContext';
 import { today } from '../../utils/formatters';
 import Select from '../../components/Select';
 import {
-  AlignLeft, Tag, Calendar, MessageSquare,
+  AlignLeft, Tag, Calendar, MessageSquare, Wallet,
   ArrowDownLeft, ArrowUpRight, Plus, RotateCcw, Check, X
 } from 'lucide-react';
 
-const EMPTY = (cats) => ({ desc: '', valor: '', tipo: 'saida', cat: cats[0]?.nome || '', data: today(), obs: '' });
+const EMPTY = (cats, contas) => ({
+  desc: '', valor: '', tipo: 'saida', cat: cats[0]?.nome || '',
+  conta_id: contas.find(c => !c.arquivada)?.id ?? null, data: today(), obs: '',
+});
 
 export default function TransactionForm() {
-  const { categorias, addTransaction, updateTransaction, editing, setEditing } = useFinance();
-  const [form, setForm] = useState(EMPTY(categorias));
+  const { categorias, contas, addTransaction, updateTransaction, editing, setEditing } = useFinance();
+  const [form, setForm] = useState(EMPTY(categorias, contas));
 
   useEffect(() => {
     if (editing) {
-      const { desc, valor, tipo, cat, data, obs } = editing;
-      setForm({ desc, valor: String(valor), tipo, cat, data, obs: obs || '' });
+      const { desc, valor, tipo, cat, conta_id, data, obs } = editing;
+      setForm({ desc, valor: String(valor), tipo, cat, conta_id, data, obs: obs || '' });
     } else {
-      setForm(EMPTY(categorias));
+      setForm(EMPTY(categorias, contas));
     }
-  }, [editing, categorias]);
+  }, [editing, categorias, contas]);
 
   function set(field, value) { setForm(f => ({ ...f, [field]: value })); }
 
@@ -32,10 +35,14 @@ export default function TransactionForm() {
       : await addTransaction(data);
     if (!ok) return;
     if (editing) setEditing(null);
-    else setForm(EMPTY(categorias));
+    else setForm(EMPTY(categorias, contas));
   }
 
   const catOptions = categorias.map(c => ({ value: c.nome, label: c.nome, color: c.cor }));
+  // Contas arquivadas não recebem lançamentos novos, exceto a que o lançamento em edição já usa.
+  const contaOptions = contas
+    .filter(c => !c.arquivada || c.id === form.conta_id)
+    .map(c => ({ value: c.id, label: c.nome, color: c.cor }));
   const isEntrada  = form.tipo === 'entrada';
 
   return (
@@ -113,6 +120,16 @@ export default function TransactionForm() {
         </div>
 
         <div className="form-group">
+          <label className="form-label">Conta</label>
+          <Select
+            value={form.conta_id}
+            onChange={v => set('conta_id', v)}
+            options={contaOptions}
+            prefix={<Wallet size={14} strokeWidth={2} />}
+          />
+        </div>
+
+        <div className="form-group">
           <label className="form-label">Data</label>
           <div className="form-input-wrap">
             <span className="form-prefix"><Calendar size={14} strokeWidth={2} /></span>
@@ -153,7 +170,7 @@ export default function TransactionForm() {
         ) : (
           <button
             className="btn btn-ghost"
-            onClick={() => setForm(EMPTY(categorias))}
+            onClick={() => setForm(EMPTY(categorias, contas))}
             title="Limpar formulário"
           >
             <RotateCcw size={14} strokeWidth={2} />
