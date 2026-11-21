@@ -39,6 +39,7 @@ export default function Entrar() {
         <img src="/logo sem texto - finanza.png" alt="" className="entrar-logo" />
         <h1>Finanza</h1>
         <p>Acompanhe entradas, gastos e contas fixas do mês em um lugar só.</p>
+        <img src="/login-ilustracao.webp" alt="" className="entrar-ilustracao" />
       </section>
 
       <section className="entrar-painel">
