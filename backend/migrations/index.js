@@ -8,6 +8,7 @@ const migrations = [
   require('./004_automacao_orcamentos_e_email'),
   require('./005_limites'),
   require('./006_cartao_de_credito'),
+  require('./007_metas'),
 ].sort((a, b) => a.version - b.version);
 
 const ultimaVersao = migrations[migrations.length - 1].version;
