@@ -13,6 +13,7 @@ import Lancamentos from './sections/Lancamentos/Lancamentos';
 import Contas from './sections/Contas/Contas';
 import Importar from './sections/Importar/Importar';
 import Cartoes from './sections/Cartoes/Cartoes';
+import Metas from './sections/Metas/Metas';
 import Orcamentos from './sections/Orcamentos/Orcamentos';
 import Recorrentes from './sections/Recorrentes/Recorrentes';
 import Categorias from './sections/Categorias/Categorias';
@@ -50,6 +51,7 @@ function AppLogado() {
           {section === 'contas'        && <Contas />}
           {section === 'cartoes'       && <Cartoes />}
           {section === 'importar'      && <Importar onNavigate={setSection} />}
+          {section === 'metas'         && <Metas />}
           {section === 'orcamentos'    && <Orcamentos ym={ym} onYmChange={setYm} />}
           {section === 'recorrentes'   && <Recorrentes />}
           {section === 'categorias'    && <Categorias />}

@@ -1,4 +1,4 @@
-import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp, Target, CreditCard } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp, Target, CreditCard, PiggyBank } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const NAV = [
@@ -8,6 +8,7 @@ const NAV = [
   { id: 'cartoes',     label: 'Cartões',     Icon: CreditCard },
   { id: 'importar',    label: 'Importar',    Icon: FileUp },
   { id: 'orcamentos',  label: 'Orçamentos',  Icon: Target },
+  { id: 'metas',       label: 'Metas',       Icon: PiggyBank },
   { id: 'recorrentes', label: 'Recorrentes', Icon: Repeat },
   { id: 'categorias',  label: 'Categorias',  Icon: Tags },
 ];
