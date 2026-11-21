@@ -7,6 +7,7 @@ const migrations = [
   require('./003_contas_transferencias_e_vinculos'),
   require('./004_automacao_orcamentos_e_email'),
   require('./005_limites'),
+  require('./006_cartao_de_credito'),
 ].sort((a, b) => a.version - b.version);
 
 const ultimaVersao = migrations[migrations.length - 1].version;
@@ -23,10 +24,23 @@ function migrar(db, { antes } = {}) {
 
   const aplicadas = [];
   for (const m of pendentes) {
-    db.transaction(() => {
-      m.up(db);
-      db.pragma(`user_version = ${m.version}`);
-    })();
+    // Reconstruir uma tabela que outras referenciam (para mudar um CHECK, por exemplo) exige o procedimento
+    // oficial do SQLite: FKs desligadas (só se muda fora de transação), mudança, conferência de integridade
+    // ainda dentro da transação, e FKs religadas aconteça o que acontecer.
+    const reconstroi = !!m.reconstroiTabelaPai;
+    if (reconstroi) db.pragma('foreign_keys = OFF');
+    try {
+      db.transaction(() => {
+        m.up(db);
+        if (reconstroi) {
+          const quebradas = db.pragma('foreign_key_check');
+          if (quebradas.length) throw new Error(`Migração ${m.version} deixaria ${quebradas.length} chave(s) estrangeira(s) inválida(s).`);
+        }
+        db.pragma(`user_version = ${m.version}`);
+      })();
+    } finally {
+      if (reconstroi) db.pragma('foreign_keys = ON');
+    }
     aplicadas.push(m.version);
   }
   return aplicadas;
