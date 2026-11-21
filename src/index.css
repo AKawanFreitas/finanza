@@ -514,3 +514,31 @@ button { font-family: inherit }
   .table th:nth-child(4), .table td:nth-child(4),
   .table th:nth-child(5), .table td:nth-child(5) { display: none }
 }
+
+/* ── Marco 2: paginação, contas e importação ───────── */
+.filters-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) auto }
+.filters-4 > input[type="month"] { grid-column: auto }
+
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; color: var(--muted); border-top: 1px solid var(--line) }
+.btn:disabled { opacity: .5; cursor: not-allowed }
+.btn:disabled:hover { border-color: var(--line2) }
+
+.saldo-total { text-align: right }
+.saldo-total small { display: block; color: var(--muted); font-size: 12.5px; font-weight: 600 }
+.saldo-total strong { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--navy) }
+.saldo-total strong.neg, .rec-amount.neg { color: var(--red) }
+.rec-card.arquivada { opacity: .6 }
+.transf-rota { display: inline-flex; align-items: center; gap: 6px }
+
+.import-bulk { display: flex; gap: 14px }
+.import-scroll { max-height: 520px; overflow: auto; border-top: 1px solid var(--line) }
+.import-table th { position: sticky; top: 0; background: var(--head); z-index: 1 }
+.import-table td, .import-table th { padding-top: 9px; padding-bottom: 9px }
+.import-table tr.desmarcada { opacity: .5 }
+.import-cat { padding: 6px 8px; font-size: 13.5px; min-width: 150px }
+.import-aviso { margin-left: 8px; font-size: 11.5px }
+.import-rodape { border-top: 1px solid var(--line); border-bottom: none }
+
+@media (max-width: 900px) {
+  .filters-4 { grid-template-columns: 1fr 1fr }
+}
