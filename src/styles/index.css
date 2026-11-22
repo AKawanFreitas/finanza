@@ -1,0 +1,16 @@
+/* A ordem importa: a cascata segue a mesma sequência do antigo index.css. */
+@import './tokens.css';
+@import './base.css';
+@import './layout.css';
+@import './painel.css';
+@import './dashboard.css';
+@import './formularios.css';
+@import './listas.css';
+@import './responsivo.css';
+@import './auth.css';
+@import './configuracoes.css';
+@import './contas-importacao.css';
+@import './orcamentos.css';
+@import './cartoes.css';
+@import './metas.css';
+@import './contas-pagar.css';

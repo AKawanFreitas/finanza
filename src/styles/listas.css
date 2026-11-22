@@ -1,0 +1,53 @@
+/* ── Filtros e lista de lançamentos ────── */
+.filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; gap: 10px; align-items: center; padding: 16px 20px }
+.filters-search { grid-column: 1 / -1 }
+
+.hist-head, .hist-row { display: grid; grid-template-columns: 2fr 1fr 1fr 150px 64px; gap: 8px; align-items: center; padding-left: 20px; padding-right: 20px }
+.hist-head { padding-top: 10px; padding-bottom: 10px; background: var(--head); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 12.5px; font-weight: 700; color: var(--muted) }
+.hist-row { padding-top: 11px; padding-bottom: 11px; border-bottom: 1px solid var(--line) }
+.hist-row:nth-child(even) { background: var(--zebra) }
+.hist-row > * { min-width: 0 }
+.hist-row:hover { background: var(--green-bg) }
+.hist-row.editing { background: var(--green-bg); box-shadow: inset 3px 0 0 var(--green-500) }
+.hist-desc-wrap { display: flex; align-items: center; gap: 10px }
+.hist-desc { font-weight: 600 }
+.hist-obs { font-size: 13px; color: var(--muted) }
+.hist-date, .cat-badge { font-size: 14px; color: var(--muted) }
+.hist-actions { display: flex; justify-content: flex-end }
+.tx-amount { font-weight: 700; display: flex; align-items: center; justify-content: flex-end; white-space: nowrap }
+.tx-amount.in { color: var(--green) }
+
+.del-btn { width: 30px; height: 30px; border-radius: 5px; border: none; background: transparent; color: var(--faint); cursor: pointer; display: flex; align-items: center; justify-content: center }
+.del-btn:hover { background: var(--red-bg); color: var(--red) }
+
+/* ── Recorrentes e categorias ──────────── */
+.launch-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 20px; color: var(--muted); border-bottom: 1px solid var(--line) }
+.rec-grid, .cat-admin-grid { display: flex; flex-direction: column }
+.rec-card, .cat-admin-row { display: flex; align-items: center; gap: 12px; padding: 13px 20px; border-bottom: 1px solid var(--line) }
+.rec-card { justify-content: space-between }
+.rec-card:nth-child(even), .cat-admin-row:nth-child(even) { background: var(--zebra) }
+.rec-card:last-child, .cat-admin-row:last-child { border-bottom: none }
+.rec-card.editing, .cat-admin-row.editing { background: var(--green-bg); box-shadow: inset 3px 0 0 var(--green-500) }
+.rec-left { display: flex; align-items: center; gap: 12px }
+.rec-name-text { font-weight: 700 }
+.rec-detail-text { font-size: 13px; color: var(--muted) }
+.rec-right { display: flex; align-items: center; gap: 14px }
+.rec-amount { font-weight: 800; color: var(--navy) }
+.tag { font-size: var(--fs-xs); font-weight: 700; padding: 2px 9px; border-radius: 999px; background: var(--head); color: var(--muted) }
+.tag-fixo { background: var(--tag-bg); color: var(--navy) }
+.tag-rec  { background: var(--green-bg); color: var(--green-700) }
+.launched { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: var(--green) }
+.cat-admin-name { flex: 1; font-weight: 600 }
+
+/* ── Toast ─────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: var(--z-toast); pointer-events: none;
+  background: var(--navy); color: var(--white); font-size: 14px; font-weight: 600;
+  padding: 12px 16px; border-radius: 5px; border-left: 4px solid var(--green-300); max-width: min(420px, calc(100vw - 32px));
+  transform: translateY(12px); opacity: 0; transition: transform .2s ease-out, opacity .2s ease-out;
+}
+.toast.show { transform: translateY(0); opacity: 1 }
+.toast.err { border-left-color: var(--red) }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important } }
+

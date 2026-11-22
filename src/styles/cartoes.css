@@ -1,0 +1,28 @@
+/* ── Marco 4: cartões, parcelas, diálogo ───────────── */
+.cartao-linha { display: flex; align-items: center; gap: 8px; padding: 0 20px 0 0; border-bottom: 1px solid var(--line) }
+.cartao-linha:last-child { border-bottom: none }
+.cartao-linha.ativo { background: var(--green-bg); box-shadow: inset 3px 0 0 var(--green-500) }
+.cartao-linha.arquivada { opacity: .6 }
+.cartao-corpo { flex: 1; min-width: 0; padding: 16px 20px; background: none; border: none; text-align: left; cursor: pointer; color: inherit; font: inherit }
+.cartao-corpo:hover { background: rgba(0,0,0,.02) }
+
+.fatura-mes { width: auto; padding: 6px 10px; font-size: 13.5px }
+.fatura-resumo { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; padding: 14px 20px; border-bottom: 1px solid var(--line) }
+.fatura-resumo small { display: block; color: var(--muted); font-size: 12.5px; font-weight: 600 }
+.fatura-resumo strong { font-size: 18px; font-weight: 800; color: var(--navy) }
+.fatura-resumo .chip { margin-left: auto }
+.fatura-pagamentos { display: flex; flex-direction: column; gap: 2px; padding: 12px 20px; color: var(--muted); font-size: 13.5px; border-top: 1px solid var(--line) }
+.fatura-pagamentos strong { color: var(--navy) }
+.fatura-pagar { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 12px; align-items: end; padding: 16px 20px; border-top: 1px solid var(--line); background: var(--head) }
+
+.parcelas-info { margin-top: 2px; color: var(--muted); font-size: 13px }
+
+.modal-fundo { position: fixed; inset: 0; z-index: var(--z-modal); display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(10,21,38,.55) }
+.modal { width: 100%; max-width: 420px; padding: 22px; border-radius: 8px; background: var(--surface); box-shadow: 0 20px 50px rgba(0,0,0,.3) }
+.modal h2 { font-size: 17px; color: var(--navy); margin-bottom: 6px }
+.modal p { color: var(--muted); margin-bottom: 16px }
+.modal-acoes { display: flex; flex-direction: column; gap: 8px }
+.modal-acoes .btn { justify-content: center }
+
+@media (max-width: 900px) { .fatura-pagar { grid-template-columns: 1fr 1fr } }
+

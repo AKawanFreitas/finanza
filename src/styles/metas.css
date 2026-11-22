@@ -1,0 +1,13 @@
+/* ── Metas ─────────────────────────────────────────── */
+.meta-card.arquivada { opacity: .6 }
+.meta-sugestao { color: var(--green-700); font-weight: 700 }
+.meta-acoes { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px }
+.meta-valor { width: 150px }
+.meta-valor .form-control { padding-top: 6px; padding-bottom: 6px }
+.meta-icones { margin-left: auto; display: inline-flex }
+.meta-historico { list-style: none; margin-top: 10px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--head) }
+.meta-historico li { display: flex; align-items: center; gap: 12px; padding: 5px 0; font-size: 13.5px; color: var(--muted) }
+.meta-historico li span:first-child { flex: 1 }
+.meta-historico .pos { color: var(--green); font-weight: 700 }
+.meta-historico .neg { color: var(--red); font-weight: 700 }
+

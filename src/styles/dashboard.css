@@ -1,0 +1,87 @@
+/* ── Indicadores ───────────────────────── */
+.kpis { display: grid; grid-template-columns: 1.25fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 18px }
+.kpi {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0;
+}
+.kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 8px }
+.kpi-label { font-weight: 600; color: var(--muted) }
+.kpi-value { font-size: clamp(22px, 2.3vw, 30px); font-weight: 800; letter-spacing: -0.03em; color: var(--navy); line-height: 1.1; white-space: nowrap }
+.kpi-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; min-height: 28px }
+.kpi-note { font-size: 13px; color: var(--muted) }
+.spark { width: 84px; height: 28px; flex-shrink: 0; color: var(--green-500) }
+.kpi:nth-child(3) .spark { color: var(--navy) }
+
+.kpi-brand { background: var(--brand-grad); border-color: var(--green-700); color: var(--white) }
+.kpi-brand .kpi-label, .kpi-brand .kpi-note { color: rgba(255,255,255,.85) }
+.kpi-brand .kpi-value { color: var(--white) }
+
+.dash-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 18px; align-items: start }
+.dash-col { display: flex; flex-direction: column; min-width: 0 }
+.dash-col .panel:last-child { margin-bottom: 0 }
+
+/* Gastos por dia */
+.daily { margin: 0 }
+.daily-plot { display: flex; align-items: flex-end; gap: 3px; height: 190px; border-bottom: 1px solid var(--line2) }
+.daily-col { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center }
+.daily-bar { width: 100%; background: var(--navy); border-radius: 2px 2px 0 0; flex: none }
+.daily-bar.peak { background: var(--amber-bar) }
+.daily-bar.is-zero { height: 0 }
+.daily-ticks { display: flex; gap: 3px; margin-top: 4px }
+.daily-tick { flex: 1; text-align: center; font-size: var(--fs-xs); color: var(--faint); height: 14px; line-height: 14px }
+.daily figcaption { margin-top: 10px; color: var(--muted); font-size: 13px }
+.daily figcaption strong { color: var(--navy) }
+
+/* Rosca */
+.donut-wrap { display: flex; flex-direction: column; gap: 20px; align-items: center }
+.donut { width: 176px; height: 176px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0 }
+.donut-hole {
+  width: 112px; height: 112px; border-radius: 50%; background: var(--surface);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2;
+}
+.donut-hole small { font-size: var(--fs-xs); color: var(--muted) }
+.donut-hole strong { font-size: 15px; font-weight: 800; color: var(--navy) }
+.donut-legend { list-style: none; width: 100% }
+.donut-legend li { display: grid; grid-template-columns: 9px 1fr auto auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line) }
+.legend-pct { color: var(--faint); font-size: 13px; min-width: 32px; text-align: right }
+.legend-val { font-weight: 700; min-width: 92px; text-align: right }
+
+/* Comprometimento */
+.meter-big { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; color: var(--navy); line-height: 1 }
+.meter-track { height: 10px; background: var(--head); border: 1px solid var(--line); border-radius: 5px; overflow: hidden; margin: 12px 0 8px }
+.meter-fill { height: 100%; background: var(--green-500) }
+.meter-fill.warn { background: var(--amber-bar) }
+.meter-fill.bad  { background: var(--red) }
+.meter-note { color: var(--muted); font-size: 13px }
+
+/* Histórico */
+.history { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; align-items: end }
+.history-col { display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: .55 }
+.history-col.current { opacity: 1 }
+.history-bars { height: 120px; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 4px; border-bottom: 1px solid var(--line2) }
+.history-bar { width: 38%; max-width: 18px; border-radius: 2px 2px 0 0; min-height: 2px }
+.history-bar.in  { background: var(--green-500) }
+.history-bar.out { background: var(--navy) }
+.history-label { font-size: 12.5px; color: var(--muted); font-weight: 600 }
+.history-col.current .history-label { color: var(--navy); font-weight: 800 }
+.history-key { grid-column: 1 / -1; display: flex; gap: 18px; font-size: 13px; color: var(--muted); margin-top: 4px }
+.history-key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px }
+.key-in  { background: var(--green-500) }
+.key-out { background: var(--navy) }
+
+/* Tabelas */
+.table { width: 100%; border-collapse: collapse }
+.table th {
+  text-align: left; padding: 10px 20px; font-size: 12.5px; font-weight: 700; color: var(--muted);
+  background: var(--head); border-bottom: 1px solid var(--line);
+}
+.table td { padding: 11px 20px; border-bottom: 1px solid var(--line) }
+.table tbody tr:nth-child(even) { background: var(--zebra) }
+.table tbody tr:hover { background: var(--green-bg) }
+.table tbody tr:last-child td { border-bottom: none }
+.table .num { text-align: right; white-space: nowrap }
+.table .strong { font-weight: 600 }
+.table .muted { color: var(--muted) }
+.table .pos { color: var(--green) }
+.tag-chip { display: inline-flex; align-items: center; gap: 7px; color: var(--muted) }
+

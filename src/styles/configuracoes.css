@@ -1,0 +1,64 @@
+/* ── Configurações e administração ──────── */
+.form-stack { display: flex; flex-direction: column; gap: 16px }
+.form-duplo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px }
+.form-estreito { max-width: 320px }
+.form-acoes { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
+
+.btn-perigo { background: var(--red); border-color: var(--red); color: var(--white) }
+.btn-perigo:hover { background: var(--red-strong); border-color: var(--red-strong) }
+
+.panel-risco { border-color: var(--red-line) }
+.panel-risco .panel-head { background: var(--red-bg); border-bottom-color: var(--red-line) }
+.panel-risco .panel-head h2 { color: var(--red) }
+
+.panel-destaque { border-color: var(--green-500) }
+.panel-destaque .panel-head { background: var(--green-bg); border-bottom-color: var(--green-line) }
+
+.senha-provisoria { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.senha-provisoria code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 18px; font-weight: 700;
+  background: var(--surface); border: 1px solid var(--line2); border-radius: 5px; padding: 8px 14px;
+  letter-spacing: 0.04em; user-select: all;
+}
+
+.linha-acoes { display: flex; gap: 4px; justify-content: flex-end; flex-wrap: nowrap }
+
+/* Tabela larga: rola dentro do painel em vez de ser cortada. */
+.tabela-rolagem { overflow-x: auto }
+.tabela-rolagem .table { min-width: 820px }
+.chip + .chip { margin-left: 6px }
+
+/* Conta no rodapé do menu */
+.conta {
+  margin-top: auto; display: flex; align-items: center; gap: 10px; text-align: left;
+  padding: 14px 16px; background: none; border: none; cursor: pointer;
+  border-top: 1px solid rgba(255,255,255,.08); color: var(--side-ink); width: 100%;
+  transition: background var(--ease), color var(--ease);
+}
+.conta:hover, .conta.active { background: rgba(255,255,255,.06); color: var(--white) }
+.conta-avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  background: var(--brand-grad); color: var(--white); font-size: 13px; font-weight: 700;
+  display: grid; place-items: center;
+}
+.conta-texto { display: flex; flex-direction: column; min-width: 0; line-height: 1.25 }
+.conta-texto strong { font-size: 14px; font-weight: 600; color: var(--white); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.conta-texto small { font-size: var(--fs-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.conta-engrenagem { flex-shrink: 0; opacity: .7 }
+
+@media (max-width: 860px) {
+  .entrar { grid-template-columns: 1fr }
+  .entrar-marca { padding: 28px 20px; gap: 8px }
+  .entrar-marca::after { top: auto; left: 0; right: 0; height: 4px; width: auto }
+  .entrar-logo { width: 44px; height: 44px }
+  .entrar-marca p { font-size: 14px }
+  .entrar-ilustracao { display: none }
+  .form-duplo { grid-template-columns: 1fr }
+  /* Na barra inferior, a conta vira só o avatar. */
+  .conta { margin: 0; width: auto; flex-shrink: 0; border-top: none; padding: 6px 12px 6px 4px }
+  .conta-texto, .conta-engrenagem { display: none }
+  .conta.active .conta-avatar { box-shadow: 0 0 0 2px var(--green-300) }
+  .table th:nth-child(4), .table td:nth-child(4),
+  .table th:nth-child(5), .table td:nth-child(5) { display: none }
+}
+
