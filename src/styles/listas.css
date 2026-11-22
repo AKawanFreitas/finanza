@@ -38,14 +38,23 @@
 .cat-admin-name { flex: 1; font-weight: 600 }
 
 /* ── Toast ─────────────────────────────── */
+.toast-regiao { position: fixed; bottom: 24px; right: 24px; z-index: var(--z-toast); pointer-events: none }
 .toast {
-  position: fixed; bottom: 24px; right: 24px; z-index: var(--z-toast); pointer-events: none;
-  background: var(--navy); color: var(--white); font-size: 14px; font-weight: 600;
-  padding: 12px 16px; border-radius: 5px; border-left: 4px solid var(--green-300); max-width: min(420px, calc(100vw - 32px));
-  transform: translateY(12px); opacity: 0; transition: transform .2s ease-out, opacity .2s ease-out;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--navy); color: var(--white); font-size: var(--fs-sm); font-weight: 600;
+  padding: 12px 16px; border-radius: var(--radius); max-width: min(420px, calc(100vw - 32px));
+  box-shadow: var(--shadow-pop);
+  transform: translateY(12px); opacity: 0; visibility: hidden;
+  transition: transform .2s ease-out, opacity .2s ease-out, visibility .2s;
 }
-.toast.show { transform: translateY(0); opacity: 1 }
-.toast.err { border-left-color: var(--red) }
+.toast.show { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto }
+.toast-icone { color: var(--green-300); flex-shrink: 0 }
+.toast.err .toast-icone { color: var(--red-soft) }
+.toast-acao {
+  margin-left: 4px; padding: 4px 8px; border: none; border-radius: var(--radius-sm); cursor: pointer;
+  background: rgba(255,255,255,.14); color: var(--white); font-weight: 700; font-size: var(--fs-sm);
+}
+.toast-acao:hover { background: rgba(255,255,255,.24) }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important } }
 

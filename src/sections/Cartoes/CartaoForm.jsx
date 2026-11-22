@@ -41,7 +41,7 @@ export default function CartaoForm({ editando, onCancelar, onSalvo }) {
     try {
       const { ok, data } = await api(editando ? `/cartoes/${editando.id}` : '/cartoes', { method: editando ? 'PUT' : 'POST', body: corpo });
       if (!ok) return showToast(data?.error || 'Não foi possível salvar o cartão.', 'err');
-      showToast(editando ? 'Cartão atualizado ✓' : 'Cartão criado ✓');
+      showToast(editando ? 'Cartão atualizado' : 'Cartão criado');
       if (!editando) setForm(VAZIO);
       onSalvo(data);
     } finally {

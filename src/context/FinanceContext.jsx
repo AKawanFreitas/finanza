@@ -17,13 +17,18 @@ export function FinanceProvider({ children }) {
   const [editingCat, setEditingCat]   = useState(null);
   const [editingConta, setEditingConta] = useState(null);
 
-  const [toast, setToast] = useState({ msg: '', type: 'ok', visible: false });
+  const [toast, setToast] = useState({ msg: '', type: 'ok', visible: false, acao: null });
   const toastTimer = useRef(null);
 
-  const showToast = useCallback((msg, type = 'ok') => {
+  // `acao` ({ rotulo, onClick }) mostra um botão no aviso, como "Desfazer". Com ação o aviso dura mais.
+  const showToast = useCallback((msg, type = 'ok', acao = null) => {
     clearTimeout(toastTimer.current);
-    setToast({ msg, type, visible: true });
-    toastTimer.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 2400);
+    setToast({ msg, type, visible: true, acao });
+    toastTimer.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), acao ? 6000 : 2800);
+  }, []);
+  const hideToast = useCallback(() => {
+    clearTimeout(toastTimer.current);
+    setToast(t => ({ ...t, visible: false }));
   }, []);
 
   const carregarContas = useCallback(async () => {
@@ -77,14 +82,14 @@ export function FinanceProvider({ children }) {
   async function addTransaction(data, { silent = false } = {}) {
     if (!await enviar('/transactions', 'POST', data)) return false;
     invalidar();
-    if (!silent) showToast(data.tipo === 'entrada' ? 'Receita adicionada ✓' : 'Gasto adicionado ✓');
+    if (!silent) showToast(data.tipo === 'entrada' ? 'Receita adicionada' : 'Gasto adicionado');
     return true;
   }
 
   async function updateTransaction(id, data) {
     if (!await enviar(`/transactions/${id}`, 'PUT', data)) return false;
     invalidar();
-    showToast('Lançamento atualizado ✓');
+    showToast('Lançamento atualizado');
     return true;
   }
 
@@ -100,14 +105,14 @@ export function FinanceProvider({ children }) {
   async function addRecorrente(data) {
     if (!await enviar('/recorrentes', 'POST', data)) return false;
     await carregarRecorrentes();
-    showToast('Recorrente adicionado ✓');
+    showToast('Recorrente adicionado');
     return true;
   }
 
   async function updateRecorrente(id, data) {
     if (!await enviar(`/recorrentes/${id}`, 'PUT', data)) return false;
     await carregarRecorrentes();
-    showToast('Recorrente atualizado ✓');
+    showToast('Recorrente atualizado');
     return true;
   }
 
@@ -121,7 +126,7 @@ export function FinanceProvider({ children }) {
   async function lancarRecorrente(id) {
     if (!await enviar(`/recorrentes/${id}/lancar`, 'POST', { mes: currentYM() })) return false;
     invalidar();
-    showToast('Gasto adicionado ✓');
+    showToast('Gasto adicionado');
     return true;
   }
 
@@ -129,7 +134,7 @@ export function FinanceProvider({ children }) {
     const r = await enviar('/recorrentes/lancar-pendentes', 'POST', { mes: currentYM() });
     if (!r) return;
     invalidar();
-    if (r.lancados) showToast(`${r.lancados} ${r.lancados === 1 ? 'recorrente lançado' : 'recorrentes lançados'} ✓`);
+    if (r.lancados) showToast(`${r.lancados} ${r.lancados === 1 ? 'recorrente lançado' : 'recorrentes lançados'}`);
   }
 
   /* ── Categorias ──────────────────────────────────── */
@@ -137,7 +142,7 @@ export function FinanceProvider({ children }) {
     const created = await enviar('/categorias', 'POST', data);
     if (!created) return false;
     setCategorias(prev => [...prev, created].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')));
-    showToast('Categoria criada ✓');
+    showToast('Categoria criada');
     return true;
   }
 
@@ -146,7 +151,7 @@ export function FinanceProvider({ children }) {
     if (!updated) return false;
     setCategorias(prev => prev.map(c => (c.id === id ? updated : c)));
     invalidar(); // os nomes nos lançamentos e recorrentes mudam junto
-    showToast('Categoria atualizada ✓');
+    showToast('Categoria atualizada');
     return true;
   }
 
@@ -161,14 +166,14 @@ export function FinanceProvider({ children }) {
   async function addConta(data) {
     if (!await enviar('/contas', 'POST', data)) return false;
     await carregarContas();
-    showToast('Conta criada ✓');
+    showToast('Conta criada');
     return true;
   }
 
   async function updateConta(id, data) {
     if (!await enviar(`/contas/${id}`, 'PUT', data)) return false;
     await carregarContas();
-    showToast('Conta atualizada ✓');
+    showToast('Conta atualizada');
     return true;
   }
 
@@ -182,7 +187,7 @@ export function FinanceProvider({ children }) {
   async function addTransferencia(data) {
     if (!await enviar('/transferencias', 'POST', data)) return false;
     invalidar();
-    showToast('Transferência registrada ✓');
+    showToast('Transferência registrada');
     return true;
   }
 
@@ -194,15 +199,13 @@ export function FinanceProvider({ children }) {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#8b90a0', fontSize: '0.9rem' }}>
-        Carregando...
-      </div>
+      <div className="tela-carregando" role="status">Carregando…</div>
     );
   }
 
   return (
     <FinanceContext.Provider value={{
-      categorias, recorrentes, contas, versao, invalidar, toast, showToast,
+      categorias, recorrentes, contas, versao, invalidar, toast, showToast, hideToast,
       editing, setEditing,
       addTransaction, updateTransaction, delTransaction,
       editingRec, setEditingRec,

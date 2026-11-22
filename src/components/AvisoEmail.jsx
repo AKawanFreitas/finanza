@@ -15,7 +15,7 @@ export default function AvisoEmail() {
     setEnviando(true);
     try {
       await reenviarVerificacao();
-      showToast(`Enviamos um novo link para ${user.email} ✓`);
+      showToast(`Enviamos um novo link para ${user.email}`);
     } catch (err) {
       showToast(err.message, 'err');
     } finally {

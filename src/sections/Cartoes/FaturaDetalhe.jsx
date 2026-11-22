@@ -43,7 +43,7 @@ export default function FaturaDetalhe({ cartao }) {
         method: 'POST', body: { origem_id: Number(origem), data: pagamento.data, ...(valor ? { valor } : {}) },
       });
       if (!ok) return showToast(data?.error || 'Não foi possível pagar a fatura.', 'err');
-      showToast('Pagamento registrado ✓');
+      showToast('Pagamento registrado');
       setPagamento(p => ({ ...p, valor: '' }));
       invalidar();
     } finally {

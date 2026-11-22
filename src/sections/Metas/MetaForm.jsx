@@ -27,7 +27,7 @@ export default function MetaForm({ editando, onCancelar, onSalvo }) {
     try {
       const { ok, data } = await api(editando ? `/metas/${editando.id}` : '/metas', { method: editando ? 'PUT' : 'POST', body: corpo });
       if (!ok) return showToast(data?.error || 'Não foi possível salvar a meta.', 'err');
-      showToast(editando ? 'Meta atualizada ✓' : 'Meta criada ✓');
+      showToast(editando ? 'Meta atualizada' : 'Meta criada');
       if (!editando) setForm(VAZIO);
       onSalvo();
     } finally {

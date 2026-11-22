@@ -34,7 +34,7 @@ export default function ContaPagarForm({ editando, onCancelar, onSalvo }) {
     try {
       const { ok, data } = await api(editando ? `/contas-pagar/${editando.id}` : '/contas-pagar', { method: editando ? 'PUT' : 'POST', body: corpo });
       if (!ok) return showToast(data?.error || 'Não foi possível salvar.', 'err');
-      showToast(editando ? 'Conta atualizada ✓' : 'Conta adicionada ✓');
+      showToast(editando ? 'Conta atualizada' : 'Conta adicionada');
       if (!editando) setForm(vazio(categorias));
       onSalvo();
     } finally {
