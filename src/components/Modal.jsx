@@ -6,7 +6,8 @@ let abertos = 0;
 
 // Diálogo modal: prende o foco, fecha com Esc ou clique no fundo, devolve o foco a quem o abriu
 // e deixa o resto da página inerte (inclusive para leitores de tela) enquanto está aberto.
-export default function Modal({ titulo, onFechar, children }) {
+// `folha` abre como painel preso à base da tela (celular), em vez de caixa centralizada.
+export default function Modal({ titulo, onFechar, children, folha = false }) {
   const id = useId();
   const caixa = useRef(null);
   const fechar = useRef(onFechar);
@@ -40,8 +41,8 @@ export default function Modal({ titulo, onFechar, children }) {
   return createPortal(
     // O fundo só fecha com o mouse; o teclado fecha com Esc (tratado acima).
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-    <div className="modal-fundo" onMouseDown={e => e.target === e.currentTarget && onFechar()}>
-      <div className="modal" role="dialog" aria-modal="true" aria-labelledby={`${id}-titulo`} tabIndex={-1} ref={caixa}>
+    <div className={folha ? 'folha-fundo' : 'modal-fundo'} onMouseDown={e => e.target === e.currentTarget && onFechar()}>
+      <div className={folha ? 'folha' : 'modal'} role="dialog" aria-modal="true" aria-labelledby={`${id}-titulo`} tabIndex={-1} ref={caixa}>
         <h2 id={`${id}-titulo`}>{titulo}</h2>
         {children}
       </div>
