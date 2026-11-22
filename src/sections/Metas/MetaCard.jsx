@@ -5,6 +5,7 @@ import { api } from '../../utils/api';
 import { fmt, fmtDate } from '../../utils/formatters';
 import BarraOrcamento from '../../components/BarraOrcamento';
 import IconButton from '../../components/IconButton';
+import { useConfirm } from '../../components/Confirm';
 
 const STATUS = {
   em_andamento: { rotulo: 'Em andamento', classe: '' },
@@ -14,6 +15,7 @@ const STATUS = {
 
 export default function MetaCard({ meta, onEditar, onMudou }) {
   const { showToast } = useFinance();
+  const confirmar = useConfirm();
   const [valor, setValor] = useState('');
   const [aberto, setAberto] = useState(false);
   const [historico, setHistorico] = useState([]);
@@ -36,6 +38,7 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
   }
 
   async function removerAporte(id) {
+    if (!await confirmar({ titulo: 'Excluir este lançamento da meta?', mensagem: 'O valor guardado da meta será recalculado. Esta ação não pode ser desfeita.', rotulo: 'Excluir' })) return;
     const { ok, data } = await api(`/metas/${meta.id}/aportes/${id}`, { method: 'DELETE' });
     if (!ok) return showToast(data?.error || 'Não foi possível remover.', 'err');
     onMudou();
@@ -50,10 +53,10 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
   }
 
   async function excluir() {
-    if (!window.confirm(`Excluir a meta "${meta.nome}" e todo o histórico de aportes?`)) return;
+    if (!await confirmar({ titulo: `Excluir a meta “${meta.nome}”?`, mensagem: 'O histórico de aportes e retiradas também será excluído. Esta ação não pode ser desfeita.', rotulo: 'Excluir' })) return;
     const { ok, data } = await api(`/metas/${meta.id}`, { method: 'DELETE' });
     if (!ok) return showToast(data?.error || 'Não foi possível excluir.', 'err');
-    showToast('Meta removida', 'err');
+    showToast('Meta excluída');
     onMudou();
   }
 
@@ -102,7 +105,7 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
             <li key={a.id}>
               <span>{fmtDate(a.data)}{a.obs ? ` · ${a.obs}` : ''}</span>
               <span className={a.tipo === 'aporte' ? 'pos' : 'neg'}>{a.tipo === 'aporte' ? '+' : '−'} {fmt(a.valor)}</span>
-              <IconButton label="Remover" danger onClick={() => removerAporte(a.id)}><Trash2 size={12} strokeWidth={2} /></IconButton>
+              <IconButton label="Excluir lançamento da meta" danger onClick={() => removerAporte(a.id)}><Trash2 size={12} strokeWidth={2} /></IconButton>
             </li>
           ))}
         </ul>

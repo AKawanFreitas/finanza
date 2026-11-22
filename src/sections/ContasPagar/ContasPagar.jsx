@@ -7,11 +7,13 @@ import PagarConta from '../../components/PagarConta';
 import ContaPagarForm from './ContaPagarForm';
 import { ROTULO, CLASSE, descreverPrazo } from './status';
 import IconButton from '../../components/IconButton';
+import { useConfirm } from '../../components/Confirm';
 
 const ABAS = [['abertas', 'Em aberto'], ['atrasada', 'Atrasadas'], ['paga', 'Pagas'], ['todas', 'Todas']];
 
 export default function ContasPagar() {
   const { versao, invalidar, showToast } = useFinance();
+  const confirmar = useConfirm();
   const [aba, setAba] = useState('abertas');
   const [dados, setDados] = useState(null);
   const [editando, setEditando] = useState(null);
@@ -36,14 +38,15 @@ export default function ContasPagar() {
   async function desfazer(c) {
     const { ok, data } = await api(`/contas-pagar/${c.id}/desfazer`, { method: 'POST' });
     if (!ok) return showToast(data?.error || 'Não foi possível desfazer.', 'err');
-    showToast('Pagamento desfeito', 'err');
+    showToast('Pagamento desfeito');
     invalidar();
   }
 
   async function excluir(c) {
+    if (!await confirmar({ titulo: `Excluir “${c.descricao}”?`, mensagem: 'A conta a pagar será removida. Esta ação não pode ser desfeita.', rotulo: 'Excluir' })) return;
     const { ok, data } = await api(`/contas-pagar/${c.id}`, { method: 'DELETE' });
     if (!ok) return showToast(data?.error || 'Não foi possível excluir.', 'err');
-    showToast('Conta removida', 'err');
+    showToast('Conta excluída');
     atualizar();
   }
 

@@ -2,12 +2,17 @@ import { Pencil, Trash2, CalendarClock, CalendarPlus, Check, Zap } from 'lucide-
 import { useFinance } from '../../context/FinanceContext';
 import { fmt, fmtDate, dueDate, getCatColor } from '../../utils/formatters';
 import IconButton from '../../components/IconButton';
+import { useConfirm } from '../../components/Confirm';
 
 export default function RecorrenteList() {
   const {
     recorrentes, categorias, delRecorrente, editingRec, setEditingRec,
     lancarRecorrente, lancarPendentes,
   } = useFinance();
+  const confirmar = useConfirm();
+  const excluir = async r => {
+    if (await confirmar({ titulo: `Excluir “${r.nome}”?`, mensagem: 'Os lançamentos que ele já gerou continuam no histórico. Esta ação não pode ser desfeita.', rotulo: 'Excluir' })) delRecorrente(r.id);
+  };
   const total = recorrentes.reduce((a, r) => a + r.valor, 0);
 
   // `lancado` vem do servidor: o recorrente já gerou um lançamento neste mês.
@@ -74,7 +79,7 @@ export default function RecorrenteList() {
                   <IconButton label="Editar" onClick={() => { setEditingRec(r); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                     <Pencil size={13} strokeWidth={2} />
                   </IconButton>
-                  <IconButton label="Excluir" danger onClick={() => delRecorrente(r.id)}>
+                  <IconButton label="Excluir" danger onClick={() => excluir(r)}>
                     <Trash2 size={13} strokeWidth={2} />
                   </IconButton>
                 </div>

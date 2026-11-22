@@ -8,9 +8,11 @@ import CartaoForm from './CartaoForm';
 import FaturaDetalhe from './FaturaDetalhe';
 import { ROTULO_FATURA, CLASSE_FATURA, statusDeUso } from './status';
 import IconButton from '../../components/IconButton';
+import { useConfirm } from '../../components/Confirm';
 
 export default function Cartoes() {
   const { versao, invalidar, showToast } = useFinance();
+  const confirmar = useConfirm();
   const [cartoes, setCartoes] = useState(null);
   const [selecionado, setSelecionado] = useState(null);
   const [editando, setEditando] = useState(null);
@@ -35,9 +37,10 @@ export default function Cartoes() {
   }
 
   async function excluir(c) {
+    if (!await confirmar({ titulo: `Excluir o cartão “${c.nome}”?`, mensagem: 'Só é possível excluir cartões sem movimentações. Esta ação não pode ser desfeita.', rotulo: 'Excluir' })) return;
     const { ok, data } = await api(`/cartoes/${c.id}`, { method: 'DELETE' });
     if (!ok) return showToast(data?.error || 'Não foi possível excluir o cartão.', 'err');
-    showToast('Cartão removido', 'err');
+    showToast('Cartão excluído');
     invalidar();
   }
 

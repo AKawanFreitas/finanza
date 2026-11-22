@@ -8,6 +8,7 @@ import MonthStepper from '../../components/MonthStepper';
 import Select from '../../components/Select';
 import BarraOrcamento from '../../components/BarraOrcamento';
 import IconButton from '../../components/IconButton';
+import { useConfirm } from '../../components/Confirm';
 
 const ROTULO_STATUS = { ok: 'Dentro do limite', atencao: 'Perto do limite', estourado: 'Limite estourado' };
 
@@ -45,7 +46,7 @@ function Linha({ item, onSalvar, onRemover }) {
           <button className="btn btn-sm" disabled={!mudou || !(Number(limite) > 0)} onClick={() => onSalvar(item.categoria_id, Number(limite))}>
             <Check size={13} strokeWidth={2.5} /> Salvar
           </button>
-          <IconButton label="Remover orçamento" danger onClick={() => onRemover(item)}>
+          <IconButton label="Excluir orçamento" danger onClick={() => onRemover(item)}>
             <Trash2 size={13} strokeWidth={2} />
           </IconButton>
         </span>
@@ -57,6 +58,7 @@ function Linha({ item, onSalvar, onRemover }) {
 export default function Orcamentos({ ym, onYmChange }) {
   const uid = useId();
   const { categorias, versao, showToast } = useFinance();
+  const confirmar = useConfirm();
   const [dados, setDados] = useState(null);
   const [recarregar, setRecarregar] = useState(0);
   const [novo, setNovo] = useState({ categoria_id: null, limite: '' });
@@ -85,9 +87,10 @@ export default function Orcamentos({ ym, onYmChange }) {
   }
 
   async function remover(item) {
+    if (!await confirmar({ titulo: `Excluir o orçamento de ${item.cat}?`, mensagem: 'Os lançamentos da categoria não mudam. Esta ação não pode ser desfeita.', rotulo: 'Excluir' })) return;
     const { ok, data } = await api(`/orcamentos/${item.categoria_id}`, { method: 'DELETE' });
     if (!ok) return showToast(data?.error || 'Não foi possível remover.', 'err');
-    showToast('Orçamento removido', 'err');
+    showToast('Orçamento excluído');
     setRecarregar(n => n + 1);
   }
 

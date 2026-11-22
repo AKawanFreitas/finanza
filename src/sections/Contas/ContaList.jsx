@@ -3,9 +3,14 @@ import { useFinance } from '../../context/FinanceContext';
 import { fmt } from '../../utils/formatters';
 import { rotuloTipo } from './tipos';
 import IconButton from '../../components/IconButton';
+import { useConfirm } from '../../components/Confirm';
 
 export default function ContaList() {
   const { contas: todas, editingConta, setEditingConta, updateConta, delConta } = useFinance();
+  const confirmar = useConfirm();
+  const excluir = async c => {
+    if (await confirmar({ titulo: `Excluir a conta “${c.nome}”?`, mensagem: 'Só é possível excluir contas sem movimentações. Esta ação não pode ser desfeita.', rotulo: 'Excluir' })) delConta(c.id);
+  };
   // Cartões de crédito têm tela própria (limite, fatura, parcelas).
   const contas = todas.filter(c => c.tipo !== 'cartao');
 
@@ -43,7 +48,7 @@ export default function ContaList() {
                 <IconButton label={c.arquivada ? 'Reativar' : 'Arquivar'} onClick={() => alternarArquivo(c)}>
                   {c.arquivada ? <ArchiveRestore size={13} strokeWidth={2} /> : <Archive size={13} strokeWidth={2} />}
                 </IconButton>
-                <IconButton label="Excluir (só contas sem movimentações)" danger onClick={() => delConta(c.id)}>
+                <IconButton label="Excluir (só contas sem movimentações)" danger onClick={() => excluir(c)}>
                   <Trash2 size={13} strokeWidth={2} />
                 </IconButton>
               </div>

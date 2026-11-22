@@ -5,6 +5,7 @@ import { api } from '../../utils/api';
 import { fmt, fmtDate, today } from '../../utils/formatters';
 import Select from '../../components/Select';
 import IconButton from '../../components/IconButton';
+import { useConfirm } from '../../components/Confirm';
 
 // origem_id e destino_id ficam nulos até a pessoa escolher; o padrão é calculado a cada render,
 // porque as contas podem mudar (criar uma nova) depois que o formulário já foi montado.
@@ -13,6 +14,10 @@ const VAZIO = () => ({ origem_id: null, destino_id: null, valor: '', data: today
 export default function Transferencias() {
   const uid = useId();
   const { contas, versao, addTransferencia, delTransferencia } = useFinance();
+  const confirmar = useConfirm();
+  const excluir = async t => {
+    if (await confirmar({ titulo: 'Excluir transferência?', mensagem: `${t.origem} → ${t.destino}. Os saldos das duas contas voltam ao que eram antes.`, rotulo: 'Excluir' })) delTransferencia(t.id);
+  };
   // Pagar fatura de cartão é feito na tela de Cartões; aqui só entre contas comuns.
   const ativas = contas.filter(c => !c.arquivada && c.tipo !== 'cartao');
   const [form, setForm] = useState(VAZIO);
@@ -114,7 +119,7 @@ export default function Transferencias() {
                 <div className="rec-right">
                   <div className="rec-amount">{fmt(t.valor)}</div>
                   <div className="hist-actions">
-                    <IconButton label="Excluir" danger onClick={() => delTransferencia(t.id)}>
+                    <IconButton label="Excluir" danger onClick={() => excluir(t)}>
                       <Trash2 size={13} strokeWidth={2} />
                     </IconButton>
                   </div>
