@@ -86,9 +86,9 @@
 }
 .cselect-option {
   width: 100%; display: flex; align-items: center; gap: 9px; padding: 9px 12px;
-  background: transparent; border: none; color: var(--ink); font-size: 14.5px; cursor: pointer; text-align: left;
+  color: var(--ink); font-size: var(--fs-md); cursor: pointer; text-align: left;
 }
-.cselect-option:hover { background: var(--green-bg) }
+.cselect-option.ativo { background: var(--green-bg) }
 .cselect-option.selected { font-weight: 700 }
 .cselect-check { color: var(--green); flex-shrink: 0 }
 

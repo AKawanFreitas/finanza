@@ -1,57 +1,110 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
-export default function Select({ value, onChange, options, prefix }) {
+// Lista suspensa acessível (padrão "select-only combobox" do WAI-ARIA).
+// Teclado: setas, Home/End, Enter/Espaço escolhem, Esc fecha, digitar salta para a opção.
+// Passe `id` (vem do <Field>) para ligar o rótulo, ou `aria-label` quando não há rótulo visível.
+export default function Select({ value, onChange, options, prefix, id, 'aria-label': ariaLabel, 'aria-labelledby': labelledBy }) {
+  const uid = useId();
   const [open, setOpen] = useState(false);
+  const [ativo, setAtivo] = useState(0);
   const ref = useRef(null);
+  const triggerRef = useRef(null);
+  const busca = useRef({ texto: '', timer: null });
+
+  const indiceSelecionado = Math.max(0, options.findIndex(o => o.value === value));
+  const selected = options[indiceSelecionado];
 
   useEffect(() => {
-    function close(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    }
-    function onKey(e) { if (e.key === 'Escape') setOpen(false); }
-    document.addEventListener('mousedown', close);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', close);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, []);
+    if (!open) return;
+    const fora = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', fora);
+    return () => document.removeEventListener('mousedown', fora);
+  }, [open]);
 
-  const selected = options.find(o => o.value === value) ?? options[0];
+  // Mantém a opção ativa visível na lista rolável.
+  useEffect(() => {
+    if (open) document.getElementById(`${uid}-${ativo}`)?.scrollIntoView({ block: 'nearest' });
+  }, [open, ativo, uid]);
+
+  const abrir = () => { setAtivo(indiceSelecionado); setOpen(true); };
+  const fechar = () => { setOpen(false); triggerRef.current?.focus(); };
+  const escolher = i => { onChange(options[i].value); fechar(); };
+
+  function onKeyDown(e) {
+    const ultimo = options.length - 1;
+    const vai = i => { e.preventDefault(); if (!open) abrir(); setAtivo(i); };
+    switch (e.key) {
+      case 'ArrowDown': return open ? vai(Math.min(ativo + 1, ultimo)) : (e.preventDefault(), abrir());
+      case 'ArrowUp':   return open ? vai(Math.max(ativo - 1, 0))      : (e.preventDefault(), abrir());
+      case 'Home':      return vai(0);
+      case 'End':       return vai(ultimo);
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        return open ? escolher(ativo) : abrir();
+      case 'Escape':
+        if (open) { e.preventDefault(); e.stopPropagation(); fechar(); }
+        return;
+      case 'Tab':
+        if (open) setOpen(false);
+        return;
+      default: {
+        if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+        clearTimeout(busca.current.timer);
+        busca.current.texto += e.key.toLowerCase();
+        busca.current.timer = setTimeout(() => { busca.current.texto = ''; }, 600);
+        const i = options.findIndex(o => String(o.label).toLowerCase().startsWith(busca.current.texto));
+        if (i >= 0) { if (!open) setOpen(true); setAtivo(i); }
+      }
+    }
+  }
 
   return (
     <div className="cselect" ref={ref}>
       <button
         type="button"
+        id={id}
+        ref={triggerRef}
+        role="combobox"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={`${uid}-lista`}
+        aria-activedescendant={open ? `${uid}-${ativo}` : undefined}
+        aria-label={ariaLabel}
+        aria-labelledby={labelledBy}
         className={`cselect-trigger${open ? ' open' : ''}`}
-        onClick={() => setOpen(o => !o)}
+        onClick={() => (open ? setOpen(false) : abrir())}
+        onKeyDown={onKeyDown}
       >
-        {prefix && <span className="cselect-prefix">{prefix}</span>}
-        {selected?.color && (
-          <span className="cselect-dot" style={{ background: selected.color }} />
-        )}
+        {prefix && <span className="cselect-prefix" aria-hidden="true">{prefix}</span>}
+        {selected?.color && <span className="cselect-dot" aria-hidden="true" style={{ background: selected.color }} />}
         <span className="cselect-value">{selected?.label ?? value}</span>
-        <ChevronDown size={13} strokeWidth={2} className="cselect-chevron" />
+        <ChevronDown size={13} strokeWidth={2} className="cselect-chevron" aria-hidden="true" />
       </button>
 
       {open && (
-        <div className="cselect-menu">
-          {options.map(opt => {
-            const active = opt.value === value;
+        <div className="cselect-menu" role="listbox" id={`${uid}-lista`} aria-label={ariaLabel}>
+          {options.map((opt, i) => {
+            const marcada = opt.value === value;
             return (
-              <button
+              // Navegação por teclado fica no combobox (aria-activedescendant); o clique é só para o mouse.
+              // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+              <div
                 key={opt.value}
-                type="button"
-                className={`cselect-option${active ? ' selected' : ''}`}
-                onClick={() => { onChange(opt.value); setOpen(false); }}
+                id={`${uid}-${i}`}
+                role="option"
+                tabIndex={-1}
+                aria-selected={marcada}
+                className={`cselect-option${marcada ? ' selected' : ''}${i === ativo ? ' ativo' : ''}`}
+                onMouseMove={() => setAtivo(i)}
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => escolher(i)}
               >
-                {opt.color && (
-                  <span className="cselect-dot" style={{ background: opt.color }} />
-                )}
+                {opt.color && <span className="cselect-dot" aria-hidden="true" style={{ background: opt.color }} />}
                 <span style={{ flex: 1 }}>{opt.label}</span>
-                {active && <Check size={12} strokeWidth={2.5} className="cselect-check" />}
-              </button>
+                {marcada && <Check size={12} strokeWidth={2.5} className="cselect-check" aria-hidden="true" />}
+              </div>
             );
           })}
         </div>
