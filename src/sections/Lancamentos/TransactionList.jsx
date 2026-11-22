@@ -5,6 +5,7 @@ import ExcluirParcelas from '../../components/ExcluirParcelas';
 import { useFinance } from '../../context/FinanceContext';
 import { api, query } from '../../utils/api';
 import { fmt, fmtDate, getCatColor } from '../../utils/formatters';
+import IconButton from '../../components/IconButton';
 
 const NO_FILTERS = { busca: '', tipo: '', categoria_id: '', conta_id: '', mes: '' };
 const POR_PAGINA = 20;
@@ -105,9 +106,9 @@ export default function TransactionList() {
             onChange={e => setFilter('busca', e.target.value)}
           />
         </div>
-        <Select value={filters.tipo} onChange={v => setFilter('tipo', v)} options={tipoOptions} />
-        <Select value={filters.categoria_id} onChange={v => setFilter('categoria_id', v)} options={catOptions} />
-        <Select value={filters.conta_id} onChange={v => setFilter('conta_id', v)} options={contaOptions} />
+        <Select value={filters.tipo} onChange={v => setFilter('tipo', v)} options={tipoOptions} aria-label="Filtrar por tipo" />
+        <Select value={filters.categoria_id} onChange={v => setFilter('categoria_id', v)} options={catOptions} aria-label="Filtrar por categoria" />
+        <Select value={filters.conta_id} onChange={v => setFilter('conta_id', v)} options={contaOptions} aria-label="Filtrar por conta" />
         <input
           className="form-control"
           type="month"
@@ -154,12 +155,12 @@ export default function TransactionList() {
               {isIn ? '+' : '−'} {fmt(t.valor)}
             </div>
             <div className="hist-actions">
-              <button className="del-btn" onClick={() => { setEditing(t); window.scrollTo({ top: 0, behavior: 'smooth' }); }} title="Editar">
+              <IconButton label="Editar" onClick={() => { setEditing(t); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                 <Pencil size={13} strokeWidth={2} />
-              </button>
-              <button className="del-btn" onClick={() => (t.parcela ? setExcluindo(t) : delTransaction(t.id))} title="Excluir">
+              </IconButton>
+              <IconButton label="Excluir" danger onClick={() => (t.parcela ? setExcluindo(t) : delTransaction(t.id))}>
                 <Trash2 size={13} strokeWidth={2} />
-              </button>
+              </IconButton>
             </div>
           </div>
         );

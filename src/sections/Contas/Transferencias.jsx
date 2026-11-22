@@ -1,15 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { ArrowRight, ArrowLeftRight, Calendar, AlignLeft, Trash2 } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import { fmt, fmtDate, today } from '../../utils/formatters';
 import Select from '../../components/Select';
+import IconButton from '../../components/IconButton';
 
 // origem_id e destino_id ficam nulos até a pessoa escolher; o padrão é calculado a cada render,
 // porque as contas podem mudar (criar uma nova) depois que o formulário já foi montado.
 const VAZIO = () => ({ origem_id: null, destino_id: null, valor: '', data: today(), descricao: '' });
 
 export default function Transferencias() {
+  const uid = useId();
   const { contas, versao, addTransferencia, delTransferencia } = useFinance();
   // Pagar fatura de cartão é feito na tela de Cartões; aqui só entre contas comuns.
   const ativas = contas.filter(c => !c.arquivada && c.tipo !== 'cartao');
@@ -56,33 +58,33 @@ export default function Transferencias() {
 
         <div className="form-grid">
           <div className="form-group">
-            <label className="form-label">De</label>
-            <Select value={origem} onChange={v => set('origem_id', v)} options={opcoes} />
+            <label className="form-label" htmlFor={`${uid}-1`}>De</label>
+            <Select id={`${uid}-1`} value={origem} onChange={v => set('origem_id', v)} options={opcoes} />
           </div>
           <div className="form-group">
-            <label className="form-label">Para</label>
-            <Select value={destino} onChange={v => set('destino_id', v)} options={opcoes} />
+            <label className="form-label" htmlFor={`${uid}-2`}>Para</label>
+            <Select id={`${uid}-2`} value={destino} onChange={v => set('destino_id', v)} options={opcoes} />
           </div>
           <div className="form-group">
-            <label className="form-label">Valor</label>
+            <label className="form-label" htmlFor={`${uid}-3`}>Valor</label>
             <div className="form-input-wrap has-text-prefix">
               <span className="form-prefix-text">R$</span>
-              <input className="form-control" type="number" min="0" step="0.01" placeholder="0,00"
+              <input id={`${uid}-3`} className="form-control" type="number" min="0" step="0.01" placeholder="0,00"
                 value={form.valor} onChange={e => set('valor', e.target.value)} />
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">Data</label>
+            <label className="form-label" htmlFor={`${uid}-4`}>Data</label>
             <div className="form-input-wrap">
               <span className="form-prefix"><Calendar size={14} strokeWidth={2} /></span>
-              <input className="form-control" type="date" value={form.data} onChange={e => set('data', e.target.value)} />
+              <input id={`${uid}-4`} className="form-control" type="date" value={form.data} onChange={e => set('data', e.target.value)} />
             </div>
           </div>
           <div className="form-group form-span-2">
-            <label className="form-label">Descrição <span className="form-label-opt">(opcional)</span></label>
+            <label className="form-label" htmlFor={`${uid}-5`}>Descrição <span className="form-label-opt">(opcional)</span></label>
             <div className="form-input-wrap">
               <span className="form-prefix"><AlignLeft size={14} strokeWidth={2} /></span>
-              <input className="form-control" placeholder="Ex: Reserva do mês" value={form.descricao} maxLength={120}
+              <input id={`${uid}-5`} className="form-control" placeholder="Ex: Reserva do mês" value={form.descricao} maxLength={120}
                 onChange={e => set('descricao', e.target.value)} />
             </div>
           </div>
@@ -112,9 +114,9 @@ export default function Transferencias() {
                 <div className="rec-right">
                   <div className="rec-amount">{fmt(t.valor)}</div>
                   <div className="hist-actions">
-                    <button className="del-btn" title="Excluir" onClick={() => delTransferencia(t.id)}>
+                    <IconButton label="Excluir" danger onClick={() => delTransferencia(t.id)}>
                       <Trash2 size={13} strokeWidth={2} />
-                    </button>
+                    </IconButton>
                   </div>
                 </div>
               </div>

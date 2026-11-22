@@ -6,6 +6,7 @@ import { fmt, fmtDate } from '../../utils/formatters';
 import PagarConta from '../../components/PagarConta';
 import ContaPagarForm from './ContaPagarForm';
 import { ROTULO, CLASSE, descreverPrazo } from './status';
+import IconButton from '../../components/IconButton';
 
 const ABAS = [['abertas', 'Em aberto'], ['atrasada', 'Atrasadas'], ['paga', 'Pagas'], ['todas', 'Todas']];
 
@@ -28,7 +29,7 @@ export default function ContasPagar() {
     const { ok, data } = await api(`/contas-pagar/${pagando.id}/pagar`, { method: 'POST', body: corpo });
     if (!ok) return showToast(data?.error || 'Não foi possível pagar.', 'err');
     setPagando(null);
-    showToast('Conta paga ✓');
+    showToast('Conta paga');
     invalidar(); // o gasto entra nos lançamentos, no resumo e nos saldos
   }
 
@@ -99,9 +100,9 @@ export default function ContasPagar() {
               )}
               <div className="hist-actions">
                 {c.status !== 'paga' && (
-                  <button className="del-btn" title="Editar" onClick={() => { setEditando(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={13} strokeWidth={2} /></button>
+                  <IconButton label="Editar" onClick={() => { setEditando(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={13} strokeWidth={2} /></IconButton>
                 )}
-                <button className="del-btn" title="Excluir" onClick={() => excluir(c)}><Trash2 size={13} strokeWidth={2} /></button>
+                <IconButton label="Excluir" danger onClick={() => excluir(c)}><Trash2 size={13} strokeWidth={2} /></IconButton>
               </div>
             </div>
           </div>

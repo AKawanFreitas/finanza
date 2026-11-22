@@ -17,8 +17,6 @@
 .tx-amount { font-weight: 700; display: flex; align-items: center; justify-content: flex-end; white-space: nowrap }
 .tx-amount.in { color: var(--green) }
 
-.del-btn { width: 30px; height: 30px; border-radius: 5px; border: none; background: transparent; color: var(--faint); cursor: pointer; display: flex; align-items: center; justify-content: center }
-.del-btn:hover { background: var(--red-bg); color: var(--red) }
 
 /* ── Recorrentes e categorias ──────────── */
 .launch-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 20px; color: var(--muted); border-bottom: 1px solid var(--line) }

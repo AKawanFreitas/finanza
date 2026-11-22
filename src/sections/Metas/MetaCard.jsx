@@ -4,6 +4,7 @@ import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import { fmt, fmtDate } from '../../utils/formatters';
 import BarraOrcamento from '../../components/BarraOrcamento';
+import IconButton from '../../components/IconButton';
 
 const STATUS = {
   em_andamento: { rotulo: 'Em andamento', classe: '' },
@@ -29,7 +30,7 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
     if (!(Number(valor) > 0)) return;
     const { ok, data } = await api(`/metas/${meta.id}/aportes`, { method: 'POST', body: { valor: Number(valor), tipo } });
     if (!ok) return showToast(data?.error || 'Não foi possível registrar.', 'err');
-    showToast(tipo === 'aporte' ? 'Valor guardado ✓' : 'Retirada registrada ✓');
+    showToast(tipo === 'aporte' ? 'Valor guardado' : 'Retirada registrada');
     setValor('');
     onMudou();
   }
@@ -86,12 +87,12 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
         <button className="btn btn-sm btn-primary" disabled={!(Number(valor) > 0)} onClick={() => movimentar('aporte')}><ArrowDownToLine size={13} strokeWidth={2.5} /> Guardar</button>
         <button className="btn btn-sm" disabled={!(Number(valor) > 0) || meta.atual <= 0} onClick={() => movimentar('retirada')}><ArrowUpFromLine size={13} strokeWidth={2.5} /> Retirar</button>
         <span className="meta-icones">
-          <button className="del-btn" title="Histórico" aria-expanded={aberto} onClick={() => setAberto(a => !a)}><History size={13} strokeWidth={2} /></button>
-          <button className="del-btn" title="Editar" onClick={() => onEditar(meta)}><Pencil size={13} strokeWidth={2} /></button>
-          <button className="del-btn" title={meta.arquivada ? 'Reativar' : 'Arquivar'} onClick={alternarArquivo}>
+          <IconButton label="Histórico" aria-expanded={aberto} onClick={() => setAberto(a => !a)}><History size={13} strokeWidth={2} /></IconButton>
+          <IconButton label="Editar" onClick={() => onEditar(meta)}><Pencil size={13} strokeWidth={2} /></IconButton>
+          <IconButton label={meta.arquivada ? 'Reativar' : 'Arquivar'} onClick={alternarArquivo}>
             {meta.arquivada ? <ArchiveRestore size={13} strokeWidth={2} /> : <Archive size={13} strokeWidth={2} />}
-          </button>
-          <button className="del-btn" title="Excluir" onClick={excluir}><Trash2 size={13} strokeWidth={2} /></button>
+          </IconButton>
+          <IconButton label="Excluir" danger onClick={excluir}><Trash2 size={13} strokeWidth={2} /></IconButton>
         </span>
       </div>
 
@@ -101,7 +102,7 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
             <li key={a.id}>
               <span>{fmtDate(a.data)}{a.obs ? ` · ${a.obs}` : ''}</span>
               <span className={a.tipo === 'aporte' ? 'pos' : 'neg'}>{a.tipo === 'aporte' ? '+' : '−'} {fmt(a.valor)}</span>
-              <button className="del-btn" title="Remover" onClick={() => removerAporte(a.id)}><Trash2 size={12} strokeWidth={2} /></button>
+              <IconButton label="Remover" danger onClick={() => removerAporte(a.id)}><Trash2 size={12} strokeWidth={2} /></IconButton>
             </li>
           ))}
         </ul>

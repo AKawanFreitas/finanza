@@ -2,6 +2,7 @@ import { Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { fmt } from '../../utils/formatters';
 import { rotuloTipo } from './tipos';
+import IconButton from '../../components/IconButton';
 
 export default function ContaList() {
   const { contas: todas, editingConta, setEditingConta, updateConta, delConta } = useFinance();
@@ -36,15 +37,15 @@ export default function ContaList() {
                 {c.saldo < 0 ? '−' : ''}{fmt(Math.abs(c.saldo))}
               </div>
               <div className="hist-actions">
-                <button className="del-btn" title="Editar" onClick={() => { setEditingConta(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                <IconButton label="Editar" onClick={() => { setEditingConta(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                   <Pencil size={13} strokeWidth={2} />
-                </button>
-                <button className="del-btn" title={c.arquivada ? 'Reativar' : 'Arquivar'} onClick={() => alternarArquivo(c)}>
+                </IconButton>
+                <IconButton label={c.arquivada ? 'Reativar' : 'Arquivar'} onClick={() => alternarArquivo(c)}>
                   {c.arquivada ? <ArchiveRestore size={13} strokeWidth={2} /> : <Archive size={13} strokeWidth={2} />}
-                </button>
-                <button className="del-btn" title="Excluir (só contas sem movimentações)" onClick={() => delConta(c.id)}>
+                </IconButton>
+                <IconButton label="Excluir (só contas sem movimentações)" danger onClick={() => delConta(c.id)}>
                   <Trash2 size={13} strokeWidth={2} />
-                </button>
+                </IconButton>
               </div>
             </div>
           </div>

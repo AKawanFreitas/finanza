@@ -92,3 +92,33 @@
 .cselect-option.selected { font-weight: 700 }
 .cselect-check { color: var(--green); flex-shrink: 0 }
 
+
+/* ── Componentes base compartilhados ───── */
+.icon-btn {
+  width: 36px; height: 36px; border-radius: var(--radius); border: none; background: transparent;
+  color: var(--faint); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: background var(--ease), color var(--ease);
+}
+.icon-btn:hover { background: var(--head); color: var(--navy) }
+.icon-btn.danger:hover { background: var(--red-bg); color: var(--red) }
+.icon-btn:disabled { opacity: .45; cursor: default }
+
+.form-hint, .form-erro { font-size: var(--fs-xs) }
+.form-hint { color: var(--muted) }
+.form-erro { color: var(--red); font-weight: 600 }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.skeleton {
+  display: block; border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--head) 25%, var(--line) 50%, var(--head) 75%);
+  background-size: 200% 100%; animation: skeleton 1.4s ease-in-out infinite;
+}
+.skeleton-lista { display: flex; flex-direction: column; gap: 12px; padding: 20px }
+@keyframes skeleton { from { background-position: 200% 0 } to { background-position: -200% 0 } }
+
+.empty-titulo { color: var(--navy); font-size: var(--fs-lg) }
+.icon-btn svg { width: 16px; height: 16px }

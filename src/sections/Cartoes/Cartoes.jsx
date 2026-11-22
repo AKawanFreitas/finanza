@@ -7,6 +7,7 @@ import BarraOrcamento from '../../components/BarraOrcamento';
 import CartaoForm from './CartaoForm';
 import FaturaDetalhe from './FaturaDetalhe';
 import { ROTULO_FATURA, CLASSE_FATURA, statusDeUso } from './status';
+import IconButton from '../../components/IconButton';
 
 export default function Cartoes() {
   const { versao, invalidar, showToast } = useFinance();
@@ -77,11 +78,11 @@ export default function Cartoes() {
                 </div>
               </button>
               <div className="hist-actions">
-                <button className="del-btn" title="Editar" onClick={() => { setEditando(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={13} strokeWidth={2} /></button>
-                <button className="del-btn" title={c.arquivada ? 'Reativar' : 'Arquivar'} onClick={() => alternarArquivo(c)}>
+                <IconButton label="Editar" onClick={() => { setEditando(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={13} strokeWidth={2} /></IconButton>
+                <IconButton label={c.arquivada ? 'Reativar' : 'Arquivar'} onClick={() => alternarArquivo(c)}>
                   {c.arquivada ? <ArchiveRestore size={13} strokeWidth={2} /> : <Archive size={13} strokeWidth={2} />}
-                </button>
-                <button className="del-btn" title="Excluir (só cartões sem movimentações)" onClick={() => excluir(c)}><Trash2 size={13} strokeWidth={2} /></button>
+                </IconButton>
+                <IconButton label="Excluir (só cartões sem movimentações)" danger onClick={() => excluir(c)}><Trash2 size={13} strokeWidth={2} /></IconButton>
               </div>
             </div>
           );

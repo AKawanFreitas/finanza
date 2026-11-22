@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Search, KeyRound, Ban, CheckCircle2, Trash2, Copy } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { fmtDate } from '../../utils/formatters';
+import IconButton from '../../components/IconButton';
 
 const API = '/api/admin';
 
@@ -205,21 +206,17 @@ export default function Admin() {
                       </div>
                     ) : (
                       <div className="linha-acoes">
-                        <button className="del-btn" title="Redefinir senha" onClick={() => redefinirSenha(u)}>
+                        <IconButton label="Redefinir senha" onClick={() => redefinirSenha(u)}>
                           <KeyRound size={14} strokeWidth={2} />
-                        </button>
-                        <button
-                          className="del-btn"
-                          title={u.status === 'ativo' ? 'Suspender conta' : 'Reativar conta'}
-                          onClick={() => alternarStatus(u)}
-                        >
+                        </IconButton>
+                        <IconButton label={u.status === 'ativo' ? 'Suspender conta' : 'Reativar conta'} onClick={() => alternarStatus(u)}>
                           {u.status === 'ativo'
                             ? <Ban size={14} strokeWidth={2} />
                             : <CheckCircle2 size={14} strokeWidth={2} />}
-                        </button>
-                        <button className="del-btn" title="Excluir conta" onClick={() => setConfirmando(u.id)}>
+                        </IconButton>
+                        <IconButton label="Excluir conta" danger onClick={() => setConfirmando(u.id)}>
                           <Trash2 size={14} strokeWidth={2} />
-                        </button>
+                        </IconButton>
                       </div>
                     )}
                   </td>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { Plus, Trash2, Check, Target } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
@@ -7,6 +7,7 @@ import { MONTH_NAMES } from '../../utils/period';
 import MonthStepper from '../../components/MonthStepper';
 import Select from '../../components/Select';
 import BarraOrcamento from '../../components/BarraOrcamento';
+import IconButton from '../../components/IconButton';
 
 const ROTULO_STATUS = { ok: 'Dentro do limite', atencao: 'Perto do limite', estourado: 'Limite estourado' };
 
@@ -44,9 +45,9 @@ function Linha({ item, onSalvar, onRemover }) {
           <button className="btn btn-sm" disabled={!mudou || !(Number(limite) > 0)} onClick={() => onSalvar(item.categoria_id, Number(limite))}>
             <Check size={13} strokeWidth={2.5} /> Salvar
           </button>
-          <button className="del-btn" title="Remover orçamento" onClick={() => onRemover(item)}>
+          <IconButton label="Remover orçamento" danger onClick={() => onRemover(item)}>
             <Trash2 size={13} strokeWidth={2} />
-          </button>
+          </IconButton>
         </span>
       </div>
     </div>
@@ -54,6 +55,7 @@ function Linha({ item, onSalvar, onRemover }) {
 }
 
 export default function Orcamentos({ ym, onYmChange }) {
+  const uid = useId();
   const { categorias, versao, showToast } = useFinance();
   const [dados, setDados] = useState(null);
   const [recarregar, setRecarregar] = useState(0);
@@ -69,7 +71,7 @@ export default function Orcamentos({ ym, onYmChange }) {
   const livres = categorias.filter(c => !comOrcamento.has(c.id));
   const escolhida = livres.some(c => c.id === novo.categoria_id) ? novo.categoria_id : livres[0]?.id;
 
-  async function salvar(categoriaId, limite, mensagem = 'Orçamento salvo ✓') {
+  async function salvar(categoriaId, limite, mensagem = 'Orçamento salvo') {
     const { ok, data } = await api(`/orcamentos/${categoriaId}`, { method: 'PUT', body: { limite } });
     if (!ok) return showToast(data?.error || 'Não foi possível salvar.', 'err');
     showToast(mensagem);
@@ -79,7 +81,7 @@ export default function Orcamentos({ ym, onYmChange }) {
 
   async function adicionar() {
     if (!escolhida || !(Number(novo.limite) > 0)) return;
-    if (await salvar(escolhida, Number(novo.limite), 'Orçamento criado ✓')) setNovo({ categoria_id: null, limite: '' });
+    if (await salvar(escolhida, Number(novo.limite), 'Orçamento criado')) setNovo({ categoria_id: null, limite: '' });
   }
 
   async function remover(item) {
@@ -114,18 +116,18 @@ export default function Orcamentos({ ym, onYmChange }) {
           <>
             <div className="form-grid">
               <div className="form-group">
-                <label className="form-label">Categoria</label>
-                <Select
+                <label className="form-label" htmlFor={`${uid}-1`}>Categoria</label>
+                <Select id={`${uid}-1`}
                   value={escolhida} onChange={v => setNovo(n => ({ ...n, categoria_id: v }))}
                   options={livres.map(c => ({ value: c.id, label: c.nome, color: c.cor }))}
                   prefix={<Target size={14} strokeWidth={2} />}
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Limite mensal</label>
+                <label className="form-label" htmlFor={`${uid}-2`}>Limite mensal</label>
                 <div className="form-input-wrap has-text-prefix">
                   <span className="form-prefix-text">R$</span>
-                  <input
+                  <input id={`${uid}-2`}
                     className="form-control" type="number" min="0" step="0.01" placeholder="0,00"
                     value={novo.limite} onChange={e => setNovo(n => ({ ...n, limite: e.target.value }))}
                     onKeyDown={e => e.key === 'Enter' && adicionar()}
