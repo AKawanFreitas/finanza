@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import Select from '../../components/Select';
 import {
@@ -9,6 +9,7 @@ import {
 const EMPTY = (cats) => ({ nome: '', valor: '', tipo: 'fixo', cat: cats[0]?.nome || '', dia: '', obs: '', automatico: false, conta_id: null });
 
 export default function RecorrenteForm() {
+  const uid = useId();
   const { categorias, contas, addRecorrente, updateRecorrente, editingRec, setEditingRec } = useFinance();
   const [form, setForm] = useState(EMPTY(categorias));
 
@@ -55,12 +56,13 @@ export default function RecorrenteForm() {
 
       <div className="form-grid">
 
-        <div className="form-group form-span-2">
-          <label className="form-label">Tipo</label>
+        <div className="form-group form-span-2" role="group" aria-labelledby={`${uid}-tipo`}>
+          <span className="form-label" id={`${uid}-tipo`}>Tipo</span>
           <div className="tipo-toggle">
             <button
               type="button"
               className={`tipo-btn ${form.tipo === 'fixo' ? 'active-fixo' : ''}`}
+              aria-pressed={form.tipo === 'fixo'}
               onClick={() => set('tipo', 'fixo')}
             >
               <Zap size={14} strokeWidth={2.5} />
@@ -69,6 +71,7 @@ export default function RecorrenteForm() {
             <button
               type="button"
               className={`tipo-btn ${form.tipo === 'recorrente' ? 'active-recorrente' : ''}`}
+              aria-pressed={form.tipo === 'recorrente'}
               onClick={() => set('tipo', 'recorrente')}
             >
               <RefreshCw size={14} strokeWidth={2} />
@@ -78,10 +81,10 @@ export default function RecorrenteForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Nome</label>
+          <label className="form-label" htmlFor={`${uid}-1`}>Nome</label>
           <div className="form-input-wrap">
             <span className="form-prefix"><AlignLeft size={14} strokeWidth={2} /></span>
-            <input
+            <input id={`${uid}-1`}
               className="form-control"
               placeholder="Ex: Aluguel"
               value={form.nome}
@@ -91,10 +94,10 @@ export default function RecorrenteForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Valor</label>
+          <label className="form-label" htmlFor={`${uid}-2`}>Valor</label>
           <div className="form-input-wrap has-text-prefix">
             <span className="form-prefix-text">R$</span>
-            <input
+            <input id={`${uid}-2`}
               className="form-control"
               type="number"
               placeholder="0,00"
@@ -107,8 +110,8 @@ export default function RecorrenteForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Categoria</label>
-          <Select
+          <label className="form-label" htmlFor={`${uid}-3`}>Categoria</label>
+          <Select id={`${uid}-3`}
             value={form.cat}
             onChange={v => set('cat', v)}
             options={catOptions}
@@ -117,10 +120,10 @@ export default function RecorrenteForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Dia do vencimento</label>
+          <label className="form-label" htmlFor={`${uid}-4`}>Dia do vencimento</label>
           <div className="form-input-wrap">
             <span className="form-prefix"><CalendarClock size={14} strokeWidth={2} /></span>
-            <input
+            <input id={`${uid}-4`}
               className="form-control"
               type="number"
               min="1"
@@ -133,8 +136,8 @@ export default function RecorrenteForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Conta do lançamento</label>
-          <Select
+          <label className="form-label" htmlFor={`${uid}-5`}>Conta do lançamento</label>
+          <Select id={`${uid}-5`}
             value={form.conta_id ?? 0}
             onChange={v => set('conta_id', v || null)}
             options={contaOptions}
@@ -154,10 +157,10 @@ export default function RecorrenteForm() {
         </div>
 
         <div className="form-group form-span-2">
-          <label className="form-label">Observação <span className="form-label-opt">(opcional)</span></label>
+          <label className="form-label" htmlFor={`${uid}-6`}>Observação <span className="form-label-opt">(opcional)</span></label>
           <div className="form-input-wrap">
             <span className="form-prefix"><MessageSquare size={14} strokeWidth={2} /></span>
-            <input
+            <input id={`${uid}-6`}
               className="form-control"
               placeholder="Algum detalhe adicional..."
               value={form.obs}

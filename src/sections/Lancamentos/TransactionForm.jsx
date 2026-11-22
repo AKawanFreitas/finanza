@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { today, fmt } from '../../utils/formatters';
 import Select from '../../components/Select';
@@ -13,6 +13,7 @@ const EMPTY = (cats, contas) => ({
 });
 
 export default function TransactionForm() {
+  const uid = useId();
   const { categorias, contas, addTransaction, updateTransaction, editing, setEditing } = useFinance();
   const [form, setForm] = useState(EMPTY(categorias, contas));
 
@@ -66,12 +67,13 @@ export default function TransactionForm() {
 
       <div className="form-grid">
 
-        <div className="form-group form-span-2">
-          <label className="form-label">Tipo</label>
+        <div className="form-group form-span-2" role="group" aria-labelledby={`${uid}-tipo`}>
+          <span className="form-label" id={`${uid}-tipo`}>Tipo</span>
           <div className="tipo-toggle">
             <button
               type="button"
               className={`tipo-btn ${!isEntrada ? 'active-saida' : ''}`}
+              aria-pressed={!isEntrada}
               onClick={() => set('tipo', 'saida')}
             >
               <ArrowUpRight size={14} strokeWidth={2.5} />
@@ -80,6 +82,7 @@ export default function TransactionForm() {
             <button
               type="button"
               className={`tipo-btn ${isEntrada ? 'active-entrada' : ''}`}
+              aria-pressed={isEntrada}
               onClick={() => set('tipo', 'entrada')}
             >
               <ArrowDownLeft size={14} strokeWidth={2.5} />
@@ -89,10 +92,10 @@ export default function TransactionForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Descrição</label>
+          <label className="form-label" htmlFor={`${uid}-1`}>Descrição</label>
           <div className="form-input-wrap">
             <span className="form-prefix"><AlignLeft size={14} strokeWidth={2} /></span>
-            <input
+            <input id={`${uid}-1`}
               className="form-control"
               placeholder="Ex: Supermercado"
               value={form.desc}
@@ -102,10 +105,10 @@ export default function TransactionForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Valor</label>
+          <label className="form-label" htmlFor={`${uid}-2`}>Valor</label>
           <div className="form-input-wrap has-text-prefix">
             <span className="form-prefix-text">R$</span>
-            <input
+            <input id={`${uid}-2`}
               className="form-control"
               type="number"
               placeholder="0,00"
@@ -118,8 +121,8 @@ export default function TransactionForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Categoria</label>
-          <Select
+          <label className="form-label" htmlFor={`${uid}-3`}>Categoria</label>
+          <Select id={`${uid}-3`}
             value={form.cat}
             onChange={v => set('cat', v)}
             options={catOptions}
@@ -128,8 +131,8 @@ export default function TransactionForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Conta</label>
-          <Select
+          <label className="form-label" htmlFor={`${uid}-4`}>Conta</label>
+          <Select id={`${uid}-4`}
             value={form.conta_id}
             onChange={v => set('conta_id', v)}
             options={contaOptions}
@@ -139,8 +142,8 @@ export default function TransactionForm() {
 
         {permiteParcelas && !editing && (
           <div className="form-group">
-            <label className="form-label">Parcelas</label>
-            <input
+            <label className="form-label" htmlFor={`${uid}-5`}>Parcelas</label>
+            <input id={`${uid}-5`}
               className="form-control" type="number" min="1" max="48" step="1"
               value={form.parcelas} onChange={e => set('parcelas', e.target.value)}
               aria-label="Número de parcelas"
@@ -152,10 +155,10 @@ export default function TransactionForm() {
         )}
 
         <div className="form-group">
-          <label className="form-label">Data</label>
+          <label className="form-label" htmlFor={`${uid}-6`}>Data</label>
           <div className="form-input-wrap">
             <span className="form-prefix"><Calendar size={14} strokeWidth={2} /></span>
-            <input
+            <input id={`${uid}-6`}
               className="form-control"
               type="date"
               value={form.data}
@@ -165,10 +168,10 @@ export default function TransactionForm() {
         </div>
 
         <div className="form-group form-span-2">
-          <label className="form-label">Observação <span className="form-label-opt">(opcional)</span></label>
+          <label className="form-label" htmlFor={`${uid}-7`}>Observação <span className="form-label-opt">(opcional)</span></label>
           <div className="form-input-wrap">
             <span className="form-prefix"><MessageSquare size={14} strokeWidth={2} /></span>
-            <input
+            <input id={`${uid}-7`}
               className="form-control"
               placeholder="Algum detalhe adicional..."
               value={form.obs}

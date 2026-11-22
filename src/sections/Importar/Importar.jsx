@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useId } from 'react';
 import { FileUp, Wallet, Check } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
@@ -15,6 +15,7 @@ async function lerTexto(arquivo) {
 const AVISO = { importada: 'Já importada', provavel: 'Possível duplicata' };
 
 export default function Importar({ onNavigate }) {
+  const uid = useId();
   const { contas, categorias, invalidar, showToast } = useFinance();
   const ativas = contas.filter(c => !c.arquivada);
   const [contaId, setContaId] = useState(ativas[0]?.id ?? null);
@@ -112,12 +113,12 @@ export default function Importar({ onNavigate }) {
           </div>
           <div className="form-grid">
             <div className="form-group">
-              <label className="form-label">Conta de destino</label>
-              <Select value={contaId} onChange={setContaId} options={opcoesConta} prefix={<Wallet size={14} strokeWidth={2} />} />
+              <label className="form-label" htmlFor={`${uid}-1`}>Conta de destino</label>
+              <Select id={`${uid}-1`} value={contaId} onChange={setContaId} options={opcoesConta} prefix={<Wallet size={14} strokeWidth={2} />} />
             </div>
             <div className="form-group">
-              <label className="form-label">Arquivo</label>
-              <input
+              <label className="form-label" htmlFor={`${uid}-2`}>Arquivo</label>
+              <input id={`${uid}-2`}
                 ref={inputRef} className="form-control" type="file" accept=".ofx,.csv,.txt,text/csv"
                 onChange={e => { setArquivo(e.target.files?.[0] ?? null); setPrevia(null); }}
               />

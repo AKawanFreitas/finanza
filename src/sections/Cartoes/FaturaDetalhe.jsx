@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { CreditCard as IconeCartao } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
@@ -9,6 +9,7 @@ import { ROTULO_FATURA, CLASSE_FATURA } from './status';
 const rotuloMes = ym => `${MONTH_ABBR[Number(ym.slice(5)) - 1]}/${ym.slice(0, 4)}`;
 
 export default function FaturaDetalhe({ cartao }) {
+  const uid = useId();
   const { contas, versao, invalidar, showToast } = useFinance();
   const [faturas, setFaturas] = useState([]);
   const [mes, setMes] = useState(cartao.fatura_atual.mes);
@@ -101,22 +102,22 @@ export default function FaturaDetalhe({ cartao }) {
       {detalhe.restante > 0 && (
         <div className="fatura-pagar">
           <div className="form-group">
-            <label className="form-label">Pagar com</label>
-            <select className="form-control" value={origem} onChange={e => setPagamento(p => ({ ...p, origem_id: Number(e.target.value) }))}>
+            <label className="form-label" htmlFor={`${uid}-1`}>Pagar com</label>
+            <select id={`${uid}-1`} className="form-control" value={origem} onChange={e => setPagamento(p => ({ ...p, origem_id: Number(e.target.value) }))}>
               {contasPagadoras.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">Valor</label>
+            <label className="form-label" htmlFor={`${uid}-2`}>Valor</label>
             <div className="form-input-wrap has-text-prefix">
               <span className="form-prefix-text">R$</span>
-              <input className="form-control" type="number" min="0" step="0.01" placeholder={String(detalhe.restante)} value={pagamento.valor}
+              <input id={`${uid}-2`} className="form-control" type="number" min="0" step="0.01" placeholder={String(detalhe.restante)} value={pagamento.valor}
                 onChange={e => setPagamento(p => ({ ...p, valor: e.target.value }))} />
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">Data</label>
-            <input className="form-control" type="date" value={pagamento.data} onChange={e => setPagamento(p => ({ ...p, data: e.target.value }))} />
+            <label className="form-label" htmlFor={`${uid}-3`}>Data</label>
+            <input id={`${uid}-3`} className="form-control" type="date" value={pagamento.data} onChange={e => setPagamento(p => ({ ...p, data: e.target.value }))} />
           </div>
           <button className="btn btn-primary" onClick={pagar} disabled={!podePagar || pagando}>
             <IconeCartao size={15} strokeWidth={2.5} /> {pagando ? 'Pagando...' : pagamento.valor ? 'Pagar parte' : 'Pagar fatura'}

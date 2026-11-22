@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { Tag, Palette, Plus, Check, X } from 'lucide-react';
 
@@ -8,10 +8,10 @@ const PRESET_COLORS = [
 ];
 
 export default function CategoriaForm() {
+  const uid = useId();
   const { addCategoria, updateCategoria, editingCat, setEditingCat } = useFinance();
   const [nome, setNome] = useState('');
   const [cor, setCor]   = useState('#22a84a');
-  const colorRef        = useRef(null);
 
   useEffect(() => {
     setNome(editingCat?.nome ?? '');
@@ -43,10 +43,10 @@ export default function CategoriaForm() {
       <div className="form-grid">
 
         <div className="form-group">
-          <label className="form-label">Nome</label>
+          <label className="form-label" htmlFor={`${uid}-1`}>Nome</label>
           <div className="form-input-wrap">
             <span className="form-prefix"><Tag size={14} strokeWidth={2} /></span>
-            <input
+            <input id={`${uid}-1`}
               className="form-control"
               placeholder="Ex: Lazer"
               value={nome}
@@ -57,16 +57,13 @@ export default function CategoriaForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Cor</label>
-          <div
-            className="color-pick-wrap"
-            onClick={() => colorRef.current?.click()}
-          >
+          <label className="form-label" htmlFor={`${uid}-2`}>Cor</label>
+          <label className="color-pick-wrap" htmlFor={`${uid}-2`}>
             <div className="color-swatch" style={{ background: cor }} />
             <span className="color-swatch-label">{cor.toUpperCase()}</span>
             <Palette size={14} strokeWidth={2} style={{ color: 'var(--faint)' }} />
-            <input ref={colorRef} type="color" value={cor} onChange={e => setCor(e.target.value)} />
-          </div>
+            <input id={`${uid}-2`} type="color" value={cor} onChange={e => setCor(e.target.value)} />
+          </label>
         </div>
 
       </div>
