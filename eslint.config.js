@@ -30,10 +30,13 @@ export default [
       ...react.configs.recommended.rules,
       ...react.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
-      // Acessibilidade: avisos por enquanto; as etapas 1 a 6 do plano zeram a lista e viram erro.
+      // Acessibilidade: qualquer regressão quebra o lint.
       ...Object.fromEntries(
-        Object.entries(jsxA11y.flatConfigs.recommended.rules).map(([k, v]) => [k, v === 'off' ? 'off' : 'warn'])
+        Object.entries(jsxA11y.flatConfigs.recommended.rules).map(([k, v]) => [k, v])
       ),
+      // Esta regra não enxerga htmlFor/aria-labelledby e acusa todo campo; label-has-associated-control cobre o caso.
+      'jsx-a11y/control-has-associated-label': 'off',
+      'jsx-a11y/label-has-associated-control': ['error', { assert: 'either', depth: 4 }],
       'react/jsx-no-target-blank': 'off',
       'react/prop-types': 'off',
       'react-refresh/only-export-components': [
