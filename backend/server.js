@@ -6,7 +6,7 @@ const { iniciarAgendador } = require('./lib/agendador');
 const logger = require('./lib/logger');
 const { criarContasIniciais } = require('./lib/bootstrap');
 
-const PORT = process.env.PORT || 4747;
+const PORT = process.env.PORT || process.env.API_PORT || 4747;
 
 try { criarContasIniciais(); } catch (err) { logger.error({ err }, 'falha ao criar as contas iniciais'); }
 iniciarAgendador();
