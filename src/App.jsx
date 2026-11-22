@@ -3,6 +3,7 @@ import { FinanceProvider } from './context/FinanceContext';
 import { useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
 import Toast from './components/Toast';
+import { ConfirmProvider } from './components/Confirm';
 import Entrar from './sections/Auth/Entrar';
 import AcaoPorLink from './sections/Auth/AcaoPorLink';
 import { lerAcaoDaUrl } from './utils/acaoDaUrl';
@@ -43,6 +44,7 @@ function AppLogado() {
 
   return (
     <FinanceProvider>
+      <ConfirmProvider>
       <div className="shell">
         <Sidebar active={section} onNavigate={setSection} />
         <main className="page">
@@ -62,6 +64,7 @@ function AppLogado() {
         </main>
       </div>
       <Toast />
+      </ConfirmProvider>
     </FinanceProvider>
   );
 }
