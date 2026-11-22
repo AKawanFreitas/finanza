@@ -1,5 +1,7 @@
-import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp, Target, CreditCard, PiggyBank, CalendarCheck } from 'lucide-react';
+import { useState } from 'react';
+import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp, Target, CreditCard, PiggyBank, CalendarCheck, Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Modal from './Modal';
 
 const NAV = [
   { id: 'dashboard',   label: 'Resumo',      Icon: LayoutDashboard },
@@ -14,50 +16,104 @@ const NAV = [
   { id: 'categorias',  label: 'Categorias',  Icon: Tags },
 ];
 
+// No celular a barra inferior mostra só o que se usa todo dia; o resto abre em "Mais".
+const PRINCIPAIS = ['dashboard', 'lancamento', 'contas-pagar'];
+
 const iniciais = nome => nome.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
 
 export default function Sidebar({ active, onNavigate }) {
   const { user, ehAdmin } = useAuth();
+  const [maisAberto, setMaisAberto] = useState(false);
 
   // A administração só aparece para o super admin.
   const itens = ehAdmin ? [...NAV, { id: 'admin', label: 'Administração', Icon: Shield }] : NAV;
+  const principais = itens.filter(i => PRINCIPAIS.includes(i.id));
+  const extras = [...itens.filter(i => !PRINCIPAIS.includes(i.id)), { id: 'configuracoes', label: 'Configurações', Icon: Settings }];
+  const maisAtivo = extras.some(i => i.id === active);
+
+  const ir = id => { setMaisAberto(false); onNavigate(id); };
 
   return (
-    <aside className="sidebar">
-      <button className="brand" onClick={() => onNavigate('dashboard')} aria-label="Finanza, ir para o resumo">
-        <img src="/logo sem texto - finanza.png" alt="" />
-        <span className="brand-text">
-          <strong>Finanza</strong>
-          <small>Controle financeiro inteligente</small>
-        </span>
-      </button>
+    <>
+      <aside className="sidebar">
+        <button className="brand" onClick={() => onNavigate('dashboard')} aria-label="Finanza, ir para o resumo">
+          <img src="/logo sem texto - finanza.png" alt="" />
+          <span className="brand-text">
+            <strong>Finanza</strong>
+            <small>Controle financeiro inteligente</small>
+          </span>
+        </button>
 
-      <nav className="side-nav" aria-label="Seções">
-        {itens.map(({ id, label, Icon }) => (
+        <nav className="side-nav" aria-label="Seções">
+          {itens.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              className={`side-link${active === id ? ' active' : ''}`}
+              aria-current={active === id ? 'page' : undefined}
+              onClick={() => onNavigate(id)}
+            >
+              <Icon size={18} strokeWidth={2} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <button
+          className={`conta${active === 'configuracoes' ? ' active' : ''}`}
+          onClick={() => onNavigate('configuracoes')}
+          aria-current={active === 'configuracoes' ? 'page' : undefined}
+        >
+          <span className="conta-avatar" aria-hidden="true">{iniciais(user.nome)}</span>
+          <span className="conta-texto">
+            <strong>{user.nome}</strong>
+            <small>{user.email}</small>
+          </span>
+          <Settings size={16} strokeWidth={2} className="conta-engrenagem" />
+        </button>
+      </aside>
+
+      <nav className="bottom-nav" aria-label="Seções">
+        {principais.map(({ id, label, Icon }) => (
           <button
             key={id}
-            className={`side-link${active === id ? ' active' : ''}`}
+            className={`bottom-link${active === id ? ' active' : ''}`}
             aria-current={active === id ? 'page' : undefined}
-            onClick={() => onNavigate(id)}
+            onClick={() => ir(id)}
           >
-            <Icon size={18} strokeWidth={2} />
-            <span>{label}</span>
+            <Icon size={22} strokeWidth={2} />
+            <span>{id === 'contas-pagar' ? 'A pagar' : label}</span>
           </button>
         ))}
+        <button
+          className={`bottom-link${maisAtivo ? ' active' : ''}`}
+          aria-haspopup="dialog"
+          aria-expanded={maisAberto}
+          onClick={() => setMaisAberto(true)}
+        >
+          <Menu size={22} strokeWidth={2} />
+          <span>Mais</span>
+        </button>
       </nav>
 
-      <button
-        className={`conta${active === 'configuracoes' ? ' active' : ''}`}
-        onClick={() => onNavigate('configuracoes')}
-        aria-current={active === 'configuracoes' ? 'page' : undefined}
-      >
-        <span className="conta-avatar" aria-hidden="true">{iniciais(user.nome)}</span>
-        <span className="conta-texto">
-          <strong>{user.nome}</strong>
-          <small>{user.email}</small>
-        </span>
-        <Settings size={16} strokeWidth={2} className="conta-engrenagem" />
-      </button>
-    </aside>
+      {maisAberto && (
+        <Modal folha titulo="Mais seções" onFechar={() => setMaisAberto(false)}>
+          <ul className="folha-lista">
+            {extras.map(({ id, label, Icon }) => (
+              <li key={id}>
+                <button
+                  className={`folha-item${active === id ? ' active' : ''}`}
+                  aria-current={active === id ? 'page' : undefined}
+                  onClick={() => ir(id)}
+                >
+                  <Icon size={20} strokeWidth={2} />
+                  {label}
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="folha-conta"><small>{user.nome} · {user.email}</small></p>
+        </Modal>
+      )}
+    </>
   );
 }

@@ -54,10 +54,6 @@
   .entrar-marca p { font-size: 14px }
   .entrar-ilustracao { display: none }
   .form-duplo { grid-template-columns: 1fr }
-  /* Na barra inferior, a conta vira só o avatar. */
-  .conta { margin: 0; width: auto; flex-shrink: 0; border-top: none; padding: 6px 12px 6px 4px }
-  .conta-texto, .conta-engrenagem { display: none }
-  .conta.active .conta-avatar { box-shadow: 0 0 0 2px var(--green-300) }
   .table th:nth-child(4), .table td:nth-child(4),
   .table th:nth-child(5), .table td:nth-child(5) { display: none }
 }

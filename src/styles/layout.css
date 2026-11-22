@@ -58,3 +58,45 @@
 .month-stepper button:disabled { color: var(--line2); cursor: default }
 .month-stepper-label { min-width: 140px; text-align: center; font-weight: 700; color: var(--navy) }
 
+
+/* ── Barra inferior (celular): 4 destinos, o resto fica em "Mais" ── */
+.bottom-nav {
+  display: none; grid-template-columns: repeat(4, 1fr);
+  position: fixed; inset: auto 0 0 0; z-index: var(--z-sidebar);
+  background: var(--navy-950); border-top: 1px solid rgba(255,255,255,.08);
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+}
+.bottom-link {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  min-height: 52px; border: none; background: none; cursor: pointer; border-radius: var(--radius);
+  color: var(--side-ink); font-size: var(--fs-xs); font-weight: 600; position: relative;
+}
+.bottom-link svg { width: 22px; height: 22px }
+.bottom-link.active { color: var(--white) }
+.bottom-link.active svg { color: var(--green-300) }
+.bottom-link.active::before {
+  content: ''; position: absolute; top: -7px; left: 28%; right: 28%; height: 3px;
+  border-radius: 0 0 3px 3px; background: var(--green-300);
+}
+
+/* Folha "Mais" */
+.folha-fundo {
+  position: fixed; inset: 0; z-index: var(--z-modal); background: rgba(10,21,38,.55);
+  display: flex; align-items: flex-end;
+}
+.folha {
+  width: 100%; max-height: 85vh; overflow-y: auto; background: var(--surface);
+  border-radius: 14px 14px 0 0; padding: 8px 16px calc(16px + env(safe-area-inset-bottom));
+  box-shadow: var(--shadow-modal);
+}
+.folha::before { content: ''; display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--line2); margin: 0 auto 12px }
+.folha h2 { font-size: var(--fs-lg); color: var(--navy); margin-bottom: 8px }
+.folha-lista { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.folha-item {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; min-height: 52px;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  color: var(--ink); font-size: var(--fs-md); font-weight: 600; cursor: pointer; text-align: left;
+}
+.folha-item svg { color: var(--green-700); flex-shrink: 0 }
+.folha-item.active { border-color: var(--green-500); background: var(--green-bg) }
+.folha-conta { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line) }

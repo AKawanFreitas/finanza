@@ -6,12 +6,8 @@
 
 @media (max-width: 860px) {
   .page { margin-left: 0; padding: 18px 14px 96px }
-  .sidebar { inset: auto 0 0 0; width: auto; flex-direction: row; border-right: none; border-top: 1px solid var(--black) }
-  .sidebar::after { display: none }
-  .brand { display: none }
-  .side-nav { flex-direction: row; width: 100%; padding: 6px 8px; gap: 4px }
-  .side-link { flex: 1; flex-direction: column; gap: 3px; padding: 8px 4px; font-size: var(--fs-xs); justify-content: center; text-align: center }
-  .side-link.active::before { left: 18%; right: 18%; top: -6px; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px }
+  .sidebar { display: none }
+  .bottom-nav { display: grid }
   .page-bar { flex-wrap: wrap }
   .form-grid { grid-template-columns: 1fr }
   .form-span-2 { grid-column: span 1 }
