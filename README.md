@@ -10,17 +10,14 @@ Controle financeiro pessoal em formato SaaS: cada pessoa tem a sua conta, com la
 Precisa do Node.js (testado na versão 24). São dois processos: a API e o front.
 
 ```bash
-# 1. API (porta 4747)
-cd backend
-npm install
-npm run dev
+# na raiz do projeto: instala front e backend
+npm run install:all
 
-# 2. Front (porta 5173), em outro terminal, na raiz do projeto
-npm install
+# sobe API (porta 4747) e front (porta 5173) juntos
 npm run dev
 ```
 
-Abra http://localhost:5173. O Vite encaminha as chamadas `/api` para o backend.
+Abra http://localhost:5173. O Vite encaminha as chamadas `/api` para o backend. Os logs saem no mesmo terminal, com o prefixo `api` ou `web`; Ctrl+C encerra os dois. Para subir só um deles: `npm run dev:api` ou `npm run dev:web`.
 
 ### Contas de teste (jeito rápido)
 
@@ -29,7 +26,7 @@ Crie um `.env` (o `.env.example` explica cada variável) com as contas que quer 
 ```bash
 cp .env.example .env
 # edite o .env: descomente as linhas BOOTSTRAP_* e escolha as senhas (8+ caracteres)
-cd backend && npm run dev     # e, na raiz, npm run dev para o front
+npm run dev
 ```
 
 As contas só são **criadas**: se o e-mail já existe, nada é alterado (reiniciar não desfaz uma senha trocada nem apaga dados). O `.env` não vai para o git, então as senhas ficam só na sua máquina. Em um servidor de verdade, não use `BOOTSTRAP_*`.
@@ -69,8 +66,7 @@ Sem `--senha`, o comando mostra uma senha provisória e pede a troca no primeiro
 Se a porta 4747 já estiver ocupada na sua máquina:
 
 ```bash
-cd backend && PORT=4800 npm run dev
-API_PORT=4800 npm run dev   # na raiz
+API_PORT=4800 npm run dev   # a API e o proxy do Vite usam a mesma porta
 ```
 
 Para experimentar sem mexer nos seus dados, aponte `DB_PATH` para um arquivo temporário. O banco é criado sozinho, já com as categorias padrão.
@@ -81,7 +77,9 @@ Na raiz:
 
 | Comando           | O que faz                        |
 | ----------------- | -------------------------------- |
-| `npm run dev`     | Front em modo desenvolvimento    |
+| `npm run dev`     | API + front em desenvolvimento   |
+| `npm run dev:web` / `dev:api` | Só o front / só a API |
+| `npm run install:all` | Instala as dependências da raiz e do `backend/` |
 | `npm run build`   | Build de produção em `dist/`     |
 | `npm run preview` | Serve o build localmente         |
 | `npm run lint`    | ESLint (o `backend/` é ignorado) |
