@@ -98,7 +98,7 @@ export function FinanceProvider({ children }) {
     if (!await remover(`/transactions/${id}${parcelas ? `?parcelas=${parcelas}` : ''}`, 'Não foi possível remover.')) return;
     setEditing(e => (e?.id === id ? null : e));
     invalidar();
-    showToast('Removido', 'err');
+    showToast('Excluído');
   }
 
   /* ── Recorrentes ─────────────────────────────────── */
@@ -120,7 +120,7 @@ export function FinanceProvider({ children }) {
     if (!await remover(`/recorrentes/${id}`, 'Não foi possível remover.')) return;
     setEditingRec(e => (e?.id === id ? null : e));
     invalidar();
-    showToast('Removido', 'err');
+    showToast('Excluído');
   }
 
   async function lancarRecorrente(id) {
@@ -159,7 +159,7 @@ export function FinanceProvider({ children }) {
     if (!await remover(`/categorias/${id}`, 'Não foi possível remover a categoria.')) return;
     setCategorias(prev => prev.filter(c => c.id !== id));
     setEditingCat(e => (e?.id === id ? null : e));
-    showToast('Categoria removida', 'err');
+    showToast('Categoria excluída');
   }
 
   /* ── Contas e transferências ─────────────────────── */
@@ -181,7 +181,7 @@ export function FinanceProvider({ children }) {
     if (!await remover(`/contas/${id}`, 'Não foi possível excluir a conta.')) return;
     setEditingConta(e => (e?.id === id ? null : e));
     await carregarContas();
-    showToast('Conta removida', 'err');
+    showToast('Conta excluída');
   }
 
   async function addTransferencia(data) {
@@ -194,7 +194,7 @@ export function FinanceProvider({ children }) {
   async function delTransferencia(id) {
     if (!await remover(`/transferencias/${id}`, 'Não foi possível remover.')) return;
     invalidar();
-    showToast('Transferência removida', 'err');
+    showToast('Transferência excluída');
   }
 
   if (loading) {
