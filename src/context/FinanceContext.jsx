@@ -3,6 +3,7 @@ import { api } from '../utils/api';
 import { currentYM } from '../utils/period';
 
 const FinanceContext = createContext(null);
+const PRAZO_DESFAZER = 6000; // ms para desfazer a exclusão de um lançamento
 
 export function FinanceProvider({ children }) {
   // Lançamentos não ficam aqui: cada tela pede ao servidor o que precisa (filtrado e paginado).
@@ -19,6 +20,8 @@ export function FinanceProvider({ children }) {
 
   const [toast, setToast] = useState({ msg: '', type: 'ok', visible: false, acao: null });
   const toastTimer = useRef(null);
+  const [ocultos, setOcultos] = useState(() => new Set()); // lançamentos excluídos aguardando o prazo do "Desfazer"
+  const pendente = useRef(null);
 
   // `acao` ({ rotulo, onClick }) mostra um botão no aviso, como "Desfazer". Com ação o aviso dura mais.
   const showToast = useCallback((msg, type = 'ok', acao = null) => {
@@ -59,6 +62,19 @@ export function FinanceProvider({ children }) {
       });
   }, []);
 
+  // Fechar a aba ou trocar de conta não pode perder uma exclusão que a pessoa já viu acontecer.
+  useEffect(() => {
+    const concluirAgora = () => {
+      const p = pendente.current;
+      if (!p) return;
+      clearTimeout(p.timer);
+      pendente.current = null;
+      fetch(`/api/transactions/${p.id}`, { method: 'DELETE', keepalive: true }).catch(() => {});
+    };
+    window.addEventListener('pagehide', concluirAgora);
+    return () => { window.removeEventListener('pagehide', concluirAgora); concluirAgora(); };
+  }, []);
+
   // POST/PUT que mostra o erro do servidor num toast. Devolve o corpo ou null.
   async function enviar(path, method, body) {
     const { ok, data } = await api(path, { method, body });
@@ -93,12 +109,46 @@ export function FinanceProvider({ children }) {
     return true;
   }
 
-  // `parcelas`: 'todas' ou 'futuras' para compras parceladas; sem ele, só o lançamento.
+  // Excluir um lançamento some da lista na hora e só vai ao servidor depois de PRAZO_DESFAZER,
+  // para dar tempo do "Desfazer". Com `parcelas` ('todas' ou 'futuras') a pessoa já confirmou num
+  // diálogo, então exclui direto.
   async function delTransaction(id, parcelas) {
-    if (!await remover(`/transactions/${id}${parcelas ? `?parcelas=${parcelas}` : ''}`, 'Não foi possível remover.')) return;
+    if (parcelas) {
+      if (!await remover(`/transactions/${id}?parcelas=${parcelas}`, 'Não foi possível excluir.')) return;
+      setEditing(e => (e?.id === id ? null : e));
+      invalidar();
+      showToast('Excluído');
+      return;
+    }
+    efetivarExclusao(); // uma exclusão pendente anterior termina antes de começar outra
+    setOcultos(o => new Set(o).add(id));
     setEditing(e => (e?.id === id ? null : e));
+    const timer = setTimeout(efetivarExclusao, PRAZO_DESFAZER);
+    pendente.current = { id, timer };
+    showToast('Lançamento excluído', 'ok', { rotulo: 'Desfazer', onClick: desfazerExclusao });
+  }
+
+  async function efetivarExclusao() {
+    const p = pendente.current;
+    if (!p) return;
+    clearTimeout(p.timer);
+    pendente.current = null;
+    const { ok, data } = await api(`/transactions/${p.id}`, { method: 'DELETE' });
+    if (!ok) {
+      setOcultos(o => { const n = new Set(o); n.delete(p.id); return n; });
+      showToast(data?.error || 'Não foi possível excluir.', 'err');
+      return;
+    }
     invalidar();
-    showToast('Excluído');
+  }
+
+  function desfazerExclusao() {
+    const p = pendente.current;
+    if (!p) return;
+    clearTimeout(p.timer);
+    pendente.current = null;
+    setOcultos(o => { const n = new Set(o); n.delete(p.id); return n; });
+    showToast('Exclusão desfeita');
   }
 
   /* ── Recorrentes ─────────────────────────────────── */
@@ -205,7 +255,7 @@ export function FinanceProvider({ children }) {
 
   return (
     <FinanceContext.Provider value={{
-      categorias, recorrentes, contas, versao, invalidar, toast, showToast, hideToast,
+      categorias, recorrentes, contas, versao, invalidar, toast, showToast, hideToast, ocultos,
       editing, setEditing,
       addTransaction, updateTransaction, delTransaction,
       editingRec, setEditingRec,

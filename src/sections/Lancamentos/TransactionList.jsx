@@ -11,7 +11,7 @@ const NO_FILTERS = { busca: '', tipo: '', categoria_id: '', conta_id: '', mes: '
 const POR_PAGINA = 20;
 
 export default function TransactionList() {
-  const { categorias, contas, versao, delTransaction, editing, setEditing } = useFinance();
+  const { categorias, contas, versao, delTransaction, editing, setEditing, ocultos } = useFinance();
   const [filters, setFilters] = useState(NO_FILTERS);
   const [buscaAplicada, setBuscaAplicada] = useState('');
   const [pagina, setPagina] = useState(1);
@@ -60,7 +60,7 @@ export default function TransactionList() {
   })}`;
 
   const hasFilters = Object.values(filters).some(Boolean);
-  const itens = resultado?.itens ?? [];
+  const itens = (resultado?.itens ?? []).filter(t => !ocultos.has(t.id));
   const total = resultado?.total ?? 0;
   const saldo = resultado?.totais.saldo ?? 0;
 
