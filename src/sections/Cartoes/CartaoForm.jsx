@@ -51,14 +51,14 @@ export default function CartaoForm({ editando, onCancelar, onSalvo }) {
   }
 
   return (
-    <div className="form-wrap">
-      <FormHeader
+    <div className={editando ? 'form-modal' : 'form-wrap'}>
+      {!editando && <FormHeader
         Icon={CreditCard}
         titulo={editando ? 'Editar cartão' : 'Novo cartão de crédito'}
         subtitulo={editando
           ? 'Mudar o dia de fechamento reorganiza as faturas do cartão'
           : 'Informe o limite e os dias de fechamento e vencimento da fatura'}
-      />
+      />}
 
       <div className="form-grid">
         <div className="form-group">

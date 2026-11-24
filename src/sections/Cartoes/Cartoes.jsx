@@ -5,6 +5,7 @@ import { api } from '../../utils/api';
 import { fmt, fmtDate } from '../../utils/formatters';
 import InfoBanner from '../../components/InfoBanner';
 import PageHeader from '../../components/PageHeader';
+import Modal from '../../components/Modal';
 import BarraOrcamento from '../../components/BarraOrcamento';
 import CartaoForm from './CartaoForm';
 import FaturaDetalhe from './FaturaDetalhe';
@@ -52,7 +53,7 @@ export default function Cartoes() {
 
       {cartoes?.length === 0 && <InfoBanner>Configure seu cartão de crédito para controlar seus gastos e acompanhar suas faturas.</InfoBanner>}
 
-      <CartaoForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={c => { setEditando(null); setSelecionado(c.id); invalidar(); }} />
+      <CartaoForm onSalvo={c => { setSelecionado(c.id); invalidar(); }} />
 
       <div className="hist-wrap">
         <div className="card-head">
@@ -80,7 +81,7 @@ export default function Cartoes() {
                 </div>
               </button>
               <div className="hist-actions">
-                <IconButton label="Editar" onClick={() => { setEditando(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={13} strokeWidth={2} /></IconButton>
+                <IconButton label="Editar" onClick={() => setEditando(c)}><Pencil size={13} strokeWidth={2} /></IconButton>
                 <IconButton label={c.arquivada ? 'Reativar' : 'Arquivar'} onClick={() => alternarArquivo(c)}>
                   {c.arquivada ? <ArchiveRestore size={13} strokeWidth={2} /> : <Archive size={13} strokeWidth={2} />}
                 </IconButton>
@@ -92,6 +93,13 @@ export default function Cartoes() {
       </div>
 
       {ativo && <FaturaDetalhe cartao={ativo} />}
+
+      {editando && (
+        <Modal titulo="Editar cartão" larga onFechar={() => setEditando(null)}>
+          <p className="modal-sub">Mudar o dia de fechamento reorganiza as faturas do cartão.</p>
+          <CartaoForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={c => { setEditando(null); setSelecionado(c.id); invalidar(); }} />
+        </Modal>
+      )}
     </div>
   );
 }
