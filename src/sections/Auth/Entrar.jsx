@@ -44,7 +44,7 @@ export default function Entrar() {
   }
 
   return (
-    <div className="entrar">
+    <div className="entrar tema-claro">
       <EntrarMarca />
 
       <section className="entrar-painel">
