@@ -1,8 +1,10 @@
 import { useMemo, useRef, useState, useId } from 'react';
-import { FileUp, Wallet, Check } from 'lucide-react';
+import { FileUp, Wallet, Check, FileSearch, UploadCloud, ArrowRight } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import { fmt, fmtDate } from '../../utils/formatters';
+import PageHeader from '../../components/PageHeader';
+import FormHeader from '../../components/FormHeader';
 import Select from '../../components/Select';
 
 // Extratos brasileiros costumam vir em Windows-1252. Tenta UTF-8 e, se falhar, cai para ele.
@@ -82,17 +84,13 @@ export default function Importar({ onNavigate }) {
 
   return (
     <div className="section-enter">
-      <div className="page-header">
-        <div>
-          <div className="page-title">Importar extrato</div>
-          <div className="page-subtitle">Traga lançamentos do seu banco em OFX ou CSV</div>
-        </div>
-      </div>
+      <PageHeader Icon={FileUp} titulo="Importar extrato" subtitulo="Traga lançamentos do seu banco em OFX ou CSV" />
 
       {resultado ? (
         <div className="panel">
           <div className="panel-body empty-state">
-            <h2><Check size={18} strokeWidth={2.5} style={{ verticalAlign: '-3px', color: 'var(--green)' }} /> Importação concluída</h2>
+            <span className="import-ok" aria-hidden="true"><Check size={26} strokeWidth={2.6} /></span>
+            <h2 className="empty-titulo">Importação concluída</h2>
             <p>
               {resultado.importados} {resultado.importados === 1 ? 'lançamento importado' : 'lançamentos importados'}
               {resultado.ignorados > 0 && <>, {resultado.ignorados} já existiam e foram ignorados</>}.
@@ -105,19 +103,14 @@ export default function Importar({ onNavigate }) {
         </div>
       ) : (
         <div className="form-wrap">
-          <div className="form-header">
-            <div className="form-header-text">
-              <div className="form-header-title">1. Escolha a conta e o arquivo</div>
-              <div className="form-header-sub">OFX (extrato de conta ou cartão) ou CSV com colunas de data, descrição e valor</div>
-            </div>
-          </div>
+          <FormHeader Icon={UploadCloud} titulo={'1. Escolha a conta e o arquivo'} subtitulo={'OFX (extrato de conta ou cartão) ou CSV com colunas de data, descrição e valor'} />
           <div className="form-grid">
             <div className="form-group">
-              <label className="form-label" htmlFor={`${uid}-1`}>Conta de destino</label>
+              <label className="form-label" htmlFor={`${uid}-1`}><Wallet size={16} />Conta de destino</label>
               <Select id={`${uid}-1`} value={contaId} onChange={setContaId} options={opcoesConta} prefix={<Wallet size={14} strokeWidth={2} />} />
             </div>
             <div className="form-group">
-              <label className="form-label" htmlFor={`${uid}-2`}>Arquivo</label>
+              <label className="form-label" htmlFor={`${uid}-2`}><FileUp size={16} />Arquivo</label>
               <input id={`${uid}-2`}
                 ref={inputRef} className="form-control" type="file" accept=".ofx,.csv,.txt,text/csv"
                 onChange={e => { setArquivo(e.target.files?.[0] ?? null); setPrevia(null); }}
@@ -127,7 +120,8 @@ export default function Importar({ onNavigate }) {
           <div className="form-actions">
             <button className="btn btn-primary btn-full" disabled={!arquivo || lendo} onClick={ler}>
               <FileUp size={15} strokeWidth={2.5} /> {lendo ? 'Lendo...' : 'Ler arquivo'}
-            </button>
+            <ArrowRight size={15} strokeWidth={2.5} />
+        </button>
           </div>
         </div>
       )}
@@ -136,7 +130,7 @@ export default function Importar({ onNavigate }) {
         <div className="hist-wrap">
           <div className="card-head">
             <div>
-              <div className="card-title">2. Revise e confirme</div>
+              <div className="card-title"><FileSearch size={20} />2. Revise e confirme</div>
               <div className="card-sub">
                 {previa.itens.length} lançamentos em {previa.formato.toUpperCase()}
                 {previa.ignoradas > 0 && ` · ${previa.ignoradas} linhas ignoradas (sem data ou valor)`}
