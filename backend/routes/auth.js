@@ -16,6 +16,8 @@ const publico = u => ({
   id: u.id, nome: u.nome, email: u.email, papel: u.papel,
   trocar_senha: !!u.trocar_senha, criado_em: u.criado_em,
   email_verificado: !!u.email_verificado_em, notificacoes_email: !!u.notificacoes_email,
+  // O ?v= muda a cada troca, então o navegador não mostra uma foto antiga do cache.
+  foto_url: u.foto_em ? `/api/auth/foto?v=${Date.parse(u.foto_em)}` : null,
   // Preenchido quando o administrador está dentro desta conta por um chamado de suporte.
   suporte: u.suporte ? suporte.descrever(u) : null,
 });
@@ -146,6 +148,46 @@ router.patch('/perfil', auth.exigirLogin, (req, res) => {
     .run(nome.value, email.value, mudouEmail ? 1 : 0, req.user.id);
   if (mudouEmail) enviarVerificacao(buscarUser(req.user.id));
   res.json({ user: publico(buscarUser(req.user.id)) });
+});
+
+/* ── Foto de perfil ─────────────────────────────────── */
+// Confere o conteúdo do arquivo, não só o cabeçalho que o cliente mandou.
+function tipoDaImagem(b) {
+  if (b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'image/jpeg';
+  if (b.length > 8 && b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'image/png';
+  if (b.length > 12 && b.toString('latin1', 0, 4) === 'RIFF' && b.toString('latin1', 8, 12) === 'WEBP') return 'image/webp';
+  return null;
+}
+
+router.put('/foto', auth.exigirLogin, (req, res) => {
+  const corpo = req.body;
+  if (!Buffer.isBuffer(corpo) || corpo.length === 0) return res.status(400).json({ error: 'Envie uma imagem JPG, PNG ou WebP.' });
+  const tipo = tipoDaImagem(corpo);
+  if (!tipo) return res.status(400).json({ error: 'Envie uma imagem JPG, PNG ou WebP.' });
+
+  db.transaction(() => {
+    db.prepare('INSERT INTO fotos_perfil (user_id, tipo, dados) VALUES (?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET tipo = excluded.tipo, dados = excluded.dados')
+      .run(req.user.id, tipo, corpo);
+    db.prepare('UPDATE users SET foto_em = ? WHERE id = ?').run(new Date().toISOString(), req.user.id);
+  })();
+  res.json({ user: publico(buscarUser(req.user.id)) });
+});
+
+router.delete('/foto', auth.exigirLogin, (req, res) => {
+  db.transaction(() => {
+    db.prepare('DELETE FROM fotos_perfil WHERE user_id = ?').run(req.user.id);
+    db.prepare('UPDATE users SET foto_em = NULL WHERE id = ?').run(req.user.id);
+  })();
+  res.json({ user: publico(buscarUser(req.user.id)) });
+});
+
+// Cada pessoa só vê a própria foto.
+router.get('/foto', auth.exigirLogin, (req, res) => {
+  const foto = db.prepare('SELECT tipo, dados FROM fotos_perfil WHERE user_id = ?').get(req.user.id);
+  if (!foto) return res.status(404).json({ error: 'Sem foto.' });
+  res.setHeader('Content-Type', foto.tipo);
+  res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+  res.send(foto.dados);
 });
 
 /* ── Preferências de e-mail ─────────────────────────── */
