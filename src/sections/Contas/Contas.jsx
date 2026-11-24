@@ -1,3 +1,5 @@
+import { Wallet } from 'lucide-react';
+import PageHeader from '../../components/PageHeader';
 import { useFinance } from '../../context/FinanceContext';
 import { fmt } from '../../utils/formatters';
 import ContaForm from './ContaForm';
@@ -11,16 +13,12 @@ export default function Contas() {
 
   return (
     <div className="section-enter">
-      <div className="page-header">
-        <div>
-          <div className="page-title">Contas</div>
-          <div className="page-subtitle">Carteiras, bancos e transferências entre elas</div>
-        </div>
+      <PageHeader Icon={Wallet} titulo="Contas" subtitulo="Carteiras, bancos e transferências entre elas">
         <div className="saldo-total">
           <small>Saldo total{temCartao ? ' (já descontando os cartões)' : ''}</small>
           <strong className={total < 0 ? 'neg' : ''}>{total < 0 ? '−' : ''}{fmt(Math.abs(total))}</strong>
         </div>
-      </div>
+      </PageHeader>
       <ContaForm />
       <ContaList />
       <Transferencias />

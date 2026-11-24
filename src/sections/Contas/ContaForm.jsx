@@ -1,6 +1,7 @@
 import { useEffect, useState, useId } from 'react';
-import { Wallet, Palette, Plus, Check, X, Landmark } from 'lucide-react';
+import { Wallet, Palette, Plus, Check, X, Landmark, Type, DollarSign, ArrowRight } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
+import FormHeader from '../../components/FormHeader';
 import Select from '../../components/Select';
 import { TIPOS_CONTA } from './tipos';
 
@@ -35,20 +36,13 @@ export default function ContaForm() {
 
   return (
     <div className="form-wrap">
-      <div className="form-header">
-        <div className="form-header-text">
-          <div className="form-header-title">{editingConta ? 'Editar conta' : 'Nova conta'}</div>
-          <div className="form-header-sub">
-            {editingConta ? 'Altere os dados e salve' : 'Cadastre um banco, carteira ou investimento'}
-          </div>
-        </div>
-      </div>
+      <FormHeader Icon={Wallet} titulo={editingConta ? 'Editar conta' : 'Nova conta'} subtitulo={editingConta ? 'Altere os dados e salve' : 'Cadastre um banco, carteira ou investimento'} />
 
       <div className="form-grid">
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-1`}>Nome</label>
+          <label className="form-label" htmlFor={`${uid}-1`}><Type size={16} />Nome</label>
           <div className="form-input-wrap">
-            <span className="form-prefix"><Wallet size={14} strokeWidth={2} /></span>
+            <span className="form-prefix"><Wallet size={16} strokeWidth={2} /></span>
             <input id={`${uid}-1`}
               className="form-control" placeholder="Ex: Nubank" value={form.nome} maxLength={40}
               onChange={e => set('nome', e.target.value)}
@@ -58,12 +52,12 @@ export default function ContaForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-2`}>Tipo</label>
+          <label className="form-label" htmlFor={`${uid}-2`}><Landmark size={16} />Tipo</label>
           <Select id={`${uid}-2`} value={form.tipo} onChange={v => set('tipo', v)} options={TIPOS_CONTA} prefix={<Landmark size={14} strokeWidth={2} />} />
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-3`}>Saldo inicial</label>
+          <label className="form-label" htmlFor={`${uid}-3`}><DollarSign size={16} />Saldo inicial</label>
           <div className="form-input-wrap has-text-prefix">
             <span className="form-prefix-text">R$</span>
             <input id={`${uid}-3`}
@@ -74,7 +68,7 @@ export default function ContaForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-4`}>Cor</label>
+          <label className="form-label" htmlFor={`${uid}-4`}><Palette size={16} />Cor</label>
           <label className="color-pick-wrap" htmlFor={`${uid}-4`}>
             <div className="color-swatch" style={{ background: form.cor }} />
             <span className="color-swatch-label">{form.cor.toUpperCase()}</span>
@@ -98,6 +92,7 @@ export default function ContaForm() {
         <button className="btn btn-primary btn-full" onClick={enviar}>
           {editingConta ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
           {editingConta ? 'Salvar alterações' : 'Criar conta'}
+        <ArrowRight size={15} strokeWidth={2.5} />
         </button>
         {editingConta && (
           <button className="btn btn-ghost" onClick={() => setEditingConta(null)}>

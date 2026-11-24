@@ -1,8 +1,9 @@
 import { useEffect, useState, useId } from 'react';
-import { ArrowRight, ArrowLeftRight, Calendar, AlignLeft, Trash2 } from 'lucide-react';
+import { ArrowRight, ArrowLeftRight, Calendar, AlignLeft, Trash2, History, ArrowUpRight, ArrowDownLeft, DollarSign } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import { fmt, fmtDate, today } from '../../utils/formatters';
+import FormHeader from '../../components/FormHeader';
 import Select from '../../components/Select';
 import IconButton from '../../components/IconButton';
 import { useConfirm } from '../../components/Confirm';
@@ -45,7 +46,7 @@ export default function Transferencias() {
   if (ativas.length < 2) {
     return (
       <div className="hist-wrap">
-        <div className="card-head"><div className="card-title">Transferências</div></div>
+        <div className="card-head"><div className="card-title"><ArrowLeftRight size={20} />Transferências</div></div>
         <div className="empty">Crie ao menos duas contas ativas para transferir valores entre elas.</div>
       </div>
     );
@@ -54,24 +55,19 @@ export default function Transferencias() {
   return (
     <>
       <div className="form-wrap">
-        <div className="form-header">
-          <div className="form-header-text">
-            <div className="form-header-title">Transferir entre contas</div>
-            <div className="form-header-sub">Move o saldo sem contar como receita nem gasto</div>
-          </div>
-        </div>
+        <FormHeader Icon={ArrowLeftRight} titulo={'Transferir entre contas'} subtitulo={'Move o saldo sem contar como receita nem gasto'} />
 
         <div className="form-grid">
           <div className="form-group">
-            <label className="form-label" htmlFor={`${uid}-1`}>De</label>
+            <label className="form-label" htmlFor={`${uid}-1`}><ArrowUpRight size={16} />De</label>
             <Select id={`${uid}-1`} value={origem} onChange={v => set('origem_id', v)} options={opcoes} />
           </div>
           <div className="form-group">
-            <label className="form-label" htmlFor={`${uid}-2`}>Para</label>
+            <label className="form-label" htmlFor={`${uid}-2`}><ArrowDownLeft size={16} />Para</label>
             <Select id={`${uid}-2`} value={destino} onChange={v => set('destino_id', v)} options={opcoes} />
           </div>
           <div className="form-group">
-            <label className="form-label" htmlFor={`${uid}-3`}>Valor</label>
+            <label className="form-label" htmlFor={`${uid}-3`}><DollarSign size={16} />Valor</label>
             <div className="form-input-wrap has-text-prefix">
               <span className="form-prefix-text">R$</span>
               <input id={`${uid}-3`} className="form-control" type="number" min="0" step="0.01" placeholder="0,00"
@@ -79,16 +75,16 @@ export default function Transferencias() {
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label" htmlFor={`${uid}-4`}>Data</label>
+            <label className="form-label" htmlFor={`${uid}-4`}><Calendar size={16} />Data</label>
             <div className="form-input-wrap">
-              <span className="form-prefix"><Calendar size={14} strokeWidth={2} /></span>
+              <span className="form-prefix"><Calendar size={16} strokeWidth={2} /></span>
               <input id={`${uid}-4`} className="form-control" type="date" value={form.data} onChange={e => set('data', e.target.value)} />
             </div>
           </div>
           <div className="form-group form-span-2">
-            <label className="form-label" htmlFor={`${uid}-5`}>Descrição <span className="form-label-opt">(opcional)</span></label>
+            <label className="form-label" htmlFor={`${uid}-5`}><AlignLeft size={16} />Descrição <span className="form-label-opt">(opcional)</span></label>
             <div className="form-input-wrap">
-              <span className="form-prefix"><AlignLeft size={14} strokeWidth={2} /></span>
+              <span className="form-prefix"><AlignLeft size={16} strokeWidth={2} /></span>
               <input id={`${uid}-5`} className="form-control" placeholder="Ex: Reserva do mês" value={form.descricao} maxLength={120}
                 onChange={e => set('descricao', e.target.value)} />
             </div>
@@ -98,13 +94,14 @@ export default function Transferencias() {
         <div className="form-actions">
           <button className="btn btn-primary btn-full" onClick={enviar}>
             <ArrowLeftRight size={15} strokeWidth={2.5} /> Transferir
-          </button>
+          <ArrowRight size={15} strokeWidth={2.5} />
+        </button>
         </div>
       </div>
 
       {lista.length > 0 && (
         <div className="hist-wrap">
-          <div className="card-head"><div className="card-title">Últimas transferências</div></div>
+          <div className="card-head"><div className="card-title"><History size={20} />Últimas transferências</div></div>
           <div className="rec-grid">
             {lista.map(t => (
               <div key={t.id} className="rec-card">
