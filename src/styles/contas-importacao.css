@@ -2,14 +2,15 @@
 .filters-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) auto }
 .filters-4 > input[type="month"] { grid-column: auto }
 
-.pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; color: var(--muted); border-top: 1px solid var(--line) }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 24px; color: var(--muted); border-top: 1px solid var(--line) }
 .btn:disabled { opacity: .5; cursor: not-allowed }
 .btn:disabled:hover { border-color: var(--line2) }
 
-.saldo-total { text-align: right }
-.saldo-total small { display: block; color: var(--muted); font-size: 12.5px; font-weight: 600 }
-.saldo-total strong { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--navy) }
-.saldo-total strong.neg, .rec-amount.neg { color: var(--red) }
+.saldo-total { text-align: right; padding: 12px 20px; border-radius: 16px; background: var(--dark-grad); box-shadow: var(--shadow-card) }
+.saldo-total small { display: block; color: rgba(255,255,255,.78); font-size: 12.5px; font-weight: 600 }
+.saldo-total strong { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--white) }
+.saldo-total strong.neg { color: var(--red-soft) }
+.rec-amount.neg { color: var(--red) }
 .rec-card.arquivada { opacity: .6 }
 .transf-rota { display: inline-flex; align-items: center; gap: 6px }
 
@@ -20,9 +21,44 @@
 .import-table tr.desmarcada { opacity: .5 }
 .import-cat { padding: 6px 8px; font-size: 13.5px; min-width: 150px }
 .import-aviso { margin-left: 8px; font-size: var(--fs-xs) }
-.import-rodape { border-top: 1px solid var(--line); border-bottom: none }
+.import-rodape { border: none }
 
 @media (max-width: 900px) {
   .filters-4 { grid-template-columns: 1fr 1fr }
 }
 
+
+/* Cartões de contas */
+.contas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; padding: 14px 24px 24px }
+.conta-card {
+  --cor: var(--green-500);
+  position: relative; display: flex; flex-direction: column; gap: 14px; padding: 18px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--line); overflow: hidden;
+}
+.conta-card::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--cor) }
+.conta-card.editing { border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(47,158,68,.16) }
+.conta-card.arquivada { opacity: .6 }
+.conta-card-topo { display: flex; align-items: center; gap: 12px; min-width: 0 }
+.conta-card-icone {
+  width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--cor) 16%, white); color: var(--cor);
+}
+.conta-card-nome { display: flex; flex-direction: column; min-width: 0; line-height: 1.25 }
+.conta-card-nome strong { color: var(--navy); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.conta-card-nome small { color: var(--muted); font-size: 13px }
+.conta-card-saldo { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; color: var(--navy) }
+.conta-card-saldo.neg { color: var(--red) }
+.conta-card-acoes { justify-content: flex-end; margin-top: -6px }
+
+/* Importação */
+.import-ok { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; background: var(--brand-grad); color: var(--white); box-shadow: 0 8px 20px rgba(47,158,68,.3) }
+input[type="file"].form-control { padding: 8px 10px }
+input[type="file"].form-control::file-selector-button {
+  margin-right: 12px; padding: 6px 14px; border: none; border-radius: 10px; cursor: pointer;
+  background: var(--green-bg); color: var(--green-700); font: inherit; font-weight: 700;
+}
+input[type="file"].form-control::file-selector-button:hover { background: var(--green-line) }
+input[type="checkbox"] { accent-color: var(--green-500); width: 16px; height: 16px }
+.import-scroll { border-top: none; margin: 0 12px }
+.import-table th:first-child, .import-table td:first-child { padding-left: 12px; width: 40px }
+.import-rodape { margin: 12px 24px 20px }
