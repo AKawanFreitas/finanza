@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Pencil, Trash2, Search, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { Pencil, Trash2, Search, ChevronLeft, ChevronRight, Download, ListChecks } from 'lucide-react';
+import CategoriaIcone from '../../components/CategoriaIcone';
 import Select from '../../components/Select';
 import ExcluirParcelas from '../../components/ExcluirParcelas';
 import { useFinance } from '../../context/FinanceContext';
@@ -59,6 +60,7 @@ export default function TransactionList() {
     conta_id: filters.conta_id, mes: filters.mes,
   })}`;
 
+  const iconeCat = nome => categorias.find(c => c.nome === nome)?.icone;
   const hasFilters = Object.values(filters).some(Boolean);
   const itens = (resultado?.itens ?? []).filter(t => !ocultos.has(t.id));
   const total = resultado?.total ?? 0;
@@ -80,8 +82,8 @@ export default function TransactionList() {
 
   return (
     <div className="hist-wrap">
-      <div className="card-head" style={{ marginBottom: '0.75rem' }}>
-        <div className="card-title">Histórico de lançamentos</div>
+      <div className="card-head">
+        <div className="card-title"><ListChecks size={20} />Histórico de lançamentos</div>
         <div className="card-sub">
           {total} {total === 1 ? 'registro' : 'registros'}
           {hasFilters && total > 0 && <> · saldo {saldo < 0 ? '-' : ''}{fmt(Math.abs(saldo))}</>}
@@ -143,7 +145,7 @@ export default function TransactionList() {
         return (
           <div key={t.id} className={`hist-row ${editing?.id === t.id ? 'editing' : ''}`}>
             <div className="hist-desc-wrap">
-              <span className="dot" style={{ background: color }} />
+              <CategoriaIcone icone={iconeCat(t.cat)} cor={color} tam={34} />
               <div>
                 <div className="hist-desc">{t.desc}</div>
                 <div className="hist-obs">{[t.conta, t.fatura && `fatura ${t.fatura.slice(5)}/${t.fatura.slice(0, 4)}`, t.obs].filter(Boolean).join(' · ')}</div>

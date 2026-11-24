@@ -1,3 +1,4 @@
+import CategoriaIcone from '../../components/CategoriaIcone';
 import { fmt, fmtDate, getCatColor } from '../../utils/formatters';
 
 export default function MovementsTable({ transactions, categorias, limit = 8 }) {
@@ -24,7 +25,7 @@ export default function MovementsTable({ transactions, categorias, limit = 8 }) 
             <td className="strong">{t.desc}</td>
             <td>
               <span className="tag-chip">
-                <span className="dot" style={{ background: getCatColor(categorias, t.cat) }} />
+                <CategoriaIcone icone={categorias.find(c => c.nome === t.cat)?.icone} cor={getCatColor(categorias, t.cat)} tam={26} />
                 {t.cat}
               </span>
             </td>

@@ -1,3 +1,4 @@
+import CategoriaIcone from '../../components/CategoriaIcone';
 import { fmt, getCatColor } from '../../utils/formatters';
 
 // Rosca feita com conic-gradient: sem biblioteca de gráficos.
@@ -23,7 +24,7 @@ export default function CategoryDonut({ sorted, categorias }) {
       <ul className="donut-legend">
         {sorted.map(([nome, v]) => (
           <li key={nome}>
-            <span className="dot" style={{ background: getCatColor(categorias, nome) }} />
+            <CategoriaIcone icone={categorias.find(c => c.nome === nome)?.icone} cor={getCatColor(categorias, nome)} tam={26} />
             <span className="legend-name">{nome}</span>
             <span className="legend-pct">{Math.round((v / total) * 100)}%</span>
             <span className="legend-val">{fmt(v)}</span>
