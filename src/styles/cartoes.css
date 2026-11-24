@@ -1,24 +1,31 @@
 /* ── Marco 4: cartões, parcelas, diálogo ───────────── */
-.cartao-linha { display: flex; align-items: center; gap: 8px; padding: 0 20px 0 0; border-bottom: 1px solid var(--line) }
-.cartao-linha:last-child { border-bottom: none }
-.cartao-linha.ativo { background: var(--green-bg); box-shadow: inset 3px 0 0 var(--green-500) }
+.cartoes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; padding: 14px 24px 24px }
+.cartao-linha {
+  --cor: var(--green-500);
+  position: relative; display: flex; flex-direction: column; border-radius: 16px; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--line); transition: border-color var(--ease), box-shadow var(--ease);
+}
+.cartao-linha::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--cor) }
+.cartao-linha.ativo { border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(47,158,68,.16) }
 .cartao-linha.arquivada { opacity: .6 }
-.cartao-corpo { flex: 1; min-width: 0; padding: 16px 20px; background: none; border: none; text-align: left; cursor: pointer; color: inherit; font: inherit }
-.cartao-corpo:hover { background: rgba(0,0,0,.02) }
+.cartao-corpo { flex: 1; min-width: 0; padding: 20px 20px 12px; background: none; border: none; text-align: left; cursor: pointer; color: inherit; font: inherit }
+.cartao-corpo:hover { background: var(--head) }
+.cartao-linha .orc-topo { flex-wrap: wrap }
+.cartao-linha .hist-actions { padding: 0 12px 10px }
 
 .fatura-mes { width: auto; padding: 6px 10px; font-size: 13.5px }
-.fatura-resumo { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; padding: 14px 20px; border-bottom: 1px solid var(--line) }
+.fatura-resumo { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; padding: 14px 24px; border-bottom: 1px solid var(--line) }
 .fatura-resumo small { display: block; color: var(--muted); font-size: 12.5px; font-weight: 600 }
 .fatura-resumo strong { font-size: 18px; font-weight: 800; color: var(--navy) }
 .fatura-resumo .chip { margin-left: auto }
-.fatura-pagamentos { display: flex; flex-direction: column; gap: 2px; padding: 12px 20px; color: var(--muted); font-size: 13.5px; border-top: 1px solid var(--line) }
+.fatura-pagamentos { display: flex; flex-direction: column; gap: 2px; padding: 12px 24px; color: var(--muted); font-size: 13.5px; border-top: 1px solid var(--line) }
 .fatura-pagamentos strong { color: var(--navy) }
-.fatura-pagar { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 12px; align-items: end; padding: 16px 20px; border-top: 1px solid var(--line); background: var(--head) }
+.fatura-pagar { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 12px; align-items: end; padding: 16px 24px; border-top: 1px solid var(--line); background: var(--head) }
 
 .parcelas-info { margin-top: 2px; color: var(--muted); font-size: 13px }
 
-.modal-fundo { position: fixed; inset: 0; z-index: var(--z-modal); display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(10,21,38,.55) }
-.modal { width: 100%; max-width: 420px; padding: 22px; border-radius: 8px; background: var(--surface); box-shadow: 0 20px 50px rgba(0,0,0,.3) }
+.modal-fundo { position: fixed; inset: 0; z-index: var(--z-modal); display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(4,35,26,.55) }
+.modal { width: 100%; max-width: 420px; padding: 24px; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-modal) }
 .modal h2 { font-size: 17px; color: var(--navy); margin-bottom: 6px }
 .modal p { color: var(--muted); margin-bottom: 16px }
 .modal-acoes { display: flex; flex-direction: column; gap: 8px }
