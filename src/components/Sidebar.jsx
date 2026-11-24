@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp, Target, CreditCard, PiggyBank, CalendarCheck, Menu, LogOut } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp, Target, CreditCard, PiggyBank, CalendarCheck, Menu, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
 
@@ -21,7 +21,7 @@ const PRINCIPAIS = ['dashboard', 'lancamento', 'contas-pagar'];
 
 const iniciais = nome => nome.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
 
-export default function Sidebar({ active, onNavigate }) {
+export default function Sidebar({ active, onNavigate, recolhida = false, onAlternar }) {
   const { user, ehAdmin, sair } = useAuth();
   const [maisAberto, setMaisAberto] = useState(false);
 
@@ -36,13 +36,21 @@ export default function Sidebar({ active, onNavigate }) {
   return (
     <>
       <aside className="sidebar">
-        <button className="brand" onClick={() => onNavigate('dashboard')} aria-label="Finanza, ir para o resumo">
-          <img src="/logo sem texto - finanza.png" alt="" />
-          <span className="brand-text">
-            <strong>Finanza</strong>
-            <small>Controle financeiro inteligente</small>
-          </span>
-        </button>
+        <div className="side-topo">
+          <button className="brand" onClick={() => onNavigate('dashboard')} aria-label="Finanza, ir para o resumo" title={recolhida ? 'Finanza' : undefined}>
+            <img src="/logo sem texto - finanza.png" alt="" />
+            <span className="brand-text">
+              <strong>Finanza</strong>
+            </span>
+          </button>
+          <button
+            className="side-recolher" onClick={onAlternar}
+            aria-label={recolhida ? 'Expandir menu' : 'Recolher menu'} aria-expanded={!recolhida}
+            title={recolhida ? 'Expandir menu' : 'Recolher menu'}
+          >
+            {recolhida ? <PanelLeftOpen size={18} strokeWidth={2} /> : <PanelLeftClose size={18} strokeWidth={2} />}
+          </button>
+        </div>
 
         <nav className="side-nav" aria-label="Seções">
           {itens.map(({ id, label, Icon }) => (
@@ -50,10 +58,12 @@ export default function Sidebar({ active, onNavigate }) {
               key={id}
               className={`side-link${active === id ? ' active' : ''}`}
               aria-current={active === id ? 'page' : undefined}
+              aria-label={recolhida ? label : undefined}
+              title={recolhida ? label : undefined}
               onClick={() => onNavigate(id)}
             >
-              <Icon size={18} strokeWidth={2} />
-              <span>{label}</span>
+              <Icon size={20} strokeWidth={2} />
+              <span className="side-rotulo">{label}</span>
             </button>
           ))}
         </nav>
@@ -63,6 +73,7 @@ export default function Sidebar({ active, onNavigate }) {
             className={`conta${active === 'configuracoes' ? ' active' : ''}`}
             onClick={() => onNavigate('configuracoes')}
             aria-current={active === 'configuracoes' ? 'page' : undefined}
+            title={recolhida ? `${user.nome} · Configurações` : undefined}
           >
             <span className="conta-avatar" aria-hidden="true">{iniciais(user.nome)}</span>
             <span className="conta-texto">
