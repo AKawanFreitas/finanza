@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Check, LogOut, Trash2, Settings, User, Type, Mail, Bell, KeyRound, Lock, Info, AlertTriangle, ArrowRight, Headset } from 'lucide-react';
+import { Check, LogOut, Trash2, Settings, User, Type, Mail, Bell, KeyRound, Lock, Info, AlertTriangle, ArrowRight, Headset, Sun, Moon, Monitor, Palette } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useFinance } from '../../context/FinanceContext';
 import PageHeader from '../../components/PageHeader';
 import InfoBanner from '../../components/InfoBanner';
 import { api } from '../../utils/api';
 import { fmtDate } from '../../utils/formatters';
+import { lerTema, salvarTema } from '../../utils/tema';
 
 // Cada bloco tem o seu próprio aviso de erro, para a pessoa ver o resultado onde agiu.
 function useAcao(showToast) {
@@ -28,6 +29,38 @@ function useAcao(showToast) {
   }
 
   return { erro, ocupado, executar, limparErro: () => setErro('') };
+}
+
+const OPCOES_TEMA = [
+  { id: 'sistema', rotulo: 'Automático', Icon: Monitor },
+  { id: 'claro',   rotulo: 'Claro',      Icon: Sun },
+  { id: 'escuro',  rotulo: 'Escuro',     Icon: Moon },
+];
+
+// Vale só neste aparelho: cada navegador guarda a sua escolha.
+function Aparencia() {
+  const [tema, setTema] = useState(lerTema);
+  const escolher = id => { salvarTema(id); setTema(id); };
+
+  return (
+    <section className="panel">
+      <div className="panel-head"><h2><Palette size={20} />Aparência</h2></div>
+      <div className="panel-body">
+        <div className="tipo-toggle" role="radiogroup" aria-label="Tema da interface">
+          {OPCOES_TEMA.map(({ id, rotulo, Icon }) => (
+            <button
+              key={id} type="button" role="radio" aria-checked={tema === id}
+              className={`tipo-btn${tema === id ? ' active-entrada' : ''}`}
+              onClick={() => escolher(id)}
+            >
+              <Icon size={16} strokeWidth={2} />{rotulo}
+            </button>
+          ))}
+        </div>
+        <p className="form-dica"><Info size={14} />Automático acompanha o modo claro ou escuro do seu aparelho. A escolha vale só neste navegador.</p>
+      </div>
+    </section>
+  );
 }
 
 const ENCERRAMENTO = { admin: 'Encerrado pelo suporte', tempo: 'Encerrado por inatividade', sistema: 'Encerrado' };
@@ -160,6 +193,8 @@ export default function Configuracoes() {
           </div>
         </form>
       </section>
+
+      <Aparencia />
 
       <section className="panel">
         <div className="panel-head"><h2><Bell size={20} />Avisos por e-mail</h2></div>
