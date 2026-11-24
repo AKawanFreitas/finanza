@@ -10,9 +10,12 @@ const PRESET_COLORS = [
   '#7c3aed', '#0891b2', '#db2777', '#65a30d',
 ];
 
-export default function CategoriaForm() {
+// Sem `editar`, cria um novo registro (na página). Com `editar`, edita aquele registro dentro do modal
+// e chama `onConcluir` ao salvar ou cancelar.
+export default function CategoriaForm({ editar = null, onConcluir }) {
+  const editingCat = editar;
   const uid = useId();
-  const { addCategoria, updateCategoria, editingCat, setEditingCat } = useFinance();
+  const { addCategoria, updateCategoria } = useFinance();
   const [nome, setNome] = useState('');
   const [cor, setCor]   = useState('#22a84a');
   const [icone, setIcone] = useState('tag');
@@ -28,19 +31,19 @@ export default function CategoriaForm() {
     const data = { nome: nome.trim(), cor, icone };
     const ok = editingCat ? await updateCategoria(editingCat.id, data) : await addCategoria(data);
     if (!ok) return;
-    if (editingCat) setEditingCat(null);
+    if (editingCat) onConcluir?.();
     else { setNome(''); setIcone('tag'); }
   }
 
   return (
-    <div className="form-wrap">
-      <FormHeader
+    <div className={editingCat ? 'form-modal' : 'form-wrap'}>
+      {!editingCat && <FormHeader
         Icon={Tag}
         titulo={editingCat ? 'Editar categoria' : 'Nova categoria'}
         subtitulo={editingCat
           ? 'Renomear atualiza também os lançamentos e recorrentes dessa categoria'
           : 'Crie categorias personalizadas para organizar seus gastos'}
-      />
+      />}
 
       <div className="form-grid">
 
@@ -106,7 +109,7 @@ export default function CategoriaForm() {
           <ArrowRight size={15} strokeWidth={2.5} />
         </button>
         {editingCat && (
-          <button className="btn btn-ghost" onClick={() => setEditingCat(null)}>
+          <button className="btn btn-ghost" onClick={() => onConcluir?.()}>
             <X size={14} strokeWidth={2} />
             Cancelar
           </button>

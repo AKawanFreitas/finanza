@@ -24,7 +24,7 @@ export default function CategoriaList() {
               <CategoriaIcone icone={c.icone} cor={c.cor} tam={40} />
               <div className="cat-admin-name">{c.nome}</div>
               <div className="hist-actions">
-                <IconButton label="Editar" onClick={() => { setEditingCat(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                <IconButton label="Editar" onClick={() => setEditingCat(c)}>
                   <Pencil size={13} strokeWidth={2} />
                 </IconButton>
                 <IconButton label="Excluir" danger onClick={() => excluir(c)}>
