@@ -104,7 +104,7 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
       ) : (
         <div className="dash-grid">
           <div className="dash-col">
-            <section className="panel">
+            <section className="panel panel-grow">
               <div className="panel-head"><h2><BarChart3 size={20} />Gastos por dia</h2></div>
               <div className="panel-body"><DailyBars days={resumo.porDia} ym={ym} /></div>
             </section>
@@ -183,7 +183,7 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
               </section>
             )}
 
-            <section className="panel">
+            <section className="panel panel-grow">
               <div className="panel-head"><h2><LineChart size={20} />Últimos {HISTORY_MONTHS} meses</h2></div>
               <div className="panel-body"><MonthHistory history={history} ym={ym} /></div>
             </section>

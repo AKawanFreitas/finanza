@@ -22,8 +22,15 @@
 .kpi-brand .kpi-icon { background: rgba(255,255,255,.14); color: var(--green-300) }
 .kpi-brand .spark { color: var(--green-300); position: absolute; right: 14px; bottom: 14px; width: 170px; height: 64px }
 
-.dash-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; align-items: start }
+.dash-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px; align-items: stretch }
 .dash-col { display: flex; flex-direction: column; min-width: 0 }
+.panel-grow { flex: 1; display: flex; flex-direction: column }
+.panel-grow > .panel-body { flex: 1; display: flex; flex-direction: column }
+.panel-grow .daily { flex: 1; display: flex; flex-direction: column }
+.panel-grow .daily-plot { flex: 1; min-height: 200px; height: auto }
+.panel-grow .history { flex: 1 }
+.panel-grow .history-bars { flex: 1; min-height: 120px; height: auto }
+.panel-grow .history-col { align-self: stretch }
 .dash-col .panel:last-child { margin-bottom: 0 }
 
 /* Gastos por dia */
@@ -63,7 +70,7 @@
 .meter-note { color: var(--muted); font-size: 13px }
 
 /* Histórico */
-.history { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; align-items: end }
+.history { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; align-items: stretch; grid-template-rows: 1fr auto }
 .history-col { display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: .55 }
 .history-col.current { opacity: 1 }
 .history-bars { height: 120px; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 4px; border-bottom: 1px solid var(--line2) }
