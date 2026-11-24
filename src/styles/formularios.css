@@ -142,3 +142,6 @@
   background: linear-gradient(90deg, #e3f6e9, #eefaf2); border: 1px solid var(--green-line); color: var(--navy); font-weight: 500;
 }
 .banner-info svg { color: var(--green-700); flex-shrink: 0 }
+
+/* O menu do select pode passar da borda do cartão do formulário */
+.form-wrap { overflow: visible }
