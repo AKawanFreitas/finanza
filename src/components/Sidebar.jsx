@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp, Target, CreditCard, PiggyBank, CalendarCheck, Menu } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp, Target, CreditCard, PiggyBank, CalendarCheck, Menu, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
 
@@ -22,7 +22,7 @@ const PRINCIPAIS = ['dashboard', 'lancamento', 'contas-pagar'];
 const iniciais = nome => nome.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
 
 export default function Sidebar({ active, onNavigate }) {
-  const { user, ehAdmin } = useAuth();
+  const { user, ehAdmin, sair } = useAuth();
   const [maisAberto, setMaisAberto] = useState(false);
 
   // A administração só aparece para o super admin.
@@ -58,18 +58,22 @@ export default function Sidebar({ active, onNavigate }) {
           ))}
         </nav>
 
-        <button
-          className={`conta${active === 'configuracoes' ? ' active' : ''}`}
-          onClick={() => onNavigate('configuracoes')}
-          aria-current={active === 'configuracoes' ? 'page' : undefined}
-        >
-          <span className="conta-avatar" aria-hidden="true">{iniciais(user.nome)}</span>
-          <span className="conta-texto">
-            <strong>{user.nome}</strong>
-            <small>{user.email}</small>
-          </span>
-          <Settings size={16} strokeWidth={2} className="conta-engrenagem" />
-        </button>
+        <div className="conta-bloco">
+          <button
+            className={`conta${active === 'configuracoes' ? ' active' : ''}`}
+            onClick={() => onNavigate('configuracoes')}
+            aria-current={active === 'configuracoes' ? 'page' : undefined}
+          >
+            <span className="conta-avatar" aria-hidden="true">{iniciais(user.nome)}</span>
+            <span className="conta-texto">
+              <strong>{user.nome}</strong>
+              <small>{user.email}</small>
+            </span>
+          </button>
+          <button className="conta-sair" onClick={sair} aria-label="Sair da conta" title="Sair">
+            <LogOut size={18} strokeWidth={2} />
+          </button>
+        </div>
       </aside>
 
       <nav className="bottom-nav" aria-label="Seções">
@@ -112,6 +116,10 @@ export default function Sidebar({ active, onNavigate }) {
             ))}
           </ul>
           <p className="folha-conta"><small>{user.nome} · {user.email}</small></p>
+          <button className="folha-item folha-sair" onClick={sair}>
+            <LogOut size={20} strokeWidth={2} />
+            Sair da conta
+          </button>
         </Modal>
       )}
     </>
