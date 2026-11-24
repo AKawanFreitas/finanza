@@ -4,6 +4,7 @@ import CategoriaIcone from '../../components/CategoriaIcone';
 import Select from '../../components/Select';
 import ExcluirParcelas from '../../components/ExcluirParcelas';
 import { useFinance } from '../../context/FinanceContext';
+import { useConfirm } from '../../components/Confirm';
 import { api, query } from '../../utils/api';
 import { fmt, fmtDate, getCatColor } from '../../utils/formatters';
 import IconButton from '../../components/IconButton';
@@ -61,6 +62,10 @@ export default function TransactionList() {
   })}`;
 
   const iconeCat = nome => categorias.find(c => c.nome === nome)?.icone;
+  const confirmar = useConfirm();
+  const excluir = async t => {
+    if (await confirmar({ titulo: 'Excluir lançamento?', mensagem: `“${t.desc}” de ${fmt(t.valor)} em ${fmtDate(t.data)} será excluído.`, rotulo: 'Excluir' })) delTransaction(t.id);
+  };
   const hasFilters = Object.values(filters).some(Boolean);
   const itens = (resultado?.itens ?? []).filter(t => !ocultos.has(t.id));
   const total = resultado?.total ?? 0;
@@ -160,7 +165,7 @@ export default function TransactionList() {
               <IconButton label="Editar" onClick={() => setEditing(t)}>
                 <Pencil size={13} strokeWidth={2} />
               </IconButton>
-              <IconButton label="Excluir" danger onClick={() => (t.parcela ? setExcluindo(t) : delTransaction(t.id))}>
+              <IconButton label="Excluir" danger onClick={() => (t.parcela ? setExcluindo(t) : excluir(t))}>
                 <Trash2 size={13} strokeWidth={2} />
               </IconButton>
             </div>
