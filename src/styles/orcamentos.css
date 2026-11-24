@@ -1,12 +1,12 @@
 /* ── Marco 3: orçamentos, avisos, e-mail ───────────── */
-.aviso-ok { padding: 10px 12px; border-radius: 5px; background: var(--green-bg); color: var(--green-700); font-size: 14px; font-weight: 600 }
+.aviso-ok { padding: 12px 14px; border-radius: 14px; background: var(--green-bg); color: var(--green-700); font-size: 14px; font-weight: 600 }
 .entrar-dica { color: var(--muted); font-size: 14px; margin-top: -6px }
 .entrar-esqueci { align-self: flex-end; margin-top: -8px; font-size: 13.5px }
 .entrar-form-interno { display: flex; flex-direction: column; gap: 16px }
 
 .aviso-email {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;
-  padding: 10px 14px; border: 1px solid var(--amber-line); border-radius: 6px; background: var(--amber-bg); color: var(--amber); font-size: 14px;
+  padding: 12px 18px; border: 1px solid var(--amber-line); border-radius: 16px; background: var(--amber-bg); color: var(--amber); font-size: 14px;
 }
 .aviso-email strong { font-weight: 700 }
 .aviso-email .link-btn { margin-left: auto }
@@ -15,7 +15,7 @@
 .opcao-check input { margin-top: 4px; width: 16px; height: 16px; accent-color: var(--green-500); flex-shrink: 0 }
 .opcao-check strong { display: block; font-size: 14.5px; color: var(--navy) }
 .opcao-check small { display: block; color: var(--muted); font-size: 13px; line-height: 1.45 }
-.opcao-compacta { padding: 8px 12px; border: 1px solid var(--line2); border-radius: 5px; background: var(--surface) }
+.opcao-compacta { padding: 10px 14px; border: 1px solid var(--line2); border-radius: 14px; background: var(--surface) }
 
 .tag-auto { display: inline-flex; align-items: center; gap: 3px; margin-left: 8px; padding: 0 7px; border-radius: 999px; background: var(--green-bg); color: var(--green-700); font-size: var(--fs-xs); font-weight: 700 }
 
@@ -23,18 +23,19 @@
 .exportar a { color: var(--green-700); font-weight: 700; text-decoration: none }
 .exportar a:hover { text-decoration: underline }
 
-.orc-linha { padding: 16px 20px; border-bottom: 1px solid var(--line) }
-.orc-linha:last-child { border-bottom: none }
-.orc-topo { display: flex; align-items: center; gap: 10px; margin-bottom: 8px }
-.orc-pct { margin-left: auto; font-weight: 800; color: var(--navy) }
-.orc-trilho { height: 10px; border-radius: 999px; background: var(--head); border: 1px solid var(--line); overflow: hidden }
-.orc-barra { height: 100%; border-radius: 999px; background: var(--green-500); transition: width .25s ease }
-.orc-barra.atencao { background: var(--amber-bar-2) }
-.orc-barra.estourado { background: var(--red) }
-.orc-base { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 8px; color: var(--muted); font-size: 13.5px }
+.orc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; padding: 14px 24px 24px }
+.orc-linha { --cor: var(--green-500); position: relative; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); overflow: hidden }
+.orc-linha::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--cor) }
+.orc-topo { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap }
+.orc-pct { margin-left: auto; font-weight: 800; font-size: 18px; color: var(--navy) }
+.orc-trilho { height: 12px; border-radius: 999px; background: var(--head); overflow: hidden }
+.orc-barra { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--green-500), var(--green-300)); transition: width .25s ease }
+.orc-barra.atencao { background: linear-gradient(90deg, var(--amber-bar-2), #f3c64f) }
+.orc-barra.estourado { background: linear-gradient(90deg, var(--red), #ee7a7a) }
+.orc-base { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px; color: var(--muted); font-size: 13.5px }
 .orc-excesso { color: var(--red); font-weight: 700 }
 .orc-editar { display: inline-flex; align-items: center; gap: 8px }
-.orc-editar .form-control { width: 130px; padding-top: 6px; padding-bottom: 6px }
+.orc-editar .form-control { width: 140px; min-height: 40px; padding-top: 6px; padding-bottom: 6px }
 
 .orc-mini { display: flex; flex-direction: column; gap: 14px }
 .orc-mini-topo { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: 600 }
