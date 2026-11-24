@@ -9,9 +9,12 @@ import {
 
 const EMPTY = (cats) => ({ nome: '', valor: '', tipo: 'fixo', cat: cats[0]?.nome || '', dia: '', obs: '', automatico: false, conta_id: null });
 
-export default function RecorrenteForm() {
+// Sem `editar`, cria um novo registro (na página). Com `editar`, edita aquele registro dentro do modal
+// e chama `onConcluir` ao salvar ou cancelar.
+export default function RecorrenteForm({ editar = null, onConcluir }) {
+  const editingRec = editar;
   const uid = useId();
-  const { categorias, contas, addRecorrente, updateRecorrente, editingRec, setEditingRec } = useFinance();
+  const { categorias, contas, addRecorrente, updateRecorrente } = useFinance();
   const [form, setForm] = useState(EMPTY(categorias));
 
   useEffect(() => {
@@ -34,7 +37,7 @@ export default function RecorrenteForm() {
       ? await updateRecorrente(editingRec.id, data)
       : await addRecorrente(data);
     if (!ok) return;
-    if (editingRec) setEditingRec(null);
+    if (editingRec) onConcluir?.();
     else setForm(EMPTY(categorias));
   }
 
@@ -45,12 +48,12 @@ export default function RecorrenteForm() {
   ];
 
   return (
-    <div className="form-wrap">
-      <FormHeader
+    <div className={editingRec ? 'form-modal' : 'form-wrap'}>
+      {!editingRec && <FormHeader
         Icon={Repeat}
         titulo={editingRec ? 'Editar recorrente' : 'Adicionar recorrente'}
         subtitulo={editingRec ? 'Altere os dados e salve' : 'Despesas que se repetem todo mês'}
-      />
+      />}
 
       <div className="form-grid">
 
@@ -176,7 +179,7 @@ export default function RecorrenteForm() {
           <ArrowRight size={15} strokeWidth={2.5} />
         </button>
         {editingRec && (
-          <button className="btn btn-ghost" onClick={() => setEditingRec(null)}>
+          <button className="btn btn-ghost" onClick={() => onConcluir?.()}>
             <X size={14} strokeWidth={2} />
             Cancelar
           </button>

@@ -78,7 +78,7 @@ export default function RecorrenteList() {
                 </span>
                 <div className="rec-amount">{fmt(r.valor)}</div>
                 <div className="hist-actions">
-                  <IconButton label="Editar" onClick={() => { setEditingRec(r); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                  <IconButton label="Editar" onClick={() => setEditingRec(r)}>
                     <Pencil size={13} strokeWidth={2} />
                   </IconButton>
                   <IconButton label="Excluir" danger onClick={() => excluir(r)}>
