@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 const API = '/api/auth';
 const AuthContext = createContext(null);
@@ -26,6 +26,10 @@ async function pedir(caminho, { method = 'GET', body } = {}) {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  // Último acesso de suporte que terminou, para o administrador ver por que voltou à conta dele.
+  const [fimSuporte, setFimSuporte] = useState(null);
+  const userRef = useRef(null);
+  userRef.current = user;
 
   useEffect(() => {
     pedir('/eu')
@@ -44,10 +48,25 @@ export function AuthProvider({ children }) {
     setUser(user);
   }, []);
 
+  // Busca de novo quem está logado (e se há um acesso de suporte em andamento).
+  const recarregar = useCallback(() => pedir('/eu').then(({ user }) => setUser(user)).catch(() => {}), []);
+
+  // Sair durante um acesso de suporte só encerra o acesso: o administrador volta à conta dele.
   const sair = useCallback(async () => {
-    await pedir('/logout', { method: 'POST' }).catch(() => {});
+    const r = await pedir('/logout', { method: 'POST' }).catch(() => ({}));
+    if (r.suporte_encerrado) {
+      setFimSuporte({ cliente: userRef.current?.suporte?.cliente?.nome ?? '', motivo: 'admin' });
+      await recarregar();
+      return;
+    }
     setUser(null);
-  }, []);
+  }, [recarregar]);
+
+  // O contador chegou a zero: confere no servidor e avisa o administrador por que a conta mudou.
+  const suporteExpirou = useCallback(async () => {
+    setFimSuporte({ cliente: userRef.current?.suporte?.cliente?.nome ?? '', motivo: 'tempo' });
+    await recarregar();
+  }, [recarregar]);
 
   const salvarPerfil = useCallback(async (nome, email) => {
     const { user } = await pedir('/perfil', { method: 'PATCH', body: { nome, email } });
@@ -82,6 +101,7 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       user, carregando, ehAdmin: user?.papel === 'superadmin',
+      recarregar, fimSuporte, limparFimSuporte: () => setFimSuporte(null), suporteExpirou,
       entrar, criarConta, sair, salvarPerfil, trocarSenha, excluirConta,
       salvarPreferencias, esqueciSenha, redefinirSenha, verificarEmail, reenviarVerificacao,
     }}>
