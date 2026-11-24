@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { Check, LogOut, Trash2, Settings, User, Type, Mail, Bell, KeyRound, Lock, Info, AlertTriangle, ArrowRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Check, LogOut, Trash2, Settings, User, Type, Mail, Bell, KeyRound, Lock, Info, AlertTriangle, ArrowRight, Headset } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useFinance } from '../../context/FinanceContext';
 import PageHeader from '../../components/PageHeader';
+import InfoBanner from '../../components/InfoBanner';
+import { api } from '../../utils/api';
 import { fmtDate } from '../../utils/formatters';
 
 // Cada bloco tem o seu próprio aviso de erro, para a pessoa ver o resultado onde agiu.
@@ -26,6 +28,51 @@ function useAcao(showToast) {
   }
 
   return { erro, ocupado, executar, limparErro: () => setErro('') };
+}
+
+const ENCERRAMENTO = { admin: 'Encerrado pelo suporte', tempo: 'Encerrado por inatividade', sistema: 'Encerrado' };
+const quandoLocal = iso => new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+const duracao = s => (s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')} s`);
+
+// Acessos que o suporte fez na conta: quando, por quê, quanto tempo e o que foi alterado.
+function AcessosDeSuporte() {
+  const [lista, setLista] = useState(null);
+  useEffect(() => {
+    let vivo = true;
+    api('/suporte/historico').then(({ ok, data }) => { if (vivo && ok) setLista(data); }).catch(() => {});
+    return () => { vivo = false; };
+  }, []);
+
+  return (
+    <section className="panel">
+      <div className="panel-head"><h2><Headset size={20} />Acessos de suporte</h2></div>
+      <div className="panel-body">
+        {!lista ? <p className="empty">Carregando...</p> : lista.length === 0 ? (
+          <p className="form-dica"><Info size={14} />Nenhum acesso de suporte à sua conta até agora. Se um dia o suporte precisar entrar, você vê o aviso na hora e o registro aqui.</p>
+        ) : (
+          <ul className="suporte-lista">
+            {lista.map(c => (
+              <li key={c.id} className="suporte-item">
+                <div className="suporte-item-topo">
+                  <strong>{quandoLocal(c.aberto_em)}</strong>
+                  <span className={`chip ${c.encerrado_em ? '' : 'warn'}`}>{c.encerrado_em ? ENCERRAMENTO[c.encerrado_por] : 'Em andamento'}</span>
+                </div>
+                <p>{c.motivo}</p>
+                <small>
+                  Por {c.admin_nome}{c.duracao_s != null && <> · duração {duracao(c.duracao_s)}</>}
+                </small>
+                <div className="suporte-acoes">
+                  {c.alteracoes.length === 0
+                    ? <span className="chip">Só visualização, nada foi alterado</span>
+                    : c.alteracoes.map(a => <span key={a.rotulo} className="chip">{a.rotulo}{a.n > 1 && ` × ${a.n}`}</span>)}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  );
 }
 
 export default function Configuracoes() {
@@ -68,6 +115,8 @@ export default function Configuracoes() {
           Sair
         </button>
       </PageHeader>
+
+      {user.suporte && <InfoBanner>Acesso de suporte: alterar senha, e-mail e perfil, e excluir a conta, ficam bloqueados.</InfoBanner>}
 
       <section className="panel">
         <div className="panel-head">
@@ -174,7 +223,9 @@ export default function Configuracoes() {
         </form>
       </section>
 
-      {user.papel !== 'superadmin' && (
+      <AcessosDeSuporte />
+
+      {user.papel !== 'superadmin' && !user.suporte && (
         <section className="panel panel-risco">
           <div className="panel-head"><h2><AlertTriangle size={20} />Excluir conta</h2></div>
           <div className="panel-body form-stack">
