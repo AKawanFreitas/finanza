@@ -42,9 +42,10 @@ function abrir(adminId, userId, motivo) {
 const BLOQUEADAS = [
   ['POST', '/api/auth/senha'], ['DELETE', '/api/auth/conta'], ['PATCH', '/api/auth/perfil'],
   ['PATCH', '/api/auth/preferencias'], ['POST', '/api/auth/reenviar-verificacao'],
+  ['PUT', '/api/auth/foto'], ['DELETE', '/api/auth/foto'],
 ];
 const bloqueada = (metodo, caminho) => BLOQUEADAS.some(([m, c]) => m === metodo && c === caminho);
-const MENSAGEM_BLOQUEIO = 'Durante o acesso de suporte não é possível alterar a senha, o e-mail, o perfil nem excluir a conta do cliente.';
+const MENSAGEM_BLOQUEIO = 'Durante o acesso de suporte não é possível alterar a senha, o e-mail, o perfil, a foto nem excluir a conta do cliente.';
 
 const caminhoLimpo = url => String(url).split('?')[0];
 

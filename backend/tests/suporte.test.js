@@ -54,13 +54,15 @@ test('dentro do chamado, as áreas de administrador ficam fechadas', async () =>
   assert.equal((await admin.agente.get('/api/admin/usuarios')).status, 403);
 });
 
-test('dentro do chamado não dá para mudar senha, e-mail, perfil nem excluir a conta do cliente', async () => {
+test('dentro do chamado não dá para mudar senha, e-mail, perfil, foto nem excluir a conta do cliente', async () => {
   const { admin, cliente } = await cenario();
   await abrir(admin, cliente);
   const senha = await admin.agente.post('/api/auth/senha').send({ atual: cliente.senha, nova: 'outra-senha-9' });
   assert.equal(senha.status, 403);
   assert.equal((await admin.agente.patch('/api/auth/perfil').send({ nome: 'X Y', email: 'x@y.com' })).status, 403);
   assert.equal((await admin.agente.patch('/api/auth/preferencias').send({ notificacoes_email: false })).status, 403);
+  assert.equal((await admin.agente.put('/api/auth/foto').set('Content-Type', 'image/jpeg').send(Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2]))).status, 403);
+  assert.equal((await admin.agente.delete('/api/auth/foto')).status, 403);
   assert.equal((await admin.agente.delete('/api/auth/conta').send({ senha: cliente.senha })).status, 403);
   assert.ok(db.prepare('SELECT 1 FROM users WHERE id = ?').get(cliente.id), 'a conta continua existindo');
   // a senha do cliente segue valendo
