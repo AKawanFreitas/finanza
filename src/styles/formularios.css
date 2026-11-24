@@ -150,3 +150,27 @@
 
 /* O menu do select pode passar da borda do cartão do formulário */
 .form-wrap { overflow: visible }
+
+/* Escolha de cor compacta */
+.cor-linha { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; min-height: 48px }
+.cor-linha { position: relative }
+.cor-personalizada {
+  --cor-sel: var(--navy); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; padding: 0;
+  display: grid; place-items: center; color: var(--white); border: 2px solid var(--white); box-shadow: 0 0 0 1px var(--line2);
+  background: conic-gradient(#ef4444, #f59e0b, #22c55e, #06b6d4, #6366f1, #ec4899, #ef4444);
+}
+.cor-personalizada svg { filter: drop-shadow(0 1px 1px rgba(0,0,0,.5)) }
+.cor-personalizada.selected { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--cor-sel) }
+.cor-painel {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: var(--z-menu); width: 320px; padding: 16px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow-pop);
+}
+.cor-grade { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px }
+.cor-amostra { aspect-ratio: 1; border-radius: 8px; border: 1px solid rgba(0,0,0,.08); cursor: pointer; padding: 0; transition: transform var(--ease) }
+.cor-amostra:hover { transform: scale(1.15) }
+.cor-amostra.selected { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--navy) }
+.cor-painel-base { display: flex; align-items: center; gap: 10px; margin-top: 14px }
+.cor-previa { width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1) }
+.cor-hex { min-height: 40px; padding: 8px 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase }
+.cor-hex[aria-invalid="true"] { border-color: var(--red) }
+.cor-codigo { font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: .02em }
