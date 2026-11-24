@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PiggyBank, Target, Info } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
+import Modal from '../../components/Modal';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import { fmt } from '../../utils/formatters';
@@ -31,7 +32,7 @@ export default function Metas() {
         )}
       </PageHeader>
 
-      <MetaForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={() => { setEditando(null); atualizar(); }} />
+      <MetaForm onSalvo={atualizar} />
 
       <div className="hist-wrap">
         <div className="card-head">
@@ -41,9 +42,15 @@ export default function Metas() {
         {!metas ? <div className="empty">Carregando...</div> : metas.length === 0 ? (
           <div className="empty form-dica"><Info size={14} />Nenhuma meta ainda. Crie a primeira acima, por exemplo uma reserva de emergência.</div>
         ) : <div className="orc-grid">{metas.map(m => (
-          <MetaCard key={m.id} meta={m} onEditar={meta => { setEditando(meta); window.scrollTo({ top: 0, behavior: 'smooth' }); }} onMudou={atualizar} />
+          <MetaCard key={m.id} meta={m} onEditar={setEditando} onMudou={atualizar} />
         ))}</div>}
       </div>
+      {editando && (
+        <Modal titulo="Editar meta" larga onFechar={() => setEditando(null)}>
+          <p className="modal-sub">Altere os dados e salve.</p>
+          <MetaForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={() => { setEditando(null); atualizar(); }} />
+        </Modal>
+      )}
     </div>
   );
 }

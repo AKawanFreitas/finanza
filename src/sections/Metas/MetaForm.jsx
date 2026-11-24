@@ -38,12 +38,12 @@ export default function MetaForm({ editando, onCancelar, onSalvo }) {
   }
 
   return (
-    <div className="form-wrap">
-      <FormHeader
+    <div className={editando ? 'form-modal' : 'form-wrap'}>
+      {!editando && <FormHeader
         Icon={PiggyBank}
         titulo={editando ? 'Editar meta' : 'Nova meta'}
         subtitulo={editando ? 'Altere os dados e salve' : 'Reserva de emergência, viagem, entrada do carro... guarde aos poucos'}
-      />
+      />}
       <div className="form-grid">
         <div className="form-group">
           <label className="form-label" htmlFor={`${uid}-1`}><Type size={16} />Nome</label>
