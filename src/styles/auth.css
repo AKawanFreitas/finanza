@@ -3,67 +3,111 @@
   min-height: 100vh; display: grid; place-items: center; color: var(--muted);
 }
 
+/* Tela inteira escura; a área clara da direita é desenhada pelo painel (curva em /entrar-curva-v3.svg) */
 .entrar {
-  min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); overflow: hidden;
+  --neon: #4ee27a;
+  position: relative; height: 100vh; height: 100dvh; min-height: 620px; overflow: hidden;
+  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   background:
-    radial-gradient(80% 60% at 0% 100%, rgba(47,158,68,.34) 0%, transparent 65%),
-    radial-gradient(70% 50% at 60% 0%, rgba(79,189,85,.12) 0%, transparent 65%),
-    linear-gradient(180deg, var(--navy-900) 0%, var(--navy-950) 100%);
+    radial-gradient(38% 34% at 24% 92%, rgba(61,220,106,.26) 0%, transparent 70%),
+    radial-gradient(30% 40% at 46% 46%, rgba(40,170,90,.16) 0%, transparent 70%),
+    radial-gradient(40% 30% at 6% 8%, rgba(61,220,106,.10) 0%, transparent 70%),
+    radial-gradient(120% 90% at 30% 50%, transparent 55%, rgba(0,0,0,.4) 100%),
+    linear-gradient(165deg, #05291e 0%, #021c15 50%, #01140f 100%);
 }
 
-/* Painel verde: marca, frase e ilustração */
+/* Lado escuro: marca, frase e ilustração */
 .entrar-marca {
-  position: relative; display: flex; flex-direction: column; gap: clamp(24px, 5vh, 56px); overflow: hidden;
-  color: var(--white); padding: clamp(32px, 5vw, 80px) clamp(28px, 4vw, 64px) 0;
+  position: relative; display: flex; flex-direction: column; min-height: 0;
+  gap: clamp(18px, 4.2vh, 44px); color: var(--white);
+  padding: clamp(28px, 7vh, 80px) clamp(28px, 4.4vw, 88px) 0;
 }
-.entrar-marca-topo { display: flex; align-items: center; gap: 18px }
-.entrar-logo { width: 64px; height: 64px; object-fit: contain }
-.entrar-nome { font-size: clamp(32px, 3vw, 44px); font-weight: 800; letter-spacing: -0.03em }
-.entrar-marca-texto { display: flex; flex-direction: column; gap: 20px; max-width: 520px }
-.entrar-marca h1 { font-size: clamp(28px, 3.2vw, 50px); font-weight: 500; line-height: 1.12; letter-spacing: -0.02em }
-.entrar-marca h1 em { font-style: normal; font-weight: 600; color: var(--green-300) }
-.entrar-traco { width: 48px; height: 2px; border-radius: 2px; background: var(--green-400) }
-.entrar-marca p { color: rgba(255,255,255,.72); max-width: 32ch; font-size: clamp(15px, 1.2vw, 18px); line-height: 1.5 }
+.entrar-marca-topo { display: flex; align-items: center; gap: clamp(14px, 1.2vw, 22px) }
+.entrar-logo {
+  width: clamp(52px, min(5vw, 9vh), 96px); height: auto; aspect-ratio: 1; object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(61,220,106,.55)) drop-shadow(0 0 28px rgba(61,220,106,.35));
+}
+.entrar-nome {
+  font-size: clamp(30px, min(3.1vw, 5.6vh), 60px); font-weight: 800; letter-spacing: -0.03em;
+  text-shadow: 0 2px 18px rgba(0,0,0,.4);
+}
+.entrar-marca-texto { display: flex; flex-direction: column; gap: clamp(14px, 2.4vh, 24px); max-width: 640px }
+.entrar-marca h1 {
+  font-size: clamp(28px, min(3.4vw, 6.2vh), 66px); font-weight: 600; line-height: 1.1; letter-spacing: -0.025em;
+  text-shadow: 0 4px 30px rgba(0,0,0,.45);
+}
+.entrar-marca h1 em {
+  font-style: normal; font-weight: 700; color: var(--neon);
+  text-shadow: 0 0 12px rgba(78,226,122,.7), 0 0 36px rgba(78,226,122,.4);
+}
+.entrar-traco {
+  width: 52px; height: 3px; border-radius: 3px; background: var(--neon);
+  box-shadow: 0 0 8px rgba(78,226,122,.95), 0 0 22px rgba(78,226,122,.55);
+}
+.entrar-marca p {
+  color: rgba(255,255,255,.76); max-width: 30ch; line-height: 1.5;
+  font-size: clamp(15px, min(1.25vw, 2.2vh), 22px);
+}
+/* A ilustração já vem com as bordas esmaecidas; ocupa o espaço que sobrar abaixo do texto */
 .entrar-ilustracao {
-  margin-top: auto; height: min(56vh, 600px); width: auto; max-width: none; margin-left: -6%; align-self: flex-start; flex-shrink: 0;
-  mix-blend-mode: lighten;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, var(--black) 30%), linear-gradient(90deg, var(--black) 62%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0, var(--black) 30%), linear-gradient(90deg, var(--black) 62%, transparent 100%);
-  -webkit-mask-composite: source-in; mask-composite: intersect;
+  position: absolute; left: 2vw; bottom: 2vh; z-index: 3; pointer-events: none;
+  width: min(54vw, 98vh); height: auto;
+  filter: drop-shadow(0 0 28px rgba(61,220,106,.28)) drop-shadow(0 24px 30px rgba(0,0,0,.5));
 }
 
-/* Painel claro com a curva: os cantos arredondados deixam ver o fundo verde */
-.entrar-painel {
-  position: relative; display: grid; place-items: center; padding: clamp(24px, 5vw, 56px);
-  border-radius: clamp(70px, 7vw, 130px) 0 0 clamp(70px, 7vw, 130px) / 38% 0 0 38%;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 700 520' preserveAspectRatio='xMaxYMin slice'%3E%3Cpath d='M700 0 L700 250 C 610 230, 520 140, 420 90 C 360 60, 300 30, 260 0 Z' fill='rgba(79,189,85,0.10)'/%3E%3Cg fill='none' stroke='rgba(47,158,68,0.20)' stroke-width='1.2'%3E%3Cpath d='M300 -10 C 420 90, 540 70, 710 200'/%3E%3Cpath d='M350 -10 C 470 90, 590 70, 710 160'/%3E%3Cpath d='M400 -10 C 520 90, 640 70, 710 120'/%3E%3C/g%3E%3Cpath d='M-10 520 C 120 440, 260 520, 420 470 L420 520 Z' fill='rgba(47,158,68,0.07)'/%3E%3C/svg%3E") right top / min(700px, 100%) auto no-repeat,
-    radial-gradient(60% 50% at 100% 100%, rgba(79,189,85,.16) 0%, transparent 70%),
-    linear-gradient(180deg, #f8fbf9 0%, #eef5f1 100%);
+/* Lado claro: a curva com camadas é o ::before, que avança um pouco sobre o lado escuro */
+.entrar-painel { position: relative; z-index: 2; display: flex; padding: clamp(24px, 4vh, 56px) clamp(24px, 3vw, 56px) }
+.entrar-painel::before {
+  content: ''; position: absolute; inset: 0 0 0 -36%; z-index: 0; pointer-events: none;
+  background: url('/entrar-curva-v3.svg') center / 100% 100% no-repeat;
 }
+
+/* Cartão de vidro claro, com sombra longa e um leve brilho verde */
 .entrar-form {
-  width: min(480px, 100%); display: flex; flex-direction: column; gap: 18px; padding: 40px 44px;
+  position: relative; z-index: 1; margin: auto; width: clamp(340px, 22vw, 440px);
+  display: flex; flex-direction: column; gap: clamp(12px, min(.9vw, 1.7vh), 18px);
+  padding: clamp(26px, min(2vw, 3.8vh), 40px) clamp(26px, 2vw, 38px);
   background:
-    radial-gradient(60% 40% at 0% 0%, rgba(79,189,85,.14) 0%, transparent 70%),
-    radial-gradient(50% 40% at 100% 100%, rgba(79,189,85,.14) 0%, transparent 70%),
-    linear-gradient(160deg, #ffffff 0%, #f7fbf9 100%);
-  border-radius: 28px; box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, var(--shadow-card), 0 30px 70px rgba(10,40,28,.12);
+    radial-gradient(70% 45% at 0% 0%, rgba(79,189,85,.10) 0%, transparent 70%),
+    radial-gradient(60% 40% at 100% 100%, rgba(79,189,85,.12) 0%, transparent 70%),
+    linear-gradient(165deg, rgba(255,255,255,.92) 0%, rgba(247,251,249,.86) 100%);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
+  border: 1px solid rgba(255,255,255,.95); border-radius: 28px;
+  box-shadow:
+    inset 0 1px 0 var(--white),
+    0 0 0 1px rgba(79,189,85,.08),
+    0 2px 4px rgba(10,40,28,.05),
+    0 24px 48px -12px rgba(10,60,35,.24),
+    0 60px 110px -30px rgba(10,60,35,.32);
 }
 .entrar-selo {
-  width: 62px; height: 62px; border-radius: 18px; display: grid; place-items: center; align-self: center;
-  background: var(--dark-grad); box-shadow: var(--shadow-card);
+  width: clamp(52px, min(3.4vw, 6.4vh), 66px); aspect-ratio: 1; border-radius: 30%; display: grid; place-items: center; align-self: center;
+  background: var(--dark-grad);
+  box-shadow: 0 10px 24px rgba(4,35,26,.35), 0 0 24px rgba(61,220,106,.35), inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,255,255,.08);
 }
-.entrar-selo img { width: 38px; height: 38px; object-fit: contain }
-.entrar-form h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--navy); text-align: center; margin-top: -4px }
-.entrar-sub { color: var(--muted); font-size: 15px; text-align: center; margin-top: -10px }
+.entrar-selo img { width: 62%; height: 62%; object-fit: contain; filter: drop-shadow(0 0 6px rgba(61,220,106,.5)) }
+.entrar-form h2 {
+  font-size: clamp(22px, min(1.45vw, 2.9vh), 28px); font-weight: 800; letter-spacing: -0.02em;
+  color: var(--navy); text-align: center; margin-top: -2px;
+}
+.entrar-sub { color: var(--muted); font-size: clamp(13.5px, min(.85vw, 1.7vh), 15.5px); text-align: center; margin-top: -8px }
 .entrar-form .form-group { gap: 6px }
+.entrar-form .form-control {
+  min-height: clamp(44px, min(2.8vw, 5.4vh), 54px); border-radius: 14px; font-size: clamp(14px, .85vw, 15.5px);
+  background: #f5f8f6; border-color: #e0e9e4; box-shadow: inset 0 1px 2px rgba(10,40,28,.05);
+}
+.entrar-form .form-control:hover { border-color: var(--line2) }
+.entrar-form .form-control:focus { background: var(--white); border-color: var(--green-500); box-shadow: 0 0 0 4px rgba(47,158,68,.16), 0 0 18px rgba(78,226,122,.22) }
 .entrar-form .btn { margin-top: 4px }
-.entrar-esqueci { align-self: flex-end; margin-top: -8px; font-size: 13.5px }
-.entrar-troca { text-align: center; color: var(--muted); font-size: 14px }
+.entrar-form .btn-primary {
+  min-height: clamp(44px, min(2.8vw, 5.4vh), 54px); border-radius: 14px; font-size: clamp(14.5px, .9vw, 16px);
+  background: linear-gradient(90deg, #4fd06a 0%, #2a9b4b 50%, #0f5c36 100%);
+  box-shadow: 0 12px 26px -6px rgba(47,158,68,.6), 0 0 28px rgba(78,226,122,.35), inset 0 1px 0 rgba(255,255,255,.3);
+}
+.entrar-esqueci { align-self: flex-end; margin-top: -6px; font-size: clamp(12.5px, .75vw, 14px) }
+.entrar-troca { text-align: center; color: var(--muted); font-size: clamp(13px, .8vw, 14.5px) }
 .entrar-dica { color: var(--muted); font-size: 14px; margin-top: -6px }
 .entrar-nota { color: var(--muted); font-size: 14px; margin-top: -8px }
-.entrar-form .form-group { gap: 6px }
-.entrar-form .btn { margin-top: 4px }
-.entrar-troca { text-align: center; color: var(--muted); font-size: 14px }
 
 .aviso-erro {
   background: var(--red-bg); color: var(--red);
@@ -72,14 +116,40 @@
 
 .form-dica { font-size: 13px; color: var(--muted) }
 
+/* Telas médias: a ilustração ficaria espremida, então as colunas se dividem por igual */
+@media (max-width: 1100px) and (min-width: 861px) {
+  .entrar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) }
+  .entrar-form { width: min(400px, 100%) }
+  .entrar-ilustracao { width: min(48vw, 80vh) }
+}
 
 @media (max-width: 860px) {
-  .entrar { grid-template-columns: 1fr }
-  .entrar-marca { padding: 28px 24px 44px; gap: 14px }
-  .entrar-logo { width: 44px; height: 44px }
-  .entrar-nome { font-size: 28px }
-  .entrar-marca h1 { font-size: 24px }
-  .entrar-traco, .entrar-marca p, .entrar-ilustracao { display: none }
-  .entrar-painel { border-radius: 28px 28px 0 0; margin-top: -24px; padding: 24px 16px 40px; align-items: start }
-  .entrar-form { padding: 28px 22px }
+  /* Celular: tudo escuro, marca centralizada, cartão claro logo abaixo e a seta neon no rodapé */
+  .entrar {
+    height: auto; min-height: 100vh; min-height: 100dvh; grid-template-columns: 1fr; align-content: start; overflow: visible;
+    background:
+      url('/entrar-onda-celular.svg') center bottom / 100% auto no-repeat,
+      radial-gradient(120% 40% at 0% 100%, rgba(61,220,106,.22) 0%, transparent 60%),
+      radial-gradient(90% 38% at 50% 0%, rgba(61,220,106,.26) 0%, transparent 65%),
+      linear-gradient(175deg, #06301f 0%, #021c15 55%, #03241a 100%);
+  }
+  .entrar-marca { padding: max(44px, 7vh) 24px 8px; gap: 18px; align-items: center; text-align: center; overflow: visible }
+  .entrar-marca-topo { flex-direction: column; gap: 8px }
+  .entrar-logo { width: 56px }
+  .entrar-nome { font-size: 30px }
+  .entrar-marca-texto { align-items: center; gap: 12px }
+  .entrar-marca h1 { font-size: 28px }
+  .entrar-traco, .entrar-ilustracao { display: none }
+  .entrar-marca p { font-size: 14.5px; max-width: 30ch }
+  .entrar-painel { padding: 14px 16px 150px }
+  .entrar-painel::before { display: none }
+  .entrar-form {
+    margin: 0 auto; width: min(440px, 100%); padding: 24px 20px; gap: 14px; border-radius: 24px;
+    background: linear-gradient(165deg, #ffffff 0%, #f4f9f6 100%);
+    box-shadow: inset 0 1px 0 var(--white), 0 0 30px rgba(61,220,106,.18), 0 24px 50px rgba(0,0,0,.4);
+  }
+  /* No login o celular mostra só os campos; criar conta e recuperar senha mantêm o título */
+  .entrar-form[data-modo="login"] :is(.entrar-selo, h2, .entrar-sub) { display: none }
+  .entrar-selo { width: 52px }
+  .entrar-form .form-control, .entrar-form .btn-primary { min-height: 48px }
 }
