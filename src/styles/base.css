@@ -1,6 +1,10 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 html, body {
-  background: var(--bg);
+  background:
+    radial-gradient(60% 40% at 100% 0%, rgba(79,189,85,.14) 0%, transparent 70%),
+    radial-gradient(50% 35% at 20% 100%, rgba(47,158,68,.08) 0%, transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font);
   font-size: 14.5px;
