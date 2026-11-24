@@ -63,6 +63,9 @@ app.use('/api', protegerCsrf);
 // O arquivo do extrato vai no corpo da requisição: esta rota aceita mais que o limite geral.
 app.use('/api/importacao', express.json({ limit: '3mb' }), importacao);
 
+// A foto de perfil vai como o próprio arquivo (o front já reduz para 256 px); o limite é folgado para um JPEG pequeno.
+app.use('/api/auth/foto', express.raw({ type: ['image/jpeg', 'image/png', 'image/webp'], limit: '200kb' }));
+
 app.use(express.json({ limit: '100kb' }));
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
