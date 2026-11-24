@@ -1,11 +1,9 @@
 import { useState, useEffect, useId } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { today, fmt } from '../../utils/formatters';
+import FormHeader from '../../components/FormHeader';
 import Select from '../../components/Select';
-import {
-  AlignLeft, Tag, Calendar, MessageSquare, Wallet,
-  ArrowDownLeft, ArrowUpRight, Plus, RotateCcw, Check, X
-} from 'lucide-react';
+import { AlignLeft, Tag, Calendar, MessageSquare, Wallet, ArrowDownLeft, ArrowUpRight, Plus, RotateCcw, Check, X, ArrowLeftRight, DollarSign, Layers, Info, ArrowRight } from 'lucide-react';
 
 const EMPTY = (cats, contas) => ({
   desc: '', valor: '', tipo: 'saida', cat: cats[0]?.nome || '', parcelas: '1',
@@ -56,19 +54,12 @@ export default function TransactionForm() {
 
   return (
     <div className="form-wrap">
-      <div className="form-header">
-        <div className="form-header-text">
-          <div className="form-header-title">{editing ? 'Editar lançamento' : 'Novo lançamento'}</div>
-          <div className="form-header-sub">
-            {editing ? 'Altere os dados e salve' : 'Registre uma entrada ou saída financeira'}
-          </div>
-        </div>
-      </div>
+      <FormHeader Icon={ArrowLeftRight} titulo={editing ? 'Editar lançamento' : 'Novo lançamento'} subtitulo={editing ? 'Altere os dados e salve' : 'Registre uma entrada ou saída financeira'} />
 
       <div className="form-grid">
 
         <div className="form-group form-span-2" role="group" aria-labelledby={`${uid}-tipo`}>
-          <span className="form-label" id={`${uid}-tipo`}>Tipo</span>
+          <span className="form-label" id={`${uid}-tipo`}><ArrowLeftRight size={16} />Tipo</span>
           <div className="tipo-toggle">
             <button
               type="button"
@@ -92,9 +83,9 @@ export default function TransactionForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-1`}>Descrição</label>
+          <label className="form-label" htmlFor={`${uid}-1`}><AlignLeft size={16} />Descrição</label>
           <div className="form-input-wrap">
-            <span className="form-prefix"><AlignLeft size={14} strokeWidth={2} /></span>
+            <span className="form-prefix"><AlignLeft size={16} strokeWidth={2} /></span>
             <input id={`${uid}-1`}
               className="form-control"
               placeholder="Ex: Supermercado"
@@ -105,7 +96,7 @@ export default function TransactionForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-2`}>Valor</label>
+          <label className="form-label" htmlFor={`${uid}-2`}><DollarSign size={16} />Valor</label>
           <div className="form-input-wrap has-text-prefix">
             <span className="form-prefix-text">R$</span>
             <input id={`${uid}-2`}
@@ -121,7 +112,7 @@ export default function TransactionForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-3`}>Categoria</label>
+          <label className="form-label" htmlFor={`${uid}-3`}><Tag size={16} />Categoria</label>
           <Select id={`${uid}-3`}
             value={form.cat}
             onChange={v => set('cat', v)}
@@ -131,7 +122,7 @@ export default function TransactionForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-4`}>Conta</label>
+          <label className="form-label" htmlFor={`${uid}-4`}><Wallet size={16} />Conta</label>
           <Select id={`${uid}-4`}
             value={form.conta_id}
             onChange={v => set('conta_id', v)}
@@ -142,22 +133,22 @@ export default function TransactionForm() {
 
         {permiteParcelas && !editing && (
           <div className="form-group">
-            <label className="form-label" htmlFor={`${uid}-5`}>Parcelas</label>
+            <label className="form-label" htmlFor={`${uid}-5`}><Layers size={16} />Parcelas</label>
             <input id={`${uid}-5`}
               className="form-control" type="number" min="1" max="48" step="1"
               value={form.parcelas} onChange={e => set('parcelas', e.target.value)}
               aria-label="Número de parcelas"
             />
             {nParcelas > 1 && valorParcela > 0 && (
-              <span className="parcelas-info">{nParcelas}x de ~{fmt(valorParcela)}, uma por fatura</span>
+              <span className="form-dica parcelas-info"><Info size={14} />{nParcelas}x de ~{fmt(valorParcela)}, uma por fatura</span>
             )}
           </div>
         )}
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-6`}>Data</label>
+          <label className="form-label" htmlFor={`${uid}-6`}><Calendar size={16} />Data</label>
           <div className="form-input-wrap">
-            <span className="form-prefix"><Calendar size={14} strokeWidth={2} /></span>
+            <span className="form-prefix"><Calendar size={16} strokeWidth={2} /></span>
             <input id={`${uid}-6`}
               className="form-control"
               type="date"
@@ -168,9 +159,9 @@ export default function TransactionForm() {
         </div>
 
         <div className="form-group form-span-2">
-          <label className="form-label" htmlFor={`${uid}-7`}>Observação <span className="form-label-opt">(opcional)</span></label>
+          <label className="form-label" htmlFor={`${uid}-7`}><MessageSquare size={16} />Observação <span className="form-label-opt">(opcional)</span></label>
           <div className="form-input-wrap">
-            <span className="form-prefix"><MessageSquare size={14} strokeWidth={2} /></span>
+            <span className="form-prefix"><MessageSquare size={16} strokeWidth={2} /></span>
             <input id={`${uid}-7`}
               className="form-control"
               placeholder="Algum detalhe adicional..."
@@ -186,6 +177,7 @@ export default function TransactionForm() {
         <button className="btn btn-primary btn-full" onClick={handleSubmit}>
           {editing ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
           {editing ? 'Salvar alterações' : 'Adicionar lançamento'}
+        <ArrowRight size={15} strokeWidth={2.5} />
         </button>
         {editing ? (
           <button className="btn btn-ghost" onClick={() => setEditing(null)}>
