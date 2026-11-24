@@ -1,7 +1,8 @@
 import { useEffect, useState, useId } from 'react';
 import { useFinance } from '../../context/FinanceContext';
-import { Tag, Palette, Shapes, Plus, Check, X, Type, ArrowRight } from 'lucide-react';
+import { Tag, Shapes, Plus, Check, X, Type, ArrowRight } from 'lucide-react';
 import FormHeader from '../../components/FormHeader';
+import CampoCor from '../../components/CampoCor';
 import CategoriaIcone from '../../components/CategoriaIcone';
 import { ICONES_CATEGORIA } from '../../utils/iconesCategoria';
 
@@ -60,30 +61,8 @@ export default function CategoriaForm({ editar = null, onConcluir }) {
             />
           </div>
         </div>
+        <CampoCor valor={cor} onChange={setCor} cores={PRESET_COLORS} />
 
-        <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-2`}><Palette size={16} />Cor</label>
-          <label className="color-pick-wrap" htmlFor={`${uid}-2`}>
-            <div className="color-swatch" style={{ background: cor }} />
-            <span className="color-swatch-label">{cor.toUpperCase()}</span>
-            <Palette size={16} strokeWidth={2} style={{ color: 'var(--faint)' }} />
-            <input id={`${uid}-2`} type="color" value={cor} onChange={e => setCor(e.target.value)} />
-          </label>
-        </div>
-
-      </div>
-
-      <div className="color-presets">
-        {PRESET_COLORS.map(c => (
-          <button
-            key={c}
-            type="button"
-            className={`color-preset-dot ${cor === c ? 'selected' : ''}`}
-            style={{ background: c, '--cor-sel': c }}
-            onClick={() => setCor(c)}
-            title={c}
-          />
-        ))}
       </div>
 
       <div className="form-group icone-bloco" role="group" aria-labelledby={`${uid}-icone`}>

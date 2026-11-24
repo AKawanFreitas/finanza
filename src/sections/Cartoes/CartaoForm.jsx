@@ -1,9 +1,10 @@
 import { useEffect, useState, useId } from 'react';
-import { CreditCard, Palette, Plus, Check, X, CalendarClock, Wallet, Info, ArrowRight, User, DollarSign, TrendingUp } from 'lucide-react';
+import { CreditCard, Plus, Check, X, CalendarClock, Wallet, Info, ArrowRight, User, DollarSign, TrendingUp } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import Select from '../../components/Select';
 import FormHeader from '../../components/FormHeader';
+import CampoCor from '../../components/CampoCor';
 
 const CORES = ['#7c3aed', '#2563eb', '#e84057', '#d97706', '#22a84a', '#0891b2', '#db2777', '#14233a'];
 const VAZIO = { nome: '', limite: '', dia_fechamento: '', dia_vencimento: '', cor: '#7c3aed', conta_pagamento_id: 0, divida_inicial: '' };
@@ -109,22 +110,7 @@ export default function CartaoForm({ editando, onCancelar, onSalvo }) {
             <span className="form-dica"><Info size={14} />Quanto já está usado do limite hoje.</span>
           </div>
         )}
-
-        <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-7`}><Palette size={16} />Cor</label>
-          <label className="color-pick-wrap" htmlFor={`${uid}-7`}>
-            <div className="color-swatch" style={{ background: form.cor }} />
-            <span className="color-swatch-label">{form.cor.toUpperCase()}</span>
-            <Palette size={16} strokeWidth={2} style={{ color: 'var(--faint)' }} />
-            <input id={`${uid}-7`} type="color" value={form.cor} onChange={e => set('cor', e.target.value)} />
-          </label>
-        </div>
-      </div>
-
-      <div className="color-presets">
-        {CORES.map(c => (
-          <button key={c} type="button" title={c} className={`color-preset-dot ${form.cor === c ? 'selected' : ''}`} style={{ background: c, '--cor-sel': c }} onClick={() => set('cor', c)} />
-        ))}
+        <CampoCor valor={form.cor} onChange={v => set('cor', v)} cores={CORES} larga={!editando} />
       </div>
 
       <div className="form-actions" style={{ marginTop: '1.1rem' }}>

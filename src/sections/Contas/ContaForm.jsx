@@ -1,7 +1,8 @@
 import { useEffect, useState, useId } from 'react';
-import { Wallet, Palette, Plus, Check, X, Landmark, Type, DollarSign, ArrowRight } from 'lucide-react';
+import { Wallet, Plus, Check, X, Landmark, Type, DollarSign, ArrowRight } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import FormHeader from '../../components/FormHeader';
+import CampoCor from '../../components/CampoCor';
 import Select from '../../components/Select';
 import { TIPOS_CONTA } from './tipos';
 
@@ -69,26 +70,7 @@ export default function ContaForm({ editar = null, onConcluir }) {
             />
           </div>
         </div>
-
-        <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-4`}><Palette size={16} />Cor</label>
-          <label className="color-pick-wrap" htmlFor={`${uid}-4`}>
-            <div className="color-swatch" style={{ background: form.cor }} />
-            <span className="color-swatch-label">{form.cor.toUpperCase()}</span>
-            <Palette size={14} strokeWidth={2} style={{ color: 'var(--faint)' }} />
-            <input id={`${uid}-4`} type="color" value={form.cor} onChange={e => set('cor', e.target.value)} />
-          </label>
-        </div>
-      </div>
-
-      <div className="color-presets">
-        {PRESET_COLORS.map(c => (
-          <button
-            key={c} type="button" title={c}
-            className={`color-preset-dot ${form.cor === c ? 'selected' : ''}`}
-            style={{ background: c }} onClick={() => set('cor', c)}
-          />
-        ))}
+        <CampoCor valor={form.cor} onChange={v => set('cor', v)} cores={PRESET_COLORS} />
       </div>
 
       <div className="form-actions" style={{ marginTop: '1.1rem' }}>
