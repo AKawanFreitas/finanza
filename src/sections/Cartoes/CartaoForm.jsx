@@ -1,8 +1,9 @@
 import { useEffect, useState, useId } from 'react';
-import { CreditCard, Palette, Plus, Check, X, CalendarClock, Wallet } from 'lucide-react';
+import { CreditCard, Palette, Plus, Check, X, CalendarClock, Wallet, Info, ArrowRight, User, DollarSign, TrendingUp } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import Select from '../../components/Select';
+import FormHeader from '../../components/FormHeader';
 
 const CORES = ['#7c3aed', '#2563eb', '#e84057', '#d97706', '#22a84a', '#0891b2', '#db2777', '#14233a'];
 const VAZIO = { nome: '', limite: '', dia_fechamento: '', dia_vencimento: '', cor: '#7c3aed', conta_pagamento_id: 0, divida_inicial: '' };
@@ -51,28 +52,25 @@ export default function CartaoForm({ editando, onCancelar, onSalvo }) {
 
   return (
     <div className="form-wrap">
-      <div className="form-header">
-        <div className="form-header-text">
-          <div className="form-header-title">{editando ? 'Editar cartão' : 'Novo cartão de crédito'}</div>
-          <div className="form-header-sub">
-            {editando
-              ? 'Mudar o dia de fechamento reorganiza as faturas do cartão'
-              : 'Informe o limite e os dias de fechamento e vencimento da fatura'}
-          </div>
-        </div>
-      </div>
+      <FormHeader
+        Icon={CreditCard}
+        titulo={editando ? 'Editar cartão' : 'Novo cartão de crédito'}
+        subtitulo={editando
+          ? 'Mudar o dia de fechamento reorganiza as faturas do cartão'
+          : 'Informe o limite e os dias de fechamento e vencimento da fatura'}
+      />
 
       <div className="form-grid">
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-1`}>Nome</label>
+          <label className="form-label" htmlFor={`${uid}-1`}><User size={16} />Nome</label>
           <div className="form-input-wrap">
-            <span className="form-prefix"><CreditCard size={14} strokeWidth={2} /></span>
+            <span className="form-prefix"><CreditCard size={16} strokeWidth={2} /></span>
             <input id={`${uid}-1`} className="form-control" placeholder="Ex: Nubank" maxLength={40} value={form.nome} onChange={e => set('nome', e.target.value)} />
           </div>
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-2`}>Limite</label>
+          <label className="form-label" htmlFor={`${uid}-2`}><DollarSign size={16} />Limite</label>
           <div className="form-input-wrap has-text-prefix">
             <span className="form-prefix-text">R$</span>
             <input id={`${uid}-2`} className="form-control" type="number" min="0" step="0.01" placeholder="0,00" value={form.limite} onChange={e => set('limite', e.target.value)} />
@@ -80,44 +78,44 @@ export default function CartaoForm({ editando, onCancelar, onSalvo }) {
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-3`}>Dia do fechamento</label>
+          <label className="form-label" htmlFor={`${uid}-3`}><CalendarClock size={16} />Dia do fechamento</label>
           <div className="form-input-wrap">
-            <span className="form-prefix"><CalendarClock size={14} strokeWidth={2} /></span>
+            <span className="form-prefix"><CalendarClock size={16} strokeWidth={2} /></span>
             <input id={`${uid}-3`} className="form-control" type="number" min="1" max="31" placeholder="Ex: 10" value={form.dia_fechamento} onChange={e => set('dia_fechamento', e.target.value)} />
           </div>
-          <span className="form-dica">Compras até esse dia entram na fatura do mês; depois, na seguinte.</span>
+          <span className="form-dica"><Info size={14} />Compras até esse dia entram na fatura do mês; depois, na seguinte.</span>
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-4`}>Dia do vencimento</label>
+          <label className="form-label" htmlFor={`${uid}-4`}><CalendarClock size={16} />Dia do vencimento</label>
           <div className="form-input-wrap">
-            <span className="form-prefix"><CalendarClock size={14} strokeWidth={2} /></span>
+            <span className="form-prefix"><CalendarClock size={16} strokeWidth={2} /></span>
             <input id={`${uid}-4`} className="form-control" type="number" min="1" max="31" placeholder="Ex: 17" value={form.dia_vencimento} onChange={e => set('dia_vencimento', e.target.value)} />
           </div>
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-5`}>Conta que costuma pagar a fatura</label>
+          <label className="form-label" htmlFor={`${uid}-5`}><Wallet size={16} />Conta que costuma pagar a fatura</label>
           <Select id={`${uid}-5`} value={form.conta_pagamento_id} onChange={v => set('conta_pagamento_id', v)} options={contasDePagamento} prefix={<Wallet size={14} strokeWidth={2} />} />
         </div>
 
         {!editando && (
           <div className="form-group">
-            <label className="form-label" htmlFor={`${uid}-6`}>Dívida atual <span className="form-label-opt">(opcional)</span></label>
+            <label className="form-label" htmlFor={`${uid}-6`}><TrendingUp size={16} />Dívida atual <span className="form-label-opt">(opcional)</span></label>
             <div className="form-input-wrap has-text-prefix">
               <span className="form-prefix-text">R$</span>
               <input id={`${uid}-6`} className="form-control" type="number" min="0" step="0.01" placeholder="0,00" value={form.divida_inicial} onChange={e => set('divida_inicial', e.target.value)} />
             </div>
-            <span className="form-dica">Quanto já está usado do limite hoje.</span>
+            <span className="form-dica"><Info size={14} />Quanto já está usado do limite hoje.</span>
           </div>
         )}
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-7`}>Cor</label>
+          <label className="form-label" htmlFor={`${uid}-7`}><Palette size={16} />Cor</label>
           <label className="color-pick-wrap" htmlFor={`${uid}-7`}>
             <div className="color-swatch" style={{ background: form.cor }} />
             <span className="color-swatch-label">{form.cor.toUpperCase()}</span>
-            <Palette size={14} strokeWidth={2} style={{ color: 'var(--faint)' }} />
+            <Palette size={16} strokeWidth={2} style={{ color: 'var(--faint)' }} />
             <input id={`${uid}-7`} type="color" value={form.cor} onChange={e => set('cor', e.target.value)} />
           </label>
         </div>
@@ -125,7 +123,7 @@ export default function CartaoForm({ editando, onCancelar, onSalvo }) {
 
       <div className="color-presets">
         {CORES.map(c => (
-          <button key={c} type="button" title={c} className={`color-preset-dot ${form.cor === c ? 'selected' : ''}`} style={{ background: c }} onClick={() => set('cor', c)} />
+          <button key={c} type="button" title={c} className={`color-preset-dot ${form.cor === c ? 'selected' : ''}`} style={{ background: c, '--cor-sel': c }} onClick={() => set('cor', c)} />
         ))}
       </div>
 
@@ -133,6 +131,7 @@ export default function CartaoForm({ editando, onCancelar, onSalvo }) {
         <button className="btn btn-primary btn-full" onClick={enviar} disabled={enviando}>
           {editando ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
           {editando ? 'Salvar alterações' : 'Criar cartão'}
+          <ArrowRight size={15} strokeWidth={2.5} />
         </button>
         {editando && <button className="btn btn-ghost" onClick={onCancelar}><X size={14} strokeWidth={2} /> Cancelar</button>}
       </div>
