@@ -143,5 +143,10 @@
 }
 .banner-info svg { color: var(--green-700); flex-shrink: 0 }
 
+/* Formulário dentro do modal de edição: sem o cartão em volta, com o espaçamento do modal */
+.form-modal .form-grid { padding: 8px 0 0; margin-bottom: 20px }
+.form-modal .form-actions { padding: 0 }
+.form-modal .color-presets, .form-modal .icone-bloco { padding-left: 0; padding-right: 0 }
+
 /* O menu do select pode passar da borda do cartão do formulário */
 .form-wrap { overflow: visible }
