@@ -1,7 +1,7 @@
 /* ── Estrutura ─────────────────────────── */
 .shell { display: flex; min-height: 100vh }
 .shell.recolhida { --side: 88px }
-.page { flex: 1; min-width: 0; margin-left: var(--side); transition: margin-left .2s ease; padding: 28px clamp(20px, 3vw, 44px) 72px; max-width: calc(1240px + var(--side)) }
+.page { flex: 1; min-width: 0; margin-left: var(--side); transition: margin-left .2s ease; padding: 28px clamp(20px, 3vw, 44px) 72px; }
 
 /* ── Menu lateral ──────────────────────── */
 .sidebar {
