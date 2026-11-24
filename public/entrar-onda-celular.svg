@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 220">
+  <defs>
+    <linearGradient id="onda" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#4fbd55" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#7fe39d" stop-opacity=".12"/>
+    </linearGradient>
+    <linearGradient id="seta" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#2f9e44" stop-opacity="0"/>
+      <stop offset=".55" stop-color="#3ddc6a" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#7cf0a0"/>
+    </linearGradient>
+    <filter id="brilho" x="-20%" y="-40%" width="140%" height="180%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+  </defs>
+
+  <!-- ondas verdes do rodapé -->
+  <path d="M0 220 L0 160 C 90 128, 200 156, 290 96 C 330 68, 368 46, 400 36 L400 220 Z" fill="url(#onda)"/>
+  <path d="M0 220 C 120 204, 250 192, 400 118 L400 220 Z" fill="#6fd68e" opacity=".22"/>
+
+  <!-- seta neon subindo: brilho por baixo e traço por cima -->
+  <g filter="url(#brilho)" opacity=".8">
+    <path d="M40 196 C 150 182, 250 146, 330 72" fill="none" stroke="#3ddc6a" stroke-width="14" stroke-linecap="round"/>
+    <polygon points="356,46 344,92 310,56" fill="#3ddc6a"/>
+  </g>
+  <path d="M40 196 C 150 182, 250 146, 330 72" fill="none" stroke="url(#seta)" stroke-width="12" stroke-linecap="round"/>
+  <polygon points="356,46 344,92 310,56" fill="#7cf0a0" stroke="#7cf0a0" stroke-width="4" stroke-linejoin="round"/>
+</svg>

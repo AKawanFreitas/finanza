@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-150 0 750 1000" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="claro" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fbf9"/>
+      <stop offset=".55" stop-color="#f1f6f3"/>
+      <stop offset="1" stop-color="#e7f1eb"/>
+    </linearGradient>
+    <linearGradient id="borda" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6be394"/>
+      <stop offset=".5" stop-color="#2f9e5a"/>
+      <stop offset="1" stop-color="#55d47f"/>
+    </linearGradient>
+    <linearGradient id="ondaTopo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fd6a6" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#d9efe0" stop-opacity=".25"/>
+    </linearGradient>
+    <linearGradient id="ondaBaixo" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#6cc58a" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#bfe5cb" stop-opacity=".35"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(95 0)">
+  <!-- brilho neon: muitos traços quase transparentes, sem degrau -->
+  <g fill="none" stroke="#3ddc6a" stroke-linecap="round">
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="12" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="17" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="22" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="27" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="32" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="37" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="42" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="47" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="52" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="57" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="62" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="67" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="72" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="77" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="82" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="87" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="92" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="97" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="102" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="107" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="112" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="117" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="122" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="127" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="132" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="137" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="142" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="147" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="152" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="157" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="162" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="167" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="172" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="177" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="182" stroke-opacity=".016"/>
+    <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000" stroke-width="187" stroke-opacity=".016"/>
+  </g>
+  <!-- faixas da borda: verde e verde-claro, dão a sensação de camadas -->
+  <path d="M160 0 C 80 180, -2 400, 16 585 C 32 760, 136 870, 196 1000 L600 1000 L600 0 Z" fill="url(#borda)" opacity=".6"/>
+  <path d="M174 0 C 94 180, 14 400, 32 585 C 48 760, 152 870, 210 1000 L600 1000 L600 0 Z" fill="#cdeedb" opacity=".9"/>
+  <!-- área clara -->
+  <path d="M192 0 C 112 180, 34 400, 52 585 C 68 760, 170 870, 228 1000 L600 1000 L600 0 Z" fill="url(#claro)"/>
+
+  </g>
+
+  <!-- ondas do canto superior direito -->
+  <path d="M320 0 C 390 120, 495 215, 600 255 L600 0 Z" fill="url(#ondaTopo)"/>
+  <path d="M430 0 C 480 70, 540 118, 600 138 L600 0 Z" fill="#c7e8d2" opacity=".6"/>
+
+  <!-- ondas da base -->
+  <path d="M190 1000 C 290 860, 440 760, 600 700 L600 1000 Z" fill="url(#ondaBaixo)"/>
+  <path d="M300 1000 C 390 900, 500 842, 600 822 L600 1000 Z" fill="#ecf6f0" opacity=".75"/>
+</svg>
