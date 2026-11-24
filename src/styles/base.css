@@ -1,6 +1,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 html, body {
   background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 560' preserveAspectRatio='xMaxYMin slice'%3E%3Cpath d='M1000 0 L1000 330 C 880 300, 780 180, 640 120 C 560 85, 480 40, 430 0 Z' fill='rgba(79,189,85,0.07)'/%3E%3Cg fill='none' stroke='rgba(47,158,68,0.16)' stroke-width='1.2'%3E%3Cpath d='M420 -10 C 560 110, 700 90, 1010 250'/%3E%3Cpath d='M470 -10 C 610 110, 750 90, 1010 205'/%3E%3Cpath d='M520 -10 C 660 110, 800 90, 1010 160'/%3E%3Cpath d='M570 -10 C 710 110, 850 90, 1010 115'/%3E%3Cpath d='M620 -10 C 760 110, 900 90, 1010 70'/%3E%3C/g%3E%3C/svg%3E") right top / min(1100px, 70vw) auto no-repeat,
     radial-gradient(60% 40% at 100% 0%, rgba(79,189,85,.14) 0%, transparent 70%),
     radial-gradient(50% 35% at 20% 100%, rgba(47,158,68,.08) 0%, transparent 70%),
     var(--bg);
