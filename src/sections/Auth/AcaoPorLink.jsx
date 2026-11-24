@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Lock, Check, MailCheck, AlertTriangle, Info } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import EntrarMarca from '../../components/EntrarMarca';
 
 // Telas abertas por links enviados por e-mail: ?redefinir=TOKEN e ?verificar=TOKEN.
 // Funcionam com ou sem sessão aberta.
@@ -9,13 +10,10 @@ const limparUrl = () => window.history.replaceState({}, '', window.location.path
 function Moldura({ titulo, children }) {
   return (
     <div className="entrar">
-      <section className="entrar-marca">
-        <img src="/logo sem texto - finanza.png" alt="" className="entrar-logo" />
-        <h1>Finanza</h1>
-        <p>Acompanhe entradas, gastos e contas fixas do mês em um lugar só.</p>
-      </section>
+      <EntrarMarca />
       <section className="entrar-painel">
         <div className="entrar-form">
+          <span className="entrar-selo" aria-hidden="true"><img src="/logo sem texto - finanza.png" alt="" /></span>
           <h2>{titulo}</h2>
           {children}
         </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Lock, Check, KeyRound, Info, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import EntrarMarca from '../../components/EntrarMarca';
 
 // Mostrada quando o administrador redefiniu a senha: a pessoa entra com a
 // provisória e só chega ao app depois de escolher uma senha própria.
@@ -25,14 +26,11 @@ export default function TrocarSenha() {
 
   return (
     <div className="entrar">
-      <section className="entrar-marca">
-        <img src="/logo sem texto - finanza.png" alt="" className="entrar-logo" />
-        <h1>Finanza</h1>
-        <p>Defina uma senha sua para continuar.</p>
-      </section>
+      <EntrarMarca subtitulo="Defina uma senha sua para continuar." />
 
       <section className="entrar-painel">
         <form className="entrar-form" onSubmit={enviar}>
+          <span className="entrar-selo" aria-hidden="true"><img src="/logo sem texto - finanza.png" alt="" /></span>
           <h2>Nova senha</h2>
           <p className="entrar-nota">A senha de {user.email} foi redefinida pelo administrador.</p>
 
