@@ -37,16 +37,29 @@ export default function App() {
   return <AppLogado key={user.id} />;
 }
 
+const CHAVE_MENU = 'finanza.menu-recolhido';
+const lerMenuRecolhido = () => {
+  try { return localStorage.getItem(CHAVE_MENU) === '1'; } catch { return false; }
+};
+
 function AppLogado() {
   const { ehAdmin } = useAuth();
   const [section, setSection] = useState('dashboard');
   const [ym, setYm] = useState(currentYM());
+  const [recolhida, setRecolhida] = useState(lerMenuRecolhido);
+
+  function alternarMenu() {
+    setRecolhida(r => {
+      try { localStorage.setItem(CHAVE_MENU, r ? '0' : '1'); } catch { /* sem armazenamento: vale só nesta sessão */ }
+      return !r;
+    });
+  }
 
   return (
     <FinanceProvider>
       <ConfirmProvider>
-      <div className="shell">
-        <Sidebar active={section} onNavigate={setSection} />
+      <div className={`shell${recolhida ? ' recolhida' : ''}`}>
+        <Sidebar active={section} onNavigate={setSection} recolhida={recolhida} onAlternar={alternarMenu} />
         <main className="page">
           <AvisoEmail />
           {section === 'dashboard'     && <Dashboard ym={ym} onYmChange={setYm} onNavigate={setSection} />}
