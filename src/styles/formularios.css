@@ -1,42 +1,42 @@
 /* ── Formulários ───────────────────────── */
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 20px 20px 0; margin-bottom: 20px }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 18px 24px 0; margin-bottom: 20px }
 .form-group { display: flex; flex-direction: column; gap: 6px }
 .form-span-2 { grid-column: span 2 }
-.form-label { font-size: 13px; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 4px }
+.form-label { font-size: 13.5px; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 8px }
+.form-label svg { color: var(--navy); flex-shrink: 0 }
 .form-label-opt { font-weight: 400; color: var(--muted) }
 
 .form-input-wrap { position: relative; display: flex; align-items: center }
-.form-input-wrap .form-control { padding-left: 38px }
-.form-prefix { position: absolute; left: 12px; color: var(--faint); pointer-events: none; display: flex; align-items: center }
-.form-sufixo { position: absolute; right: 6px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; background: none; border: none; border-radius: 4px; color: var(--faint); cursor: pointer }
+.form-input-wrap .form-control { padding-left: 48px }
+.form-prefix { position: absolute; left: 18px; color: var(--faint); pointer-events: none; display: flex; align-items: center }
+.form-sufixo { position: absolute; right: 6px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; background: none; border: none; border-radius: 8px; color: var(--faint); cursor: pointer }
 .form-sufixo:hover { color: var(--ink) }
 .form-input-wrap:has(.form-sufixo) .form-control { padding-right: 40px }
-.form-prefix-text { position: absolute; left: 12px; font-size: 14px; font-weight: 700; color: var(--muted); pointer-events: none }
+.form-prefix-text { position: absolute; left: 18px; font-size: 14px; font-weight: 700; color: var(--muted); pointer-events: none }
 
 .form-control {
-  width: 100%; padding: 10px 12px; background: var(--surface);
-  border: 1px solid var(--line2); border-radius: 5px; color: var(--ink); font-family: var(--font); font-size: 14.5px;
-  outline: none; transition: border-color var(--ease), box-shadow var(--ease);
+  width: 100%; min-height: 48px; padding: 12px 18px; background: var(--surface);
+  border: 1px solid var(--line2); border-radius: 16px; color: var(--ink); font-family: var(--font); font-size: 14.5px;
+  box-shadow: 0 1px 2px rgba(10,40,28,.04); outline: none; transition: border-color var(--ease), box-shadow var(--ease);
 }
 .form-control:hover { border-color: var(--faint) }
-.form-control:focus { border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(47,158,68,.18) }
+.form-control:focus { border-color: var(--green-500); box-shadow: 0 0 0 4px rgba(47,158,68,.16) }
 .form-control::placeholder { color: var(--faint) }
 
-.tipo-toggle { display: flex; border: 1px solid var(--line2); border-radius: 5px; overflow: hidden; background: var(--surface) }
+.tipo-toggle { display: flex; gap: 4px; padding: 4px; border-radius: 18px; background: var(--head); border: 1px solid var(--line) }
 .tipo-btn {
   flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 10px 12px; font-size: 14.5px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--muted);
+  padding: 10px 12px; font-size: 14.5px; font-weight: 600; cursor: pointer; border: none; border-radius: 14px; background: transparent; color: var(--muted);
 }
-.tipo-btn:hover { background: var(--head); color: var(--navy) }
-.tipo-btn + .tipo-btn { border-left: 1px solid var(--line2) }
-.tipo-btn.active-saida   { background: var(--navy);      color: var(--white) }
-.tipo-btn.active-fixo    { background: var(--navy);      color: var(--white) }
-.tipo-btn.active-entrada { background: var(--green-500); color: var(--white) }
-.tipo-btn.active-recorrente { background: var(--green-500); color: var(--white) }
+.tipo-btn:hover { background: var(--surface); color: var(--navy) }
+.tipo-btn.active-saida   { background: var(--dark-grad); color: var(--white); box-shadow: var(--shadow-card) }
+.tipo-btn.active-fixo    { background: var(--dark-grad); color: var(--white); box-shadow: var(--shadow-card) }
+.tipo-btn.active-entrada { background: var(--brand-grad); color: var(--white); box-shadow: var(--shadow-card) }
+.tipo-btn.active-recorrente { background: var(--brand-grad); color: var(--white); box-shadow: var(--shadow-card) }
 
 .color-pick-wrap {
-  display: flex; align-items: center; gap: 10px; padding: 7px 12px; position: relative;
-  background: var(--surface); border: 1px solid var(--line2); border-radius: 5px; cursor: pointer;
+  display: flex; align-items: center; gap: 10px; padding: 8px 18px; min-height: 48px; position: relative;
+  background: var(--surface); border: 1px solid var(--line2); border-radius: 16px; cursor: pointer;
 }
 .color-pick-wrap:hover { border-color: var(--faint) }
 .color-pick-wrap:focus-within { border-color: var(--green-500) }
@@ -44,36 +44,37 @@
 .color-swatch-label { font-size: 14.5px; color: var(--muted); flex: 1 }
 .color-pick-wrap input[type="color"] { opacity: 0; position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; border: none }
 
-.color-presets { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 20px; margin: -6px 0 18px }
-.color-preset-dot { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--white); box-shadow: 0 0 0 1px var(--line2); cursor: pointer }
-.color-preset-dot.selected { box-shadow: 0 0 0 2px var(--navy) }
+.color-presets { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 24px; margin: -6px 0 18px }
+.color-preset-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--white); box-shadow: 0 0 0 1px var(--line2); cursor: pointer }
+.color-preset-dot.selected { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--cor-sel, var(--navy)) }
 
-.form-actions { display: flex; gap: 8px; align-items: center; padding: 0 20px 20px }
+.form-actions { display: flex; gap: 8px; align-items: center; padding: 0 24px 24px }
 
 /* ── Botões ────────────────────────────── */
 .btn {
-  display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 5px;
+  display: inline-flex; align-items: center; gap: 6px; padding: 12px 22px; border-radius: 16px;
   font-size: 14.5px; font-weight: 700; cursor: pointer; white-space: nowrap;
   border: 1px solid var(--line2); background: var(--surface); color: var(--navy);
   transition: background var(--ease), border-color var(--ease);
 }
-.btn:hover { border-color: var(--navy) }
+.btn:hover { border-color: var(--green-500); color: var(--green-700) }
 .btn-ghost { background: transparent; color: var(--muted) }
-.btn-ghost:hover { color: var(--red); border-color: var(--red) }
-.btn-full { flex: 1; justify-content: center }
-.btn-primary { background: var(--brand-grad); border-color: var(--green-700); color: var(--white) }
-.btn-primary:hover { border-color: var(--green-900); filter: brightness(1.06) }
+.btn-ghost { border-color: transparent }
+.btn-ghost:hover { color: var(--red); border-color: var(--red-line); background: var(--red-bg) }
+.btn-full { flex: 1; justify-content: center; min-height: 50px; font-size: 15px }
+.btn-primary { background: var(--brand-grad); border-color: transparent; color: var(--white); box-shadow: 0 6px 16px rgba(47,158,68,.28) }
+.btn-primary:hover { border-color: transparent; color: var(--white); filter: brightness(1.06) }
 .btn-sm { padding: 5px 10px; font-size: 13px }
 
 /* ── Select ────────────────────────────── */
 .cselect { position: relative; width: 100% }
 .cselect-trigger {
-  width: 100%; display: flex; align-items: center; gap: 8px; padding: 10px 12px;
-  background: var(--surface); border: 1px solid var(--line2); border-radius: 5px;
+  width: 100%; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 12px 18px;
+  background: var(--surface); border: 1px solid var(--line2); border-radius: 16px; box-shadow: 0 1px 2px rgba(10,40,28,.04);
   color: var(--ink); font-size: 14.5px; cursor: pointer; text-align: left; transition: border-color var(--ease);
 }
 .cselect-trigger:hover { border-color: var(--faint) }
-.cselect-trigger.open { border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(47,158,68,.18) }
+.cselect-trigger.open { border-color: var(--green-500); box-shadow: 0 0 0 4px rgba(47,158,68,.16) }
 .cselect-prefix { color: var(--faint); display: flex; align-items: center; flex-shrink: 0 }
 .cselect-value { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
 .cselect-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0 }
@@ -81,11 +82,11 @@
 .cselect-trigger.open .cselect-chevron { transform: rotate(180deg) }
 .cselect-menu {
   position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: var(--z-menu);
-  background: var(--surface); border: 1px solid var(--line2); border-radius: 5px;
-  box-shadow: 0 8px 24px rgba(15,32,56,.16); max-height: 260px; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px;
+  box-shadow: var(--shadow-pop); max-height: 260px; overflow-y: auto;
 }
 .cselect-option {
-  width: 100%; display: flex; align-items: center; gap: 9px; padding: 9px 12px;
+  width: 100%; border-radius: 10px; display: flex; align-items: center; gap: 9px; padding: 9px 12px;
   color: var(--ink); font-size: var(--fs-md); cursor: pointer; text-align: left;
 }
 .cselect-option.ativo { background: var(--green-bg) }
@@ -122,3 +123,22 @@
 
 .empty-titulo { color: var(--navy); font-size: var(--fs-lg) }
 .icon-btn svg { width: 16px; height: 16px }
+
+/* Cabeçalho de formulário com bloco de ícone */
+.form-header { padding: 24px 28px 8px }
+.form-header-icon { width: 56px; height: 56px; border-radius: 18px; flex-shrink: 0; display: grid; place-items: center; background: var(--green-bg); color: var(--green-700) }
+.form-header-text { flex-direction: column; align-items: flex-start; gap: 2px }
+.form-header-title { font-size: 19px }
+.form-header-sub { font-size: 14px; color: var(--muted) }
+.form-grid { padding-left: 28px; padding-right: 28px; gap: 20px 28px }
+.form-actions, .color-presets { padding-left: 28px; padding-right: 28px }
+.form-dica, .form-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted) }
+.form-dica svg { flex-shrink: 0 }
+.card-sub.pill { padding: 4px 14px; border-radius: 999px; background: var(--head); border: 1px solid var(--line); font-weight: 600 }
+
+/* Faixa informativa */
+.banner-info {
+  display: flex; align-items: center; gap: 12px; padding: 14px 22px; margin-bottom: 20px; border-radius: 18px;
+  background: linear-gradient(90deg, #e3f6e9, #eefaf2); border: 1px solid var(--green-line); color: var(--navy); font-weight: 500;
+}
+.banner-info svg { color: var(--green-700); flex-shrink: 0 }
