@@ -1,7 +1,8 @@
 import { useEffect, useState, useId } from 'react';
-import { PiggyBank, Calendar, Plus, Check, X } from 'lucide-react';
+import { PiggyBank, Calendar, Plus, Check, X, Type, DollarSign, Wallet, Info, ArrowRight } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
+import FormHeader from '../../components/FormHeader';
 
 const VAZIO = { nome: '', valor_alvo: '', prazo: '', valor_inicial: '', cor: '#22a84a' };
 
@@ -38,38 +39,37 @@ export default function MetaForm({ editando, onCancelar, onSalvo }) {
 
   return (
     <div className="form-wrap">
-      <div className="form-header">
-        <div className="form-header-text">
-          <div className="form-header-title">{editando ? 'Editar meta' : 'Nova meta'}</div>
-          <div className="form-header-sub">{editando ? 'Altere os dados e salve' : 'Reserva de emergência, viagem, entrada do carro... guarde aos poucos'}</div>
-        </div>
-      </div>
+      <FormHeader
+        Icon={PiggyBank}
+        titulo={editando ? 'Editar meta' : 'Nova meta'}
+        subtitulo={editando ? 'Altere os dados e salve' : 'Reserva de emergência, viagem, entrada do carro... guarde aos poucos'}
+      />
       <div className="form-grid">
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-1`}>Nome</label>
+          <label className="form-label" htmlFor={`${uid}-1`}><Type size={16} />Nome</label>
           <div className="form-input-wrap">
-            <span className="form-prefix"><PiggyBank size={14} strokeWidth={2} /></span>
+            <span className="form-prefix"><PiggyBank size={16} strokeWidth={2} /></span>
             <input id={`${uid}-1`} className="form-control" placeholder="Ex: Reserva de emergência" maxLength={60} value={form.nome} onChange={e => set('nome', e.target.value)} />
           </div>
         </div>
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-2`}>Valor da meta</label>
+          <label className="form-label" htmlFor={`${uid}-2`}><DollarSign size={16} />Valor da meta</label>
           <div className="form-input-wrap has-text-prefix">
             <span className="form-prefix-text">R$</span>
             <input id={`${uid}-2`} className="form-control" type="number" min="0" step="0.01" placeholder="0,00" value={form.valor_alvo} onChange={e => set('valor_alvo', e.target.value)} />
           </div>
         </div>
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-3`}>Prazo <span className="form-label-opt">(opcional)</span></label>
+          <label className="form-label" htmlFor={`${uid}-3`}><Calendar size={16} />Prazo <span className="form-label-opt">(opcional)</span></label>
           <div className="form-input-wrap">
-            <span className="form-prefix"><Calendar size={14} strokeWidth={2} /></span>
+            <span className="form-prefix"><Calendar size={16} strokeWidth={2} /></span>
             <input id={`${uid}-3`} className="form-control" type="date" value={form.prazo} onChange={e => set('prazo', e.target.value)} />
           </div>
-          <span className="form-dica">Com prazo, mostramos quanto guardar por mês.</span>
+          <span className="form-dica"><Info size={14} />Com prazo, mostramos quanto guardar por mês.</span>
         </div>
         {!editando && (
           <div className="form-group">
-            <label className="form-label" htmlFor={`${uid}-4`}>Já guardado <span className="form-label-opt">(opcional)</span></label>
+            <label className="form-label" htmlFor={`${uid}-4`}><Wallet size={16} />Já guardado <span className="form-label-opt">(opcional)</span></label>
             <div className="form-input-wrap has-text-prefix">
               <span className="form-prefix-text">R$</span>
               <input id={`${uid}-4`} className="form-control" type="number" min="0" step="0.01" placeholder="0,00" value={form.valor_inicial} onChange={e => set('valor_inicial', e.target.value)} />
@@ -81,6 +81,7 @@ export default function MetaForm({ editando, onCancelar, onSalvo }) {
         <button className="btn btn-primary btn-full" onClick={enviar} disabled={enviando}>
           {editando ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
           {editando ? 'Salvar alterações' : 'Criar meta'}
+          <ArrowRight size={15} strokeWidth={2.5} />
         </button>
         {editando && <button className="btn btn-ghost" onClick={onCancelar}><X size={14} strokeWidth={2} /> Cancelar</button>}
       </div>

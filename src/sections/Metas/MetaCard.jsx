@@ -61,7 +61,7 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
   }
 
   return (
-    <div className={`orc-linha meta-card${meta.arquivada ? ' arquivada' : ''}`}>
+    <div className={`orc-linha meta-card${meta.arquivada ? ' arquivada' : ''}`} style={{ '--cor': meta.cor }}>
       <div className="orc-topo">
         <span className="dot" style={{ background: meta.cor }} />
         <strong>{meta.nome}</strong>
