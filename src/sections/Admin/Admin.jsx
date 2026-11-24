@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Search, KeyRound, Ban, CheckCircle2, Trash2, Copy, Shield, Users, UserPlus, Activity, ArrowLeftRight } from 'lucide-react';
+import { Search, KeyRound, Ban, CheckCircle2, Trash2, Copy, Shield, Users, UserPlus, Activity, ArrowLeftRight, Headset, Info, Clock } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
+import { useAuth } from '../../context/AuthContext';
+import Modal from '../../components/Modal';
 import { fmtDate } from '../../utils/formatters';
 import PageHeader from '../../components/PageHeader';
 import Kpi from '../Dashboard/Kpi';
@@ -8,8 +10,8 @@ import IconButton from '../../components/IconButton';
 
 const API = '/api/admin';
 
-async function pedir(caminho, { method = 'GET', body } = {}) {
-  const res = await fetch(`${API}${caminho}`, {
+async function pedir(caminho, { method = 'GET', body, raiz = API } = {}) {
+  const res = await fetch(`${raiz}${caminho}`, {
     method,
     credentials: 'same-origin',
     headers: body ? { 'Content-Type': 'application/json' } : undefined,
@@ -24,6 +26,11 @@ const quando = iso => (iso ? fmtDate(iso.slice(0, 10)) : '—');
 
 export default function Admin() {
   const { showToast } = useFinance();
+  const { recarregar, fimSuporte, limparFimSuporte } = useAuth();
+  const [chamadoPara, setChamadoPara] = useState(null);   // usuário para quem o chamado será aberto
+  const [motivo, setMotivo] = useState('');
+  const [abrindo, setAbrindo] = useState(false);
+  const [erroChamado, setErroChamado] = useState('');
   const [usuarios, setUsuarios] = useState([]);
   const [metricas, setMetricas] = useState(null);
   const [busca, setBusca] = useState('');
@@ -82,11 +89,39 @@ export default function Admin() {
     }
   }
 
+  async function abrirChamado(e) {
+    e.preventDefault();
+    setErroChamado('');
+    setAbrindo(true);
+    try {
+      await pedir('/suporte/chamados', { method: 'POST', body: { user_id: chamadoPara.id, motivo }, raiz: '/api' });
+      setChamadoPara(null);
+      setMotivo('');
+      await recarregar(); // a sessão passa a ser a do cliente, com a barra de suporte
+    } catch (err) {
+      setErroChamado(err.message);
+    } finally {
+      setAbrindo(false);
+    }
+  }
+
   const excluir = u => agir(() => pedir(`/usuarios/${u.id}`, { method: 'DELETE' }), 'Conta excluída');
 
   return (
     <div className="section-enter">
       <PageHeader Icon={Shield} titulo="Administração" subtitulo="Contas e uso do sistema" />
+
+      {fimSuporte && (
+        <div className="banner-info" role="status">
+          <Clock size={20} strokeWidth={2.2} />
+          <span>
+            {fimSuporte.motivo === 'tempo'
+              ? `O acesso à conta de ${fimSuporte.cliente} foi encerrado após 1 minuto sem atividade.`
+              : `O acesso à conta de ${fimSuporte.cliente} foi encerrado.`}
+          </span>
+          <button className="link-btn" onClick={limparFimSuporte} style={{ marginLeft: 'auto' }}>Fechar</button>
+        </div>
+      )}
 
       {erro && <p className="aviso-erro" role="alert">{erro}</p>}
 
@@ -185,6 +220,11 @@ export default function Admin() {
                       </div>
                     ) : (
                       <div className="linha-acoes">
+                        {u.status === 'ativo' && (
+                          <IconButton label="Abrir chamado de suporte" onClick={() => { setChamadoPara(u); setMotivo(''); setErroChamado(''); }}>
+                            <Headset size={14} strokeWidth={2} />
+                          </IconButton>
+                        )}
                         <IconButton label="Redefinir senha" onClick={() => redefinirSenha(u)}>
                           <KeyRound size={14} strokeWidth={2} />
                         </IconButton>
@@ -206,6 +246,34 @@ export default function Admin() {
           </div>
         )}
       </section>
+      {chamadoPara && (
+        <Modal titulo="Abrir chamado de suporte" larga onFechar={() => setChamadoPara(null)}>
+          <p className="modal-sub">Você vai entrar na conta de <strong>{chamadoPara.nome}</strong> ({chamadoPara.email}).</p>
+          <form className="form-stack" onSubmit={abrirChamado}>
+            {erroChamado && <p className="aviso-erro" role="alert">{erroChamado}</p>}
+            <label className="form-group">
+              <span className="form-label"><Headset size={16} />Motivo do acesso</span>
+              <textarea
+                className="form-control" required minLength={5} maxLength={300} rows={3} data-autofocus
+                placeholder="Ex.: Cliente não consegue importar o extrato do banco"
+                value={motivo} onChange={e => setMotivo(e.target.value)}
+              />
+              <span className="form-dica"><Info size={14} />O cliente vê este motivo enquanto você estiver na conta dele, e depois no histórico.</span>
+            </label>
+            <ul className="suporte-regras">
+              <li>Sem atividade por 1 minuto, o acesso se encerra sozinho.</li>
+              <li>Você pode editar os dados, mas não a senha, o e-mail, o perfil nem excluir a conta.</li>
+              <li>Tudo o que for alterado fica registrado no chamado.</li>
+            </ul>
+            <div className="form-acoes">
+              <button className="btn btn-primary" type="submit" disabled={abrindo}>
+                <Headset size={15} strokeWidth={2.4} /> {abrindo ? 'Abrindo...' : 'Abrir chamado e entrar'}
+              </button>
+              <button className="btn btn-ghost" type="button" onClick={() => setChamadoPara(null)}>Cancelar</button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

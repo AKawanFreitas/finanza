@@ -44,8 +44,9 @@ const lerMenuRecolhido = () => {
 };
 
 function AppLogado() {
-  const { ehAdmin, user } = useAuth();
-  const [section, setSection] = useState('dashboard');
+  const { ehAdmin, user, fimSuporte } = useAuth();
+  // Ao voltar de um acesso de suporte, cai na Administração, onde está o aviso de que o acesso terminou.
+  const [section, setSection] = useState(() => (fimSuporte && ehAdmin ? 'admin' : 'dashboard'));
   const [ym, setYm] = useState(currentYM());
   const [recolhida, setRecolhida] = useState(lerMenuRecolhido);
 
