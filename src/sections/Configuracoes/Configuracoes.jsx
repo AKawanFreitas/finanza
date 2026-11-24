@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Check, LogOut, Trash2 } from 'lucide-react';
+import { Check, LogOut, Trash2, Settings, User, Type, Mail, Bell, KeyRound, Lock, Info, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useFinance } from '../../context/FinanceContext';
+import PageHeader from '../../components/PageHeader';
 import { fmtDate } from '../../utils/formatters';
 
 // Cada bloco tem o seu próprio aviso de erro, para a pessoa ver o resultado onde agiu.
@@ -61,20 +62,16 @@ export default function Configuracoes() {
 
   return (
     <div className="section-enter">
-      <header className="page-bar">
-        <div>
-          <h1 className="page-title">Configurações</h1>
-          <p className="page-subtitle">Seus dados de acesso e a sua conta</p>
-        </div>
+      <PageHeader Icon={Settings} titulo="Configurações" subtitulo="Seus dados de acesso e a sua conta">
         <button className="btn" onClick={sair}>
-          <LogOut size={15} strokeWidth={2} />
+          <LogOut size={16} strokeWidth={2} />
           Sair
         </button>
-      </header>
+      </PageHeader>
 
       <section className="panel">
         <div className="panel-head">
-          <h2>Perfil</h2>
+          <h2><User size={20} />Perfil</h2>
           {user.papel === 'superadmin' && <span className="chip good">Administrador</span>}
         </div>
         <form className="panel-body form-stack" onSubmit={enviarPerfil}>
@@ -82,34 +79,41 @@ export default function Configuracoes() {
 
           <div className="form-duplo">
             <label className="form-group">
-              <span className="form-label">Nome</span>
-              <input
-                className="form-control" required autoComplete="name"
-                value={perfil.nome} onChange={e => setPerfil(p => ({ ...p, nome: e.target.value }))}
-              />
+              <span className="form-label"><Type size={16} />Nome</span>
+              <span className="form-input-wrap">
+                <span className="form-prefix"><User size={16} strokeWidth={2} /></span>
+                <input
+                  className="form-control" required autoComplete="name"
+                  value={perfil.nome} onChange={e => setPerfil(p => ({ ...p, nome: e.target.value }))}
+                />
+              </span>
             </label>
             <label className="form-group">
-              <span className="form-label">E-mail</span>
-              <input
-                className="form-control" type="email" required autoComplete="email"
-                value={perfil.email} onChange={e => setPerfil(p => ({ ...p, email: e.target.value }))}
-              />
+              <span className="form-label"><Mail size={16} />E-mail</span>
+              <span className="form-input-wrap">
+                <span className="form-prefix"><Mail size={16} strokeWidth={2} /></span>
+                <input
+                  className="form-control" type="email" required autoComplete="email"
+                  value={perfil.email} onChange={e => setPerfil(p => ({ ...p, email: e.target.value }))}
+                />
+              </span>
             </label>
           </div>
 
-          <p className="form-dica">Conta criada em {fmtDate(user.criado_em.slice(0, 10))}.</p>
+          <p className="form-dica"><Info size={14} />Conta criada em {fmtDate(user.criado_em.slice(0, 10))}.</p>
 
           <div className="form-acoes">
             <button className="btn btn-primary" type="submit" disabled={!perfilMudou || acaoPerfil.ocupado}>
               <Check size={15} strokeWidth={2.5} />
               {acaoPerfil.ocupado ? 'Salvando...' : 'Salvar alterações'}
+              <ArrowRight size={15} strokeWidth={2.5} />
             </button>
           </div>
         </form>
       </section>
 
       <section className="panel">
-        <div className="panel-head"><h2>Avisos por e-mail</h2></div>
+        <div className="panel-head"><h2><Bell size={20} />Avisos por e-mail</h2></div>
         <div className="panel-body">
           {acaoAvisos.erro && <p className="aviso-erro" role="alert">{acaoAvisos.erro}</p>}
           <label className="opcao-check">
@@ -129,35 +133,42 @@ export default function Configuracoes() {
       </section>
 
       <section className="panel">
-        <div className="panel-head"><h2>Senha</h2></div>
+        <div className="panel-head"><h2><KeyRound size={20} />Senha</h2></div>
         <form className="panel-body form-stack" onSubmit={enviarSenha}>
           {acaoSenha.erro && <p className="aviso-erro" role="alert">{acaoSenha.erro}</p>}
 
           <div className="form-duplo">
             <label className="form-group">
-              <span className="form-label">Senha atual</span>
-              <input
-                className="form-control" type="password" required autoComplete="current-password"
-                value={senhas.atual} onChange={e => setSenhas(s => ({ ...s, atual: e.target.value }))}
-              />
+              <span className="form-label"><Lock size={16} />Senha atual</span>
+              <span className="form-input-wrap">
+                <span className="form-prefix"><Lock size={16} strokeWidth={2} /></span>
+                <input
+                  className="form-control" type="password" required autoComplete="current-password"
+                  value={senhas.atual} onChange={e => setSenhas(s => ({ ...s, atual: e.target.value }))}
+                />
+              </span>
             </label>
             <label className="form-group">
-              <span className="form-label">Nova senha</span>
-              <input
-                className="form-control" type="password" required minLength={8} autoComplete="new-password"
-                value={senhas.nova} onChange={e => setSenhas(s => ({ ...s, nova: e.target.value }))}
-              />
+              <span className="form-label"><KeyRound size={16} />Nova senha</span>
+              <span className="form-input-wrap">
+                <span className="form-prefix"><KeyRound size={16} strokeWidth={2} /></span>
+                <input
+                  className="form-control" type="password" required minLength={8} autoComplete="new-password"
+                  value={senhas.nova} onChange={e => setSenhas(s => ({ ...s, nova: e.target.value }))}
+                />
+              </span>
             </label>
           </div>
 
           <p className="form-dica">
-            Pelo menos 8 caracteres. Trocar a senha encerra as sessões abertas em outros aparelhos.
+            <Info size={14} />Pelo menos 8 caracteres. Trocar a senha encerra as sessões abertas em outros aparelhos.
           </p>
 
           <div className="form-acoes">
             <button className="btn btn-primary" type="submit" disabled={acaoSenha.ocupado}>
               <Check size={15} strokeWidth={2.5} />
               {acaoSenha.ocupado ? 'Salvando...' : 'Alterar senha'}
+              <ArrowRight size={15} strokeWidth={2.5} />
             </button>
           </div>
         </form>
@@ -165,10 +176,10 @@ export default function Configuracoes() {
 
       {user.papel !== 'superadmin' && (
         <section className="panel panel-risco">
-          <div className="panel-head"><h2>Excluir conta</h2></div>
+          <div className="panel-head"><h2><AlertTriangle size={20} />Excluir conta</h2></div>
           <div className="panel-body form-stack">
             <p className="form-dica">
-              Apaga a conta e todos os lançamentos, recorrentes e categorias dela. Não dá para desfazer.
+              <Info size={14} />Apaga a conta e todos os lançamentos, recorrentes e categorias dela. Não dá para desfazer.
             </p>
 
             {acaoExcluir.erro && <p className="aviso-erro" role="alert">{acaoExcluir.erro}</p>}
@@ -183,11 +194,14 @@ export default function Configuracoes() {
             ) : (
               <form className="form-stack" onSubmit={enviarExclusao}>
                 <label className="form-group form-estreito">
-                  <span className="form-label">Confirme com a sua senha</span>
-                  <input
-                    className="form-control" type="password" required autoComplete="current-password"
-                    value={confirmacao} onChange={e => setConfirmacao(e.target.value)}
-                  />
+                  <span className="form-label"><Lock size={16} />Confirme com a sua senha</span>
+                  <span className="form-input-wrap">
+                    <span className="form-prefix"><Lock size={16} strokeWidth={2} /></span>
+                    <input
+                      className="form-control" type="password" required autoComplete="current-password"
+                      value={confirmacao} onChange={e => setConfirmacao(e.target.value)}
+                    />
+                  </span>
                 </label>
                 <div className="form-acoes">
                   <button className="btn btn-perigo" type="submit" disabled={acaoExcluir.ocupado}>
