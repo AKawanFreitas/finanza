@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LayoutDashboard, ArrowLeftRight, Repeat, Tags, Settings, Shield, Wallet, FileUp, Target, CreditCard, PiggyBank, CalendarCheck, Menu, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
+import Avatar from './Avatar';
 
 const NAV = [
   { id: 'dashboard',   label: 'Resumo',      Icon: LayoutDashboard },
@@ -18,8 +19,6 @@ const NAV = [
 
 // No celular a barra inferior mostra só o que se usa todo dia; o resto abre em "Mais".
 const PRINCIPAIS = ['dashboard', 'lancamento', 'contas-pagar'];
-
-const iniciais = nome => nome.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
 
 export default function Sidebar({ active, onNavigate, recolhida = false, onAlternar }) {
   const { user, ehAdmin, sair } = useAuth();
@@ -75,7 +74,7 @@ export default function Sidebar({ active, onNavigate, recolhida = false, onAlter
             aria-current={active === 'configuracoes' ? 'page' : undefined}
             title={recolhida ? `${user.nome} · Configurações` : undefined}
           >
-            <span className="conta-avatar" aria-hidden="true">{iniciais(user.nome)}</span>
+            <Avatar user={user} className="conta-avatar" />
             <span className="conta-texto">
               <strong>{user.nome}</strong>
               <small>{user.email}</small>

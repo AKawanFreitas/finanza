@@ -47,11 +47,19 @@
   transition: background var(--ease), color var(--ease);
 }
 .conta:hover, .conta.active { background: rgba(255,255,255,.06); color: var(--white) }
-.conta-avatar {
-  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
-  background: var(--brand-grad); color: var(--white); font-size: 13px; font-weight: 700;
+.avatar {
+  border-radius: 50%; flex-shrink: 0; overflow: hidden;
+  background: var(--brand-grad); color: var(--white); font-weight: 700;
   display: grid; place-items: center;
 }
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block }
+.conta-avatar { width: 34px; height: 34px; font-size: 13px }
+.avatar-grande { width: 76px; height: 76px; font-size: 26px; box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--line2) }
+.foto-perfil { display: flex; align-items: center; gap: 18px; padding-bottom: 16px; border-bottom: 1px solid var(--line) }
+.foto-perfil-info { display: flex; flex-direction: column; gap: 4px; min-width: 0 }
+.foto-perfil-info strong { color: var(--navy) }
+.foto-perfil-info small { color: var(--muted); font-size: var(--fs-sm) }
+.foto-perfil-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px }
 .conta-texto { display: flex; flex-direction: column; min-width: 0; line-height: 1.25 }
 .conta-texto strong { font-size: 14px; font-weight: 600; color: var(--white); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 .conta-texto small { font-size: var(--fs-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
