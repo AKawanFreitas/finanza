@@ -121,3 +121,27 @@ test('rota inexistente devolve 404 em JSON', async () => {
   assert.equal(r.status, 404);
   assert.ok(r.body.error);
 });
+
+test('categoria guarda o ícone escolhido e o mantém ao editar sem informar o ícone', async () => {
+  const u = await novoUsuario();
+  const criada = (await u.agente.post('/api/categorias').send({ nome: 'Pets', cor: '#123456', icone: 'paw-print' })).body;
+  assert.equal(criada.icone, 'paw-print');
+  const editada = (await u.agente.put(`/api/categorias/${criada.id}`).send({ nome: 'Bichos', cor: '#123456' })).body;
+  assert.equal(editada.icone, 'paw-print', 'sem ícone no corpo, o atual é mantido');
+  const trocada = (await u.agente.put(`/api/categorias/${criada.id}`).send({ nome: 'Bichos', cor: '#123456', icone: 'heart-pulse' })).body;
+  assert.equal(trocada.icone, 'heart-pulse');
+  assert.equal((await u.agente.get('/api/categorias')).body.find(c => c.id === criada.id).icone, 'heart-pulse');
+});
+
+test('categoria rejeita ícone fora da lista e usa o genérico quando não vem ícone', async () => {
+  const u = await novoUsuario();
+  assert.equal((await u.agente.post('/api/categorias').send({ nome: 'X1', cor: '#123456', icone: 'nao-existe' })).status, 400);
+  assert.equal((await u.agente.post('/api/categorias').send({ nome: 'X2', cor: '#123456' })).body.icone, 'tag');
+});
+
+test('categorias padrão já vêm com ícone', async () => {
+  const u = await novoUsuario();
+  const cats = (await u.agente.get('/api/categorias')).body;
+  assert.equal(cats.find(c => c.nome === 'Alimentação').icone, 'utensils');
+  assert.equal(cats.find(c => c.nome === 'Outros').icone, 'tag');
+});
