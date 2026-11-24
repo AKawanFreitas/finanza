@@ -62,7 +62,7 @@ export default function Sidebar({ active, onNavigate, recolhida = false, onAlter
               title={recolhida ? label : undefined}
               onClick={() => onNavigate(id)}
             >
-              <Icon size={20} strokeWidth={2} />
+              <Icon size={18} strokeWidth={2} />
               <span className="side-rotulo">{label}</span>
             </button>
           ))}
