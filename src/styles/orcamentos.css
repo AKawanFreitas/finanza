@@ -23,7 +23,7 @@
 .exportar a { color: var(--green-700); font-weight: 700; text-decoration: none }
 .exportar a:hover { text-decoration: underline }
 
-.orc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; padding: 14px 24px 24px }
+.orc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; padding: 14px 28px 28px }
 .orc-linha { --cor: var(--green-500); position: relative; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); overflow: hidden }
 .orc-linha::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--cor) }
 .orc-topo { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap }

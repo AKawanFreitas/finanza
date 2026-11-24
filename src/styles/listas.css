@@ -1,8 +1,8 @@
 /* ── Filtros e lista de lançamentos ────── */
-.filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; gap: 10px; align-items: center; padding: 14px 24px 18px }
+.filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; gap: 10px; align-items: center; padding: 14px 28px 18px }
 .filters-search { grid-column: 1 / -1 }
 
-.hist-head, .hist-row { display: grid; grid-template-columns: 2fr 1fr 1fr 150px 64px; gap: 8px; align-items: center; padding-left: 24px; padding-right: 24px }
+.hist-head, .hist-row { display: grid; grid-template-columns: 2fr 1fr 1fr 150px 64px; gap: 8px; align-items: center; padding-left: 28px; padding-right: 28px }
 .hist-head { padding-top: 10px; padding-bottom: 10px; background: var(--head); font-size: 12.5px; font-weight: 700; color: var(--muted) }
 .hist-row { padding-top: 13px; padding-bottom: 13px; border-bottom: 1px solid var(--line) }
 .hist-row > * { min-width: 0 }
@@ -18,10 +18,10 @@
 
 
 /* ── Recorrentes e categorias ──────────── */
-.launch-bar { margin: 8px 24px 4px; border: none; border-radius: 14px; background: var(--green-bg); display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 24px; color: var(--muted) }
+.launch-bar { margin: 8px 28px 4px; border: none; border-radius: 14px; background: var(--green-bg); display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 28px; color: var(--muted) }
 .rec-grid { display: flex; flex-direction: column }
-.cat-admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; padding: 12px 24px 24px }
-.rec-card { display: flex; align-items: center; gap: 12px; padding: 14px 24px; border-bottom: 1px solid var(--line) }
+.cat-admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; padding: 12px 28px 28px }
+.rec-card { display: flex; align-items: center; gap: 12px; padding: 14px 28px; border-bottom: 1px solid var(--line) }
 .rec-card { justify-content: space-between }
 .rec-card:last-child { border-bottom: none }
 .rec-card.editing { background: var(--green-bg); box-shadow: inset 4px 0 0 var(--green-500) }

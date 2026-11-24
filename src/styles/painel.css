@@ -1,15 +1,15 @@
 /* ── Painéis ───────────────────────────── */
 .panel, .form-wrap, .hist-wrap {
   background: var(--surface); border: none; border-radius: var(--radius-lg); box-shadow: var(--shadow-card);
-  overflow: hidden; margin-bottom: 20px;
+  overflow: hidden; margin-bottom: 24px;
 }
 .panel-head, .form-header, .card-head {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 18px 24px 4px; background: none; border: none; margin: 0;
+  padding: 22px 28px 0; background: none; border: none; margin: 0;
 }
 .panel-head h2, .form-header-title, .card-title { font-size: 16px; font-weight: 700; color: var(--navy); letter-spacing: -0.005em; display: flex; align-items: center; gap: 10px }
 .panel-head h2 svg { color: var(--green-700); flex-shrink: 0 }
-.panel-body { padding: 16px 24px 22px }
+.panel-body { padding: 16px 28px 28px }
 .form-header { justify-content: flex-start; gap: 16px }
 .form-header-text { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; min-width: 0 }
 .form-header-sub, .card-sub { font-size: 13px; color: var(--muted) }

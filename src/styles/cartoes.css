@@ -1,5 +1,5 @@
 /* ── Marco 4: cartões, parcelas, diálogo ───────────── */
-.cartoes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; padding: 14px 24px 24px }
+.cartoes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; padding: 14px 28px 28px }
 .cartao-linha {
   --cor: var(--green-500);
   position: relative; display: flex; flex-direction: column; border-radius: 16px; overflow: hidden;
@@ -14,13 +14,13 @@
 .cartao-linha .hist-actions { padding: 0 12px 10px }
 
 .fatura-mes { width: auto; padding: 6px 10px; font-size: 13.5px }
-.fatura-resumo { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; padding: 14px 24px; border-bottom: 1px solid var(--line) }
+.fatura-resumo { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; padding: 14px 28px; border-bottom: 1px solid var(--line) }
 .fatura-resumo small { display: block; color: var(--muted); font-size: 12.5px; font-weight: 600 }
 .fatura-resumo strong { font-size: 18px; font-weight: 800; color: var(--navy) }
 .fatura-resumo .chip { margin-left: auto }
 .fatura-pagamentos { display: flex; flex-direction: column; gap: 2px; padding: 12px 24px; color: var(--muted); font-size: 13.5px; border-top: 1px solid var(--line) }
 .fatura-pagamentos strong { color: var(--navy) }
-.fatura-pagar { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 12px; align-items: end; padding: 16px 24px; border-top: 1px solid var(--line); background: var(--head) }
+.fatura-pagar { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 12px; align-items: end; padding: 16px 28px; border-top: 1px solid var(--line); background: var(--head) }
 
 .parcelas-info { margin-top: 2px; color: var(--muted); font-size: 13px }
 

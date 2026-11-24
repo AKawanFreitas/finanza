@@ -1,5 +1,5 @@
 /* ── Formulários ───────────────────────── */
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 18px 24px 0; margin-bottom: 20px }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 20px 28px 0; margin-bottom: 24px }
 .form-group { display: flex; flex-direction: column; gap: 6px }
 .form-span-2 { grid-column: span 2 }
 .form-label { font-size: 13.5px; font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 8px }
@@ -44,11 +44,11 @@
 .color-swatch-label { font-size: 14.5px; color: var(--muted); flex: 1 }
 .color-pick-wrap input[type="color"] { opacity: 0; position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; border: none }
 
-.color-presets { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 24px; margin: -6px 0 18px }
+.color-presets { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 28px; margin: -6px 0 18px }
 .color-preset-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--white); box-shadow: 0 0 0 1px var(--line2); cursor: pointer }
 .color-preset-dot.selected { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--cor-sel, var(--navy)) }
 
-.form-actions { display: flex; gap: 8px; align-items: center; padding: 0 24px 24px }
+.form-actions { display: flex; gap: 8px; align-items: center; padding: 0 28px 28px }
 
 /* ── Botões ────────────────────────────── */
 .btn {
@@ -125,7 +125,7 @@
 .icon-btn svg { width: 16px; height: 16px }
 
 /* Cabeçalho de formulário com bloco de ícone */
-.form-header { padding: 24px 28px 8px }
+.form-header { padding: 28px 28px 8px }
 .form-header-icon { width: 56px; height: 56px; border-radius: 18px; flex-shrink: 0; display: grid; place-items: center; background: var(--green-bg); color: var(--green-700) }
 .form-header-text { flex-direction: column; align-items: flex-start; gap: 2px }
 .form-header-title { font-size: 19px }
@@ -138,7 +138,7 @@
 
 /* Faixa informativa */
 .banner-info {
-  display: flex; align-items: center; gap: 12px; padding: 14px 22px; margin-bottom: 20px; border-radius: 18px;
+  display: flex; align-items: center; gap: 12px; padding: 14px 22px; margin-bottom: 24px; border-radius: 18px;
   background: linear-gradient(90deg, #e3f6e9, #eefaf2); border: 1px solid var(--green-line); color: var(--navy); font-weight: 500;
 }
 .banner-info svg { color: var(--green-700); flex-shrink: 0 }

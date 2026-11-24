@@ -5,7 +5,7 @@
 .aba.ativa { background: var(--dark-grad); color: var(--white); box-shadow: var(--shadow-card) }
 
 .venc-lista { list-style: none }
-.venc-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 24px; background: none; border: none; border-bottom: 1px solid var(--line); text-align: left; cursor: pointer; font: inherit; color: inherit }
+.venc-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 28px; background: none; border: none; border-bottom: 1px solid var(--line); text-align: left; cursor: pointer; font: inherit; color: inherit }
 .venc-lista li:last-child .venc-item { border-bottom: none }
 .venc-item:hover { background: var(--green-bg) }
 .venc-titulo { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }

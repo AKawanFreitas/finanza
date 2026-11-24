@@ -2,7 +2,7 @@
 .filters-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) auto }
 .filters-4 > input[type="month"] { grid-column: auto }
 
-.pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 24px; color: var(--muted); border-top: 1px solid var(--line) }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 28px; color: var(--muted); border-top: 1px solid var(--line) }
 .btn:disabled { opacity: .5; cursor: not-allowed }
 .btn:disabled:hover { border-color: var(--line2) }
 
@@ -29,7 +29,7 @@
 
 
 /* Cartões de contas */
-.contas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; padding: 14px 24px 24px }
+.contas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; padding: 14px 28px 28px }
 .conta-card {
   --cor: var(--green-500);
   position: relative; display: flex; flex-direction: column; gap: 14px; padding: 18px; border-radius: 16px;
@@ -61,4 +61,4 @@ input[type="file"].form-control::file-selector-button:hover { background: var(--
 input[type="checkbox"] { accent-color: var(--green-500); width: 16px; height: 16px }
 .import-scroll { border-top: none; margin: 0 12px }
 .import-table th:first-child, .import-table td:first-child { padding-left: 12px; width: 40px }
-.import-rodape { margin: 12px 24px 20px }
+.import-rodape { margin: 12px 28px 20px }
