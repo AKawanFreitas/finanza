@@ -1,23 +1,24 @@
 /* ── Configurações e administração ──────── */
 .form-stack { display: flex; flex-direction: column; gap: 16px }
-.form-duplo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px }
+.form-duplo { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px }
+.form-stack .form-input-wrap { display: flex }
 .form-estreito { max-width: 320px }
 .form-acoes { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
 
 .btn-perigo { background: var(--red); border-color: var(--red); color: var(--white) }
 .btn-perigo:hover { background: var(--red-strong); border-color: var(--red-strong) }
 
-.panel-risco { border-color: var(--red-line) }
-.panel-risco .panel-head { background: var(--red-bg); border-bottom-color: var(--red-line) }
+.panel-risco { box-shadow: 0 0 0 1px var(--red-line), var(--shadow-card) }
+.panel-risco .panel-head { background: var(--red-bg); padding-bottom: 14px }
 .panel-risco .panel-head h2 { color: var(--red) }
 
-.panel-destaque { border-color: var(--green-500) }
-.panel-destaque .panel-head { background: var(--green-bg); border-bottom-color: var(--green-line) }
+.panel-destaque { box-shadow: 0 0 0 2px var(--green-500), var(--shadow-card) }
+.panel-destaque .panel-head { background: var(--green-bg); padding-bottom: 14px }
 
 .senha-provisoria { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
 .senha-provisoria code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 18px; font-weight: 700;
-  background: var(--surface); border: 1px solid var(--line2); border-radius: 5px; padding: 8px 14px;
+  background: var(--surface); border: 1px solid var(--line2); border-radius: 14px; padding: 10px 16px;
   letter-spacing: 0.04em; user-select: all;
 }
 
@@ -30,8 +31,8 @@
 
 /* Conta no rodapé do menu */
 .conta-bloco {
-  margin-top: auto; display: flex; align-items: stretch;
-  border-top: 1px solid rgba(255,255,255,.08);
+  margin-top: auto; display: flex; align-items: stretch; margin: auto 14px 14px;
+  background: rgba(255,255,255,.05); border-radius: 12px; overflow: hidden;
 }
 .conta-sair {
   flex-shrink: 0; width: 52px; display: grid; place-items: center; background: none; border: none;
@@ -67,3 +68,6 @@
   .table th:nth-child(5), .table td:nth-child(5) { display: none }
 }
 
+
+.admin-nome { display: inline-flex; align-items: center; gap: 10px }
+.admin-avatar { width: 30px; height: 30px; font-size: 11px }
