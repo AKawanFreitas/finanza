@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Check, LogOut, Trash2, Settings, User, Type, Mail, Bell, KeyRound, Lock, Info, AlertTriangle, ArrowRight, Headset, Sun, Moon, Monitor, Palette } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Check, LogOut, Trash2, Settings, User, Type, Mail, Bell, KeyRound, Lock, Info, AlertTriangle, ArrowRight, Headset, Sun, Moon, Monitor, Palette, Camera } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useFinance } from '../../context/FinanceContext';
 import PageHeader from '../../components/PageHeader';
@@ -7,6 +7,8 @@ import InfoBanner from '../../components/InfoBanner';
 import { api } from '../../utils/api';
 import { fmtDate } from '../../utils/formatters';
 import { lerTema, salvarTema } from '../../utils/tema';
+import { prepararFoto } from '../../utils/foto';
+import Avatar from '../../components/Avatar';
 
 // Cada bloco tem o seu próprio aviso de erro, para a pessoa ver o resultado onde agiu.
 function useAcao(showToast) {
@@ -29,6 +31,43 @@ function useAcao(showToast) {
   }
 
   return { erro, ocupado, executar, limparErro: () => setErro('') };
+}
+
+// Escolher, trocar ou remover a foto: o arquivo é reduzido no navegador antes de subir.
+function FotoPerfil({ user, bloqueado }) {
+  const { salvarFoto, removerFoto } = useAuth();
+  const { showToast } = useFinance();
+  const acao = useAcao(showToast);
+  const campo = useRef(null);
+
+  async function escolher(e) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = '';
+    if (!arquivo) return;
+    await acao.executar(async () => salvarFoto(await prepararFoto(arquivo)), 'Foto atualizada');
+  }
+
+  return (
+    <div className="foto-perfil">
+      <Avatar user={user} className="avatar-grande" />
+      <div className="foto-perfil-info">
+        <strong>Foto de perfil</strong>
+        <small>JPG, PNG ou WebP. Ela aparece no menu e fica só na sua conta.</small>
+        <div className="foto-perfil-acoes">
+          <input ref={campo} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={escolher} />
+          <button type="button" className="btn" disabled={acao.ocupado || bloqueado} onClick={() => campo.current.click()}>
+            <Camera size={16} strokeWidth={2} />{user.foto_url ? 'Trocar foto' : 'Escolher foto'}
+          </button>
+          {user.foto_url && (
+            <button type="button" className="btn" disabled={acao.ocupado || bloqueado} onClick={() => acao.executar(removerFoto, 'Foto removida')}>
+              <Trash2 size={16} strokeWidth={2} />Remover
+            </button>
+          )}
+        </div>
+        {acao.erro && <p className="aviso-erro" role="alert">{acao.erro}</p>}
+      </div>
+    </div>
+  );
 }
 
 const OPCOES_TEMA = [
@@ -157,6 +196,7 @@ export default function Configuracoes() {
           {user.papel === 'superadmin' && <span className="chip good">Administrador</span>}
         </div>
         <form className="panel-body form-stack" onSubmit={enviarPerfil}>
+          <FotoPerfil user={user} bloqueado={!!user.suporte} />
           {acaoPerfil.erro && <p className="aviso-erro" role="alert">{acaoPerfil.erro}</p>}
 
           <div className="form-duplo">
