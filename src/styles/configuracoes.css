@@ -71,3 +71,9 @@
 
 .admin-nome { display: inline-flex; align-items: center; gap: 10px }
 .admin-avatar { width: 30px; height: 30px; font-size: 11px }
+
+/* Conta no menu recolhido: avatar e botão de sair, um sobre o outro */
+.shell.recolhida .conta-bloco { flex-direction: column; margin: auto 14px 16px }
+.shell.recolhida .conta { justify-content: center; padding: 12px 0 }
+.shell.recolhida .conta-texto { display: none }
+.shell.recolhida .conta-sair { width: auto; height: 44px; border-left: none; border-top: 1px solid rgba(255,255,255,.08) }
