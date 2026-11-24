@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Mail, Lock, User, LogIn, UserPlus, Eye, EyeOff, Send, ArrowLeft, Type, KeyRound, ArrowRight, Info } from 'lucide-react';
+import { Mail, User, UserPlus, Eye, EyeOff, Send, ArrowLeft, KeyRound, ArrowRight, Info } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import EntrarMarca from '../../components/EntrarMarca';
 
 export default function Entrar() {
   const { entrar, criarConta, esqueciSenha } = useAuth();
@@ -44,28 +45,27 @@ export default function Entrar() {
 
   return (
     <div className="entrar">
-      <section className="entrar-marca">
-        <img src="/logo sem texto - finanza.png" alt="" className="entrar-logo" />
-        <h1>Finanza</h1>
-        <p>Acompanhe entradas, gastos e contas fixas do mês em um lugar só.</p>
-        <img src="/login-ilustracao.webp" alt="" className="entrar-ilustracao" />
-      </section>
+      <EntrarMarca />
 
       <section className="entrar-painel">
         <form className="entrar-form" onSubmit={enviar}>
+          <span className="entrar-selo" aria-hidden="true"><img src="/logo sem texto - finanza.png" alt="" /></span>
           <h2>{recuperar ? 'Recuperar senha' : novaConta ? 'Criar conta' : 'Entrar na sua conta'}</h2>
-
-          {recuperar && !aviso && <p className="entrar-dica">Informe seu e-mail e enviaremos um link para escolher uma nova senha.</p>}
+          <p className="entrar-sub">
+            {recuperar ? 'Informe seu e-mail e enviaremos um link para escolher uma nova senha.'
+              : novaConta ? 'Crie sua conta para começar a organizar suas finanças.'
+              : 'Bem-vindo de volta! Faça login para continuar.'}
+          </p>
           {aviso && <p className="aviso-ok" role="status">{aviso}</p>}
           {erro && <p className="aviso-erro" role="alert">{erro}</p>}
 
           {novaConta && (
             <label className="form-group">
-              <span className="form-label"><Type size={16} />Nome</span>
+              <span className="sr-only">Nome</span>
               <span className="form-input-wrap">
-                <span className="form-prefix"><User size={16} strokeWidth={2} /></span>
+                <span className="form-prefix"><User size={18} strokeWidth={2} /></span>
                 <input
-                  className="form-control" autoComplete="name" required
+                  className="form-control" autoComplete="name" required placeholder="Nome"
                   value={form.nome} onChange={e => set('nome', e.target.value)}
                 />
               </span>
@@ -73,22 +73,22 @@ export default function Entrar() {
           )}
 
           <label className="form-group">
-            <span className="form-label"><Mail size={16} />E-mail</span>
+            <span className="sr-only">E-mail</span>
             <span className="form-input-wrap">
-              <span className="form-prefix"><Mail size={16} strokeWidth={2} /></span>
+              <span className="form-prefix"><Mail size={18} strokeWidth={2} /></span>
               <input
-                className="form-control" type="email" autoComplete="email" required
+                className="form-control" type="email" autoComplete="email" required placeholder="E-mail"
                 value={form.email} onChange={e => set('email', e.target.value)}
               />
             </span>
           </label>
 
           {!recuperar && <label className="form-group">
-            <span className="form-label"><KeyRound size={16} />Senha</span>
+            <span className="sr-only">Senha</span>
             <span className="form-input-wrap">
-              <span className="form-prefix"><Lock size={16} strokeWidth={2} /></span>
+              <span className="form-prefix"><KeyRound size={18} strokeWidth={2} /></span>
               <input
-                className="form-control" type={verSenha ? 'text' : 'password'} required
+                className="form-control" type={verSenha ? 'text' : 'password'} required placeholder="Senha"
                 autoComplete={novaConta ? 'new-password' : 'current-password'}
                 minLength={novaConta ? 8 : undefined}
                 value={form.senha} onChange={e => set('senha', e.target.value)}
@@ -107,14 +107,13 @@ export default function Entrar() {
 
           {modo === 'login' && (
             <button type="button" className="link-btn entrar-esqueci" onClick={() => trocarModo('esqueci')}>
-              Esqueci minha senha
+              Esqueceu minha senha?
             </button>
           )}
 
           <button className="btn btn-primary btn-full" type="submit" disabled={enviando}>
-            {recuperar ? <Send size={16} strokeWidth={2.5} /> : novaConta ? <UserPlus size={16} strokeWidth={2.5} /> : <LogIn size={16} strokeWidth={2.5} />}
+            {recuperar ? <Send size={17} strokeWidth={2.5} /> : novaConta ? <UserPlus size={17} strokeWidth={2.5} /> : <ArrowRight size={17} strokeWidth={2.5} />}
             {enviando ? 'Aguarde...' : recuperar ? 'Enviar link' : novaConta ? 'Criar conta' : 'Entrar'}
-            <ArrowRight size={16} strokeWidth={2.5} />
           </button>
 
           {recuperar ? (
