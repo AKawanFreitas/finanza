@@ -35,7 +35,7 @@ function bancoLegado() {
 
 test('banco novo chega na última versão', () => {
   const db = new Database(':memory:');
-  assert.deepEqual(migrar(db), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.deepEqual(migrar(db), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   assert.equal(versaoAtual(db), ultimaVersao);
 });
 
