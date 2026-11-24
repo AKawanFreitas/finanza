@@ -41,7 +41,7 @@ export default function TransactionForm() {
     else setForm(EMPTY(categorias, contas));
   }
 
-  const catOptions = categorias.map(c => ({ value: c.nome, label: c.nome, color: c.cor }));
+  const catOptions = categorias.map(c => ({ value: c.nome, label: c.nome, color: c.cor, icone: c.icone }));
   // Contas arquivadas não recebem lançamentos novos, exceto a que o lançamento em edição já usa.
   const contaOptions = contas
     .filter(c => !c.arquivada || c.id === form.conta_id)

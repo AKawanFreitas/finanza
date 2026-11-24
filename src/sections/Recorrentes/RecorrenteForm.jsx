@@ -38,7 +38,7 @@ export default function RecorrenteForm() {
     else setForm(EMPTY(categorias));
   }
 
-  const catOptions = categorias.map(c => ({ value: c.nome, label: c.nome, color: c.cor }));
+  const catOptions = categorias.map(c => ({ value: c.nome, label: c.nome, color: c.cor, icone: c.icone }));
   const contaOptions = [
     { value: 0, label: 'Conta principal' },
     ...contas.filter(c => !c.arquivada || c.id === form.conta_id).map(c => ({ value: c.id, label: c.nome, color: c.cor })),

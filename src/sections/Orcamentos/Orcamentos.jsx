@@ -115,7 +115,7 @@ export default function Orcamentos({ ym, onYmChange }) {
                 <label className="form-label" htmlFor={`${uid}-1`}><Tag size={16} />Categoria</label>
                 <Select id={`${uid}-1`}
                   value={escolhida} onChange={v => setNovo(n => ({ ...n, categoria_id: v }))}
-                  options={livres.map(c => ({ value: c.id, label: c.nome, color: c.cor }))}
+                  options={livres.map(c => ({ value: c.id, label: c.nome, color: c.cor, icone: c.icone }))}
                   prefix={<Tag size={16} strokeWidth={2} />}
                 />
               </div>

@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect, useId } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
+import CategoriaIcone from './CategoriaIcone';
 
 // Lista suspensa acessível (padrão "select-only combobox" do WAI-ARIA).
 // Teclado: setas, Home/End, Enter/Espaço escolhem, Esc fecha, digitar salta para a opção.
+// Uma opção pode trazer `color` (bolinha) ou `icone` + `color` (ícone da categoria no lugar da bolinha e do prefixo).
 // Passe `id` (vem do <Field>) para ligar o rótulo, ou `aria-label` quando não há rótulo visível.
 export default function Select({ value, onChange, options, prefix, id, 'aria-label': ariaLabel, 'aria-labelledby': labelledBy }) {
   const uid = useId();
@@ -77,8 +79,12 @@ export default function Select({ value, onChange, options, prefix, id, 'aria-lab
         onClick={() => (open ? setOpen(false) : abrir())}
         onKeyDown={onKeyDown}
       >
-        {prefix && <span className="cselect-prefix" aria-hidden="true">{prefix}</span>}
-        {selected?.color && <span className="cselect-dot" aria-hidden="true" style={{ background: selected.color }} />}
+        {selected?.icone
+          ? <CategoriaIcone icone={selected.icone} cor={selected.color} tam={26} />
+          : <>
+            {prefix && <span className="cselect-prefix" aria-hidden="true">{prefix}</span>}
+            {selected?.color && <span className="cselect-dot" aria-hidden="true" style={{ background: selected.color }} />}
+          </>}
         <span className="cselect-value">{selected?.label ?? value}</span>
         <ChevronDown size={13} strokeWidth={2} className="cselect-chevron" aria-hidden="true" />
       </button>
@@ -101,7 +107,9 @@ export default function Select({ value, onChange, options, prefix, id, 'aria-lab
                 onMouseDown={e => e.preventDefault()}
                 onClick={() => escolher(i)}
               >
-                {opt.color && <span className="cselect-dot" aria-hidden="true" style={{ background: opt.color }} />}
+                {opt.icone
+                  ? <CategoriaIcone icone={opt.icone} cor={opt.color} tam={26} />
+                  : opt.color && <span className="cselect-dot" aria-hidden="true" style={{ background: opt.color }} />}
                 <span style={{ flex: 1 }}>{opt.label}</span>
                 {marcada && <Check size={12} strokeWidth={2.5} className="cselect-check" aria-hidden="true" />}
               </div>

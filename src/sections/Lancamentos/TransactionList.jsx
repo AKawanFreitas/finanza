@@ -73,7 +73,7 @@ export default function TransactionList() {
   ];
   const catOptions = [
     { value: '', label: 'Todas as categorias' },
-    ...categorias.map(c => ({ value: String(c.id), label: c.nome, color: c.cor })),
+    ...categorias.map(c => ({ value: String(c.id), label: c.nome, color: c.cor, icone: c.icone })),
   ];
   const contaOptions = [
     { value: '', label: 'Todas as contas' },

@@ -20,7 +20,7 @@ export default function ContaPagarForm({ editando, onCancelar, onSalvo }) {
       : vazio(categorias));
   }, [editando, categorias]);
 
-  const catOptions = categorias.map(c => ({ value: c.nome, label: c.nome, color: c.cor }));
+  const catOptions = categorias.map(c => ({ value: c.nome, label: c.nome, color: c.cor, icone: c.icone }));
   const contaOptions = [
     { value: 0, label: 'Escolher na hora de pagar' },
     ...contas.filter(c => !c.arquivada || c.id === form.conta_id).map(c => ({ value: c.id, label: c.nome, color: c.cor })),
