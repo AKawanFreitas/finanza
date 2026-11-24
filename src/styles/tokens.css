@@ -3,30 +3,11 @@
   --navy-950: #04231a;
   --navy-900: #0a3a2a;
   --navy-800: #11503a;
-  --navy:     #10241c;
 
   --green-300: #7fd35f;
   --green-400: #4fbd55;
   --green-500: #2f9e44;
-  --green-700: #1b6e30;
-  --green-900: #0e4a22;
   --brand-grad: linear-gradient(135deg, #5fcf5b 0%, #2f9e44 48%, #145c2c 100%);
-
-  --bg:      #f1f6f4;
-  --surface: #ffffff;
-  --head:    #f5f9f7;
-  --ink:     #15261e;
-  --muted:   #5b6e65;
-  --faint:   #8a9d94;
-  --line:    #e3ece8;
-  --line2:   #cddad4;
-
-  --green:    #1f8a3b;
-  --green-bg: #e2f6e9;
-  --red:      #cf3f3f;
-  --red-bg:   #fbe6e5;
-  --amber:    #a96a0a;
-  --amber-bg: #fbefd9;
 
   --font: 'Hanken Grotesk', system-ui, sans-serif;
   --side: 248px;
@@ -35,15 +16,8 @@
   /* Tons de apoio (antes soltos nos arquivos de estilo) */
   --white:       #ffffff;
   --black:       #000000;
-  --zebra:       #fafcfb;
   --side-ink:    #b6d1c4;   /* texto secundário sobre o azul-marinho */
   --side-faint:  #8db5a2;
-  --tag-bg:      #e3efe9;
-  --red-strong:  #b22f2f;
-  --red-soft:    #ff8a8a;
-  --red-line:    #e6c3c0;
-  --green-line:  #b9e0c3;
-  --amber-line:  #ecd49b;
   --amber-bar:   #e2a02f;
   --amber-bar-2: #e0a21b;
 
@@ -63,13 +37,85 @@
   /* Raios, sombras e camadas */
   --radius-sm: 8px;
   --radius:    12px;
-  --shadow-pop:   0 8px 24px rgba(10,40,28,.16);
   --radius-lg:    18px;
-  --shadow-card:  0 1px 2px rgba(10,40,28,.04), 0 6px 20px rgba(10,40,28,.06);
   --dark-grad:    linear-gradient(135deg, #0b4a33 0%, #063022 60%, #04231a 100%);
   --shadow-modal: 0 20px 60px rgba(10,21,38,.35);
   --z-sidebar: 60;
   --z-menu:    80;
   --z-modal:   100;
   --z-toast:   120;
+}
+
+/* Cores do tema claro. A classe .tema-claro repõe estas cores dentro do tema escuro (telas de entrada). */
+:root, .tema-claro {
+  --navy:     #10241c;
+  --green-700: #1b6e30;   /* usado em texto e ícones sobre fundos claros */
+  --green-900: #0e4a22;
+  --bg:      #f1f6f4;
+  --surface: #ffffff;
+  --head:    #f5f9f7;
+  --ink:     #15261e;
+  --muted:   #5b6e65;
+  --faint:   #8a9d94;
+  --line:    #e3ece8;
+  --line2:   #cddad4;
+
+  --green:    #1f8a3b;
+  --green-bg: #e2f6e9;
+  --red:      #cf3f3f;
+  --red-bg:   #fbe6e5;
+  --amber:    #a96a0a;
+  --amber-bg: #fbefd9;
+
+
+  --zebra:       #fafcfb;
+  --tag-bg:      #e3efe9;
+  --red-strong:  #b22f2f;
+  --red-soft:    #ff8a8a;
+  --red-line:    #e6c3c0;
+  --green-line:  #b9e0c3;
+  --amber-line:  #ecd49b;
+  --banner-bg: linear-gradient(90deg, #e3f6e9, #eefaf2);
+  --azul:     #2f6fd1;
+  --azul-bg:  #e3edfb;
+  --shadow-pop:   0 8px 24px rgba(10,40,28,.16);
+  --shadow-card:  0 1px 2px rgba(10,40,28,.04), 0 6px 20px rgba(10,40,28,.06);
+}
+
+
+/* Tema escuro: ativado por data-tema="escuro" na tag html (ver src/utils/tema.js) */
+html[data-tema="escuro"] {
+  color-scheme: dark;
+  --navy:     #e8f2ec;   /* nos textos de título; os fundos azul-marinho usam --navy-9xx */
+  --bg:      #0a1511;
+  --surface: #111f19;
+  --head:    #152821;
+  --ink:     #e3eee8;
+  --muted:   #9db4a8;
+  --faint:   #7b968a;
+  --line:    #20352b;
+  --line2:   #2e473a;
+
+  --green-700: #5ee38a;
+  --green-900: #9af2b8;
+  --green:    #4ee27a;
+  --green-bg: rgba(78,226,122,.14);
+  --red:      #ff7b7b;
+  --red-bg:   rgba(255,123,123,.14);
+  --amber:    #f0b24a;
+  --amber-bg: rgba(240,178,74,.14);
+
+  --zebra:       #0e1c16;
+  --tag-bg:      #1b2f26;
+  --red-strong:  #ff9a9a;
+  --red-soft:    #ff8a8a;
+  --red-line:    #5e3333;
+  --green-line:  #285f3d;
+  --amber-line:  #5f4c20;
+  --banner-bg:   linear-gradient(90deg, rgba(78,226,122,.16), rgba(78,226,122,.08));
+  --azul:        #7fb0ff;
+  --azul-bg:     rgba(127,176,255,.15);
+  --shadow-pop:   0 8px 24px rgba(0,0,0,.45);
+  --shadow-card:  0 1px 2px rgba(0,0,0,.35), 0 6px 20px rgba(0,0,0,.28);
+  --shadow-modal: 0 20px 60px rgba(0,0,0,.6);
 }
