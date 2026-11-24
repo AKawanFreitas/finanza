@@ -1,9 +1,10 @@
 import { useState, useEffect, useId } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import Select from '../../components/Select';
+import FormHeader from '../../components/FormHeader';
 import {
   AlignLeft, Tag, CalendarClock, MessageSquare,
-  RefreshCw, Zap, Plus, Check, X, Wallet
+  RefreshCw, Zap, Plus, Check, X, Wallet, Repeat, ArrowLeftRight, DollarSign, ArrowRight
 } from 'lucide-react';
 
 const EMPTY = (cats) => ({ nome: '', valor: '', tipo: 'fixo', cat: cats[0]?.nome || '', dia: '', obs: '', automatico: false, conta_id: null });
@@ -45,19 +46,16 @@ export default function RecorrenteForm() {
 
   return (
     <div className="form-wrap">
-      <div className="form-header">
-        <div className="form-header-text">
-          <div className="form-header-title">{editingRec ? 'Editar recorrente' : 'Adicionar recorrente'}</div>
-          <div className="form-header-sub">
-            {editingRec ? 'Altere os dados e salve' : 'Despesas que se repetem todo mês'}
-          </div>
-        </div>
-      </div>
+      <FormHeader
+        Icon={Repeat}
+        titulo={editingRec ? 'Editar recorrente' : 'Adicionar recorrente'}
+        subtitulo={editingRec ? 'Altere os dados e salve' : 'Despesas que se repetem todo mês'}
+      />
 
       <div className="form-grid">
 
         <div className="form-group form-span-2" role="group" aria-labelledby={`${uid}-tipo`}>
-          <span className="form-label" id={`${uid}-tipo`}>Tipo</span>
+          <span className="form-label" id={`${uid}-tipo`}><ArrowLeftRight size={16} />Tipo</span>
           <div className="tipo-toggle">
             <button
               type="button"
@@ -81,9 +79,9 @@ export default function RecorrenteForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-1`}>Nome</label>
+          <label className="form-label" htmlFor={`${uid}-1`}><AlignLeft size={16} />Nome</label>
           <div className="form-input-wrap">
-            <span className="form-prefix"><AlignLeft size={14} strokeWidth={2} /></span>
+            <span className="form-prefix"><AlignLeft size={16} strokeWidth={2} /></span>
             <input id={`${uid}-1`}
               className="form-control"
               placeholder="Ex: Aluguel"
@@ -94,7 +92,7 @@ export default function RecorrenteForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-2`}>Valor</label>
+          <label className="form-label" htmlFor={`${uid}-2`}><DollarSign size={16} />Valor</label>
           <div className="form-input-wrap has-text-prefix">
             <span className="form-prefix-text">R$</span>
             <input id={`${uid}-2`}
@@ -110,19 +108,19 @@ export default function RecorrenteForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-3`}>Categoria</label>
+          <label className="form-label" htmlFor={`${uid}-3`}><Tag size={16} />Categoria</label>
           <Select id={`${uid}-3`}
             value={form.cat}
             onChange={v => set('cat', v)}
             options={catOptions}
-            prefix={<Tag size={14} strokeWidth={2} />}
+            prefix={<Tag size={16} strokeWidth={2} />}
           />
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-4`}>Dia do vencimento</label>
+          <label className="form-label" htmlFor={`${uid}-4`}><CalendarClock size={16} />Dia do vencimento</label>
           <div className="form-input-wrap">
-            <span className="form-prefix"><CalendarClock size={14} strokeWidth={2} /></span>
+            <span className="form-prefix"><CalendarClock size={16} strokeWidth={2} /></span>
             <input id={`${uid}-4`}
               className="form-control"
               type="number"
@@ -136,17 +134,17 @@ export default function RecorrenteForm() {
         </div>
 
         <div className="form-group">
-          <label className="form-label" htmlFor={`${uid}-5`}>Conta do lançamento</label>
+          <label className="form-label" htmlFor={`${uid}-5`}><Wallet size={16} />Conta do lançamento</label>
           <Select id={`${uid}-5`}
             value={form.conta_id ?? 0}
             onChange={v => set('conta_id', v || null)}
             options={contaOptions}
-            prefix={<Wallet size={14} strokeWidth={2} />}
+            prefix={<Wallet size={16} strokeWidth={2} />}
           />
         </div>
 
         <div className="form-group">
-          <span className="form-label">Lançamento</span>
+          <span className="form-label"><Zap size={16} />Lançamento</span>
           <label className="opcao-check opcao-compacta">
             <input type="checkbox" checked={form.automatico} onChange={e => set('automatico', e.target.checked)} />
             <span>
@@ -157,9 +155,9 @@ export default function RecorrenteForm() {
         </div>
 
         <div className="form-group form-span-2">
-          <label className="form-label" htmlFor={`${uid}-6`}>Observação <span className="form-label-opt">(opcional)</span></label>
+          <label className="form-label" htmlFor={`${uid}-6`}><MessageSquare size={16} />Observação <span className="form-label-opt">(opcional)</span></label>
           <div className="form-input-wrap">
-            <span className="form-prefix"><MessageSquare size={14} strokeWidth={2} /></span>
+            <span className="form-prefix"><MessageSquare size={16} strokeWidth={2} /></span>
             <input id={`${uid}-6`}
               className="form-control"
               placeholder="Algum detalhe adicional..."
@@ -175,6 +173,7 @@ export default function RecorrenteForm() {
         <button className="btn btn-primary btn-full" onClick={handleSubmit}>
           {editingRec ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
           {editingRec ? 'Salvar alterações' : 'Adicionar recorrente'}
+          <ArrowRight size={15} strokeWidth={2.5} />
         </button>
         {editingRec && (
           <button className="btn btn-ghost" onClick={() => setEditingRec(null)}>

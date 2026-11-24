@@ -1,4 +1,4 @@
-import { Pencil, Trash2, CalendarClock, CalendarPlus, Check, Zap } from 'lucide-react';
+import { Pencil, Trash2, CalendarClock, CalendarPlus, Check, Zap, Repeat, Info } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { fmt, fmtDate, dueDate, getCatColor } from '../../utils/formatters';
 import IconButton from '../../components/IconButton';
@@ -20,9 +20,9 @@ export default function RecorrenteList() {
 
   return (
     <div className="hist-wrap">
-      <div className="card-head" style={{ marginBottom: '1rem' }}>
-        <div className="card-title">Recorrentes cadastrados</div>
-        <div className="card-sub">Total: {fmt(total)}/mês</div>
+      <div className="card-head">
+        <div className="card-title"><Repeat size={20} />Recorrentes cadastrados</div>
+        <div className="card-sub pill">Total: {fmt(total)}/mês</div>
       </div>
 
       {recorrentes.length > 0 && (
@@ -43,13 +43,15 @@ export default function RecorrenteList() {
 
       <div className="rec-grid">
         {recorrentes.length === 0 ? (
-          <div className="empty">Nenhum recorrente cadastrado.</div>
+          <div className="empty form-dica"><Info size={14} />Nenhum recorrente cadastrado.</div>
         ) : recorrentes.map(r => {
           const color   = getCatColor(categorias, r.cat);
           return (
             <div key={r.id} className={`rec-card ${editingRec?.id === r.id ? 'editing' : ''}`}>
               <div className="rec-left">
-                <span className="dot" style={{ background: color }} />
+                <span className="rec-icone" style={{ '--cor': color }} aria-hidden="true">
+                  {r.tipo === 'fixo' ? <Zap size={18} /> : <Repeat size={18} />}
+                </span>
                 <div>
                   <div className="rec-name-text">{r.nome}</div>
                   <div className="rec-detail-text" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
