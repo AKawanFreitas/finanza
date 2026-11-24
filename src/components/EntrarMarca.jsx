@@ -11,7 +11,7 @@ export default function EntrarMarca({ subtitulo = 'Acompanhe entradas, gastos e 
         <span className="entrar-traco" aria-hidden="true" />
         <p>{subtitulo}</p>
       </div>
-      <img src="/login-ilustracao.webp" alt="" className="entrar-ilustracao" />
+      <img src="/login-ilustracao-sem-fundo.webp" alt="" className="entrar-ilustracao" />
     </section>
   );
 }
