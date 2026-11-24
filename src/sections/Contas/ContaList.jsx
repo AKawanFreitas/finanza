@@ -43,7 +43,7 @@ export default function ContaList() {
                 {c.saldo < 0 ? '−' : ''}{fmt(Math.abs(c.saldo))}
               </div>
               <div className="hist-actions conta-card-acoes">
-                <IconButton label="Editar" onClick={() => { setEditingConta(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                <IconButton label="Editar" onClick={() => setEditingConta(c)}>
                   <Pencil size={13} strokeWidth={2} />
                 </IconButton>
                 <IconButton label={c.arquivada ? 'Reativar' : 'Arquivar'} onClick={() => alternarArquivo(c)}>

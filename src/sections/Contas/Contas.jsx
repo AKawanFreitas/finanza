@@ -1,5 +1,6 @@
 import { Wallet } from 'lucide-react';
 import PageHeader from '../../components/PageHeader';
+import Modal from '../../components/Modal';
 import { useFinance } from '../../context/FinanceContext';
 import { fmt } from '../../utils/formatters';
 import ContaForm from './ContaForm';
@@ -7,7 +8,7 @@ import ContaList from './ContaList';
 import Transferencias from './Transferencias';
 
 export default function Contas() {
-  const { contas } = useFinance();
+  const { contas, editingConta, setEditingConta } = useFinance();
   const total = contas.filter(c => !c.arquivada).reduce((a, c) => a + c.saldo, 0);
   const temCartao = contas.some(c => c.tipo === 'cartao' && !c.arquivada);
 
@@ -22,6 +23,12 @@ export default function Contas() {
       <ContaForm />
       <ContaList />
       <Transferencias />
+      {editingConta && (
+        <Modal titulo="Editar conta" larga onFechar={() => setEditingConta(null)}>
+          <p className="modal-sub">Altere os dados e salve.</p>
+          <ContaForm editar={editingConta} onConcluir={() => setEditingConta(null)} />
+        </Modal>
+      )}
     </div>
   );
 }

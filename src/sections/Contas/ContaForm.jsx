@@ -8,9 +8,12 @@ import { TIPOS_CONTA } from './tipos';
 const PRESET_COLORS = ['#4d9fff', '#22a84a', '#e84057', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#65a30d'];
 const VAZIO = { nome: '', tipo: 'corrente', saldo_inicial: '', cor: '#4d9fff' };
 
-export default function ContaForm() {
+// Sem `editar`, cria um novo registro (na página). Com `editar`, edita aquele registro dentro do modal
+// e chama `onConcluir` ao salvar ou cancelar.
+export default function ContaForm({ editar = null, onConcluir }) {
+  const editingConta = editar;
   const uid = useId();
-  const { addConta, updateConta, editingConta, setEditingConta } = useFinance();
+  const { addConta, updateConta } = useFinance();
   const [form, setForm] = useState(VAZIO);
   const set = (campo, valor) => setForm(f => ({ ...f, [campo]: valor }));
 
@@ -30,13 +33,13 @@ export default function ContaForm() {
       ? await updateConta(editingConta.id, { ...dados, arquivada: editingConta.arquivada })
       : await addConta(dados);
     if (!ok) return;
-    if (editingConta) setEditingConta(null);
+    if (editingConta) onConcluir?.();
     else setForm(VAZIO);
   }
 
   return (
-    <div className="form-wrap">
-      <FormHeader Icon={Wallet} titulo={editingConta ? 'Editar conta' : 'Nova conta'} subtitulo={editingConta ? 'Altere os dados e salve' : 'Cadastre um banco, carteira ou investimento'} />
+    <div className={editingConta ? 'form-modal' : 'form-wrap'}>
+      {!editingConta && <FormHeader Icon={Wallet} titulo={editingConta ? 'Editar conta' : 'Nova conta'} subtitulo={editingConta ? 'Altere os dados e salve' : 'Cadastre um banco, carteira ou investimento'} />}
 
       <div className="form-grid">
         <div className="form-group">
@@ -95,7 +98,7 @@ export default function ContaForm() {
         <ArrowRight size={15} strokeWidth={2.5} />
         </button>
         {editingConta && (
-          <button className="btn btn-ghost" onClick={() => setEditingConta(null)}>
+          <button className="btn btn-ghost" onClick={() => onConcluir?.()}>
             <X size={14} strokeWidth={2} /> Cancelar
           </button>
         )}
