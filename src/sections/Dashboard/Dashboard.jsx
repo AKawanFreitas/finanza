@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { BarChart3, PieChart, History, TrendingUp, Wallet, ArrowDownToLine, ArrowUpRight, CalendarDays, CalendarClock, Target, LineChart, ArrowRight } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import { fmt, fmtDate } from '../../utils/formatters';
@@ -24,6 +26,7 @@ function delta(atual, anterior, mesAnterior, goodWhenUp) {
 
 export default function Dashboard({ ym, onYmChange, onNavigate }) {
   const { recorrentes, categorias, versao } = useFinance();
+  const { user } = useAuth();
   const [resumo, setResumo] = useState(null);
 
   // Os números vêm prontos do servidor. Mantém o resumo anterior na tela enquanto o novo carrega.
@@ -54,34 +57,38 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
 
   return (
     <div style={{ opacity: resumo.mes === ym ? 1 : 0.5, transition: 'opacity .15s' }}>
-      <header className="page-bar">
-        <div>
-          <h1 className="page-title">Resumo</h1>
-          <p className="page-subtitle">{mesNome} de {anoStr}, {totalMes} {totalMes === 1 ? 'movimentação' : 'movimentações'}</p>
+      <header className="page-bar hero">
+        <div className="greeting">
+          <span className="greeting-icon" aria-hidden="true"><BarChart3 size={28} strokeWidth={2.4} /></span>
+          <div>
+            <h1>Olá, {user.nome.trim().split(/\s+/)[0]}!</h1>
+            <p>{mesNome} de {anoStr}, {totalMes} {totalMes === 1 ? 'movimentação' : 'movimentações'}</p>
+          </div>
         </div>
         <MonthStepper ym={ym} onChange={onYmChange} />
       </header>
 
       <section className="kpis" aria-label="Indicadores do mês">
         <Kpi
-          tone="brand" label="Saldo do mês" value={fmt(saldo)}
+          tone="brand" Icon={Wallet} label="Saldo do mês" value={fmt(saldo)}
+          spark={history.map(h => h.rec - h.gas)}
           chip={{ text: saldo >= 0 ? 'Superávit' : 'Déficit', cls: 'on-brand' }}
           note="Receitas menos gastos"
         />
         <Kpi
-          label="Receitas" value={fmt(rec)}
+          Icon={ArrowDownToLine} kind="in" label="Receitas" value={fmt(rec)}
           chip={delta(rec, prevRec, mesAnterior, true)}
           note={`${resumo.qtd.entradas} ${resumo.qtd.entradas === 1 ? 'entrada' : 'entradas'}`}
           spark={history.map(h => h.rec)}
         />
         <Kpi
-          label="Gastos" value={fmt(gas)}
+          Icon={ArrowUpRight} kind="out" label="Gastos" value={fmt(gas)}
           chip={delta(gas, prevGas, mesAnterior, false)}
           note={`${resumo.qtd.saidas} ${resumo.qtd.saidas === 1 ? 'saída' : 'saídas'}`}
           spark={history.map(h => h.gas)}
         />
         <Kpi
-          label="Contas fixas" value={fmt(fixosTotal)}
+          Icon={CalendarDays} kind="fix" label="Contas fixas" value={fmt(fixosTotal)}
           note={`${fixos.length} ${fixos.length === 1 ? 'item' : 'itens'} por mês`}
         />
       </section>
@@ -98,14 +105,14 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
         <div className="dash-grid">
           <div className="dash-col">
             <section className="panel">
-              <div className="panel-head"><h2>Gastos por dia</h2></div>
+              <div className="panel-head"><h2><BarChart3 size={20} />Gastos por dia</h2></div>
               <div className="panel-body"><DailyBars days={resumo.porDia} ym={ym} /></div>
             </section>
 
             <section className="panel">
               <div className="panel-head">
-                <h2>Últimas movimentações</h2>
-                {totalMes > 8 && <button className="link-btn" onClick={() => onNavigate('lancamento')}>Ver todas</button>}
+                <h2><History size={20} />Últimas movimentações</h2>
+                {totalMes > 8 && <button className="link-btn" onClick={() => onNavigate('lancamento')}>Ver todas <ArrowRight size={14} /></button>}
               </div>
               <MovementsTable transactions={resumo.ultimas} categorias={categorias} />
             </section>
@@ -113,14 +120,14 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
 
           <div className="dash-col">
             <section className="panel">
-              <div className="panel-head"><h2>Gastos por categoria</h2></div>
+              <div className="panel-head"><h2><PieChart size={20} />Gastos por categoria</h2></div>
               <div className="panel-body"><CategoryDonut sorted={sorted} categorias={categorias} /></div>
             </section>
 
             {health && (
-              <section className="panel">
+              <section className="panel panel-dark">
                 <div className="panel-head">
-                  <h2>Comprometimento da renda</h2>
+                  <h2><TrendingUp size={20} />Comprometimento da renda</h2>
                   <span className={`chip ${health.cls}`}>{health.label}</span>
                 </div>
                 <div className="panel-body">
@@ -136,7 +143,7 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
             {resumo.vencimentos.length > 0 && (
               <section className="panel">
                 <div className="panel-head">
-                  <h2>Próximos vencimentos</h2>
+                  <h2><CalendarClock size={20} />Próximos vencimentos</h2>
                   <button className="link-btn" onClick={() => onNavigate('contas-pagar')}>Ver contas</button>
                 </div>
                 <ul className="venc-lista">
@@ -158,7 +165,7 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
             {resumo.orcamentos.length > 0 && (
               <section className="panel">
                 <div className="panel-head">
-                  <h2>Orçamentos</h2>
+                  <h2><Target size={20} />Orçamentos</h2>
                   <button className="link-btn" onClick={() => onNavigate('orcamentos')}>Ver todos</button>
                 </div>
                 <div className="panel-body orc-mini">
@@ -177,7 +184,7 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
             )}
 
             <section className="panel">
-              <div className="panel-head"><h2>Últimos {HISTORY_MONTHS} meses</h2></div>
+              <div className="panel-head"><h2><LineChart size={20} />Últimos {HISTORY_MONTHS} meses</h2></div>
               <div className="panel-body"><MonthHistory history={history} ym={ym} /></div>
             </section>
           </div>

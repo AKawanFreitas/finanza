@@ -1,3 +1,4 @@
+import { Trophy } from 'lucide-react';
 import { fmt } from '../../utils/formatters';
 
 // Gasto de cada dia do mês. O dia de maior gasto fica em destaque.
@@ -29,7 +30,7 @@ export default function DailyBars({ days, ym }) {
       </div>
       <figcaption>
         {peak >= 0
-          ? <>Maior gasto no dia {peak + 1}: <strong>{fmt(max)}</strong></>
+          ? <><Trophy size={16} /><span>Maior gasto no dia {peak + 1}: <strong>{fmt(max)}</strong></span></>
           : 'Nenhum gasto registrado neste mês.'}
       </figcaption>
     </figure>
