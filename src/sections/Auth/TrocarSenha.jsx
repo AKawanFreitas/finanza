@@ -25,7 +25,7 @@ export default function TrocarSenha() {
   }
 
   return (
-    <div className="entrar">
+    <div className="entrar tema-claro">
       <EntrarMarca subtitulo="Defina uma senha sua para continuar." />
 
       <section className="entrar-painel">
