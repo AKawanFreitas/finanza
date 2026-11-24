@@ -57,12 +57,6 @@
 .conta-texto small { font-size: var(--fs-xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 
 @media (max-width: 860px) {
-  .entrar { grid-template-columns: 1fr }
-  .entrar-marca { padding: 28px 20px; gap: 8px }
-  .entrar-marca::after { top: auto; left: 0; right: 0; height: 4px; width: auto }
-  .entrar-logo { width: 44px; height: 44px }
-  .entrar-marca p { font-size: 14px }
-  .entrar-ilustracao { display: none }
   .form-duplo { grid-template-columns: 1fr }
   .table th:nth-child(4), .table td:nth-child(4),
   .table th:nth-child(5), .table td:nth-child(5) { display: none }
