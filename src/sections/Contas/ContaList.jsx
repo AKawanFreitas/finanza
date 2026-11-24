@@ -1,7 +1,9 @@
-import { Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react';
+import { Pencil, Trash2, Archive, ArchiveRestore, Wallet, Landmark, PiggyBank, Banknote, TrendingUp } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { fmt } from '../../utils/formatters';
 import { rotuloTipo } from './tipos';
+
+const ICONE = { corrente: Landmark, poupanca: PiggyBank, carteira: Banknote, investimento: TrendingUp };
 import IconButton from '../../components/IconButton';
 import { useConfirm } from '../../components/Confirm';
 
@@ -20,28 +22,27 @@ export default function ContaList() {
 
   return (
     <div className="hist-wrap">
-      <div className="card-head" style={{ marginBottom: '0.25rem' }}>
-        <div className="card-title">Suas contas</div>
+      <div className="card-head">
+        <div className="card-title"><Wallet size={20} />Suas contas</div>
         <div className="card-sub">{contas.length} {contas.length === 1 ? 'conta' : 'contas'}</div>
       </div>
 
-      <div className="rec-grid">
-        {contas.map(c => (
-          <div key={c.id} className={`rec-card${editingConta?.id === c.id ? ' editing' : ''}${c.arquivada ? ' arquivada' : ''}`}>
-            <div className="rec-left">
-              <span className="dot" style={{ background: c.cor }} />
-              <div>
-                <div className="rec-name-text">{c.nome}</div>
-                <div className="rec-detail-text">
-                  {rotuloTipo(c.tipo)}{c.arquivada ? ' · arquivada' : ''}
+      <div className="contas-grid">
+        {contas.map(c => {
+          const Icone = ICONE[c.tipo] ?? Wallet;
+          return (
+            <div key={c.id} className={`conta-card${editingConta?.id === c.id ? ' editing' : ''}${c.arquivada ? ' arquivada' : ''}`} style={{ '--cor': c.cor }}>
+              <div className="conta-card-topo">
+                <span className="conta-card-icone"><Icone size={20} strokeWidth={2.2} /></span>
+                <div className="conta-card-nome">
+                  <strong>{c.nome}</strong>
+                  <small>{rotuloTipo(c.tipo)}{c.arquivada ? ' · arquivada' : ''}</small>
                 </div>
               </div>
-            </div>
-            <div className="rec-right">
-              <div className={`rec-amount${c.saldo < 0 ? ' neg' : ''}`}>
+              <div className={`conta-card-saldo${c.saldo < 0 ? ' neg' : ''}`}>
                 {c.saldo < 0 ? '−' : ''}{fmt(Math.abs(c.saldo))}
               </div>
-              <div className="hist-actions">
+              <div className="hist-actions conta-card-acoes">
                 <IconButton label="Editar" onClick={() => { setEditingConta(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                   <Pencil size={13} strokeWidth={2} />
                 </IconButton>
@@ -53,8 +54,8 @@ export default function ContaList() {
                 </IconButton>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
