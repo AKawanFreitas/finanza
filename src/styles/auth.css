@@ -8,13 +8,13 @@
 }
 
 .entrar-marca {
-  background: linear-gradient(180deg, var(--navy-900) 0%, var(--navy-950) 100%);
+  background:
+    radial-gradient(120% 60% at 0% 100%, rgba(47,158,68,.32) 0%, transparent 60%),
+    radial-gradient(90% 40% at 100% 0%, rgba(79,189,85,.12) 0%, transparent 60%),
+    linear-gradient(180deg, var(--navy-900) 0%, var(--navy-950) 100%);
   color: var(--white); padding: clamp(32px, 6vw, 72px);
   display: flex; flex-direction: column; justify-content: center; gap: 14px;
   position: relative;
-}
-.entrar-marca::after {
-  content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: 4px; background: var(--brand-grad);
 }
 .entrar-logo { width: 64px; height: 64px; object-fit: contain }
 .entrar-ilustracao {
@@ -25,16 +25,19 @@
 .entrar-marca p { color: var(--side-ink); max-width: 30ch; font-size: 16px }
 
 .entrar-painel { display: grid; place-items: center; padding: clamp(24px, 5vw, 56px) }
-.entrar-form { width: min(380px, 100%); display: flex; flex-direction: column; gap: 16px }
-.entrar-form h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--navy) }
+.entrar-form {
+  width: min(430px, 100%); display: flex; flex-direction: column; gap: 18px; padding: 36px;
+  background: var(--surface); border-radius: 24px; box-shadow: var(--shadow-card), 0 24px 60px rgba(10,40,28,.08);
+}
+.entrar-form h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--navy) }
 .entrar-nota { color: var(--muted); font-size: 14px; margin-top: -8px }
 .entrar-form .form-group { gap: 6px }
-.entrar-form .btn { margin-top: 4px; padding: 12px 18px }
+.entrar-form .btn { margin-top: 4px }
 .entrar-troca { text-align: center; color: var(--muted); font-size: 14px }
 
 .aviso-erro {
   background: var(--red-bg); color: var(--red); border-left: 3px solid var(--red);
-  padding: 10px 12px; border-radius: 4px; font-size: 14px; font-weight: 600;
+  padding: 12px 14px; border-radius: 14px; font-size: 14px; font-weight: 600;
 }
 
 .form-dica { font-size: 13px; color: var(--muted) }

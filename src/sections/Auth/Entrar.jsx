@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Lock, User, LogIn, UserPlus, Eye, EyeOff, Send, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, LogIn, UserPlus, Eye, EyeOff, Send, ArrowLeft, Type, KeyRound, ArrowRight, Info } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Entrar() {
@@ -61,9 +61,9 @@ export default function Entrar() {
 
           {novaConta && (
             <label className="form-group">
-              <span className="form-label">Nome</span>
+              <span className="form-label"><Type size={16} />Nome</span>
               <span className="form-input-wrap">
-                <span className="form-prefix"><User size={15} strokeWidth={2} /></span>
+                <span className="form-prefix"><User size={16} strokeWidth={2} /></span>
                 <input
                   className="form-control" autoComplete="name" required
                   value={form.nome} onChange={e => set('nome', e.target.value)}
@@ -73,9 +73,9 @@ export default function Entrar() {
           )}
 
           <label className="form-group">
-            <span className="form-label">E-mail</span>
+            <span className="form-label"><Mail size={16} />E-mail</span>
             <span className="form-input-wrap">
-              <span className="form-prefix"><Mail size={15} strokeWidth={2} /></span>
+              <span className="form-prefix"><Mail size={16} strokeWidth={2} /></span>
               <input
                 className="form-control" type="email" autoComplete="email" required
                 value={form.email} onChange={e => set('email', e.target.value)}
@@ -84,9 +84,9 @@ export default function Entrar() {
           </label>
 
           {!recuperar && <label className="form-group">
-            <span className="form-label">Senha</span>
+            <span className="form-label"><KeyRound size={16} />Senha</span>
             <span className="form-input-wrap">
-              <span className="form-prefix"><Lock size={15} strokeWidth={2} /></span>
+              <span className="form-prefix"><Lock size={16} strokeWidth={2} /></span>
               <input
                 className="form-control" type={verSenha ? 'text' : 'password'} required
                 autoComplete={novaConta ? 'new-password' : 'current-password'}
@@ -102,7 +102,7 @@ export default function Entrar() {
                 {verSenha ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
               </button>
             </span>
-            {novaConta && <span className="form-dica">Pelo menos 8 caracteres.</span>}
+            {novaConta && <span className="form-dica"><Info size={14} />Pelo menos 8 caracteres.</span>}
           </label>}
 
           {modo === 'login' && (
@@ -114,6 +114,7 @@ export default function Entrar() {
           <button className="btn btn-primary btn-full" type="submit" disabled={enviando}>
             {recuperar ? <Send size={16} strokeWidth={2.5} /> : novaConta ? <UserPlus size={16} strokeWidth={2.5} /> : <LogIn size={16} strokeWidth={2.5} />}
             {enviando ? 'Aguarde...' : recuperar ? 'Enviar link' : novaConta ? 'Criar conta' : 'Entrar'}
+            <ArrowRight size={16} strokeWidth={2.5} />
           </button>
 
           {recuperar ? (

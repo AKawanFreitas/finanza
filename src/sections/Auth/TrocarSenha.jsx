@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lock, Check } from 'lucide-react';
+import { Lock, Check, KeyRound, Info, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 // Mostrada quando o administrador redefiniu a senha: a pessoa entra com a
@@ -39,9 +39,9 @@ export default function TrocarSenha() {
           {erro && <p className="aviso-erro" role="alert">{erro}</p>}
 
           <label className="form-group">
-            <span className="form-label">Senha provisória</span>
+            <span className="form-label"><Lock size={16} />Senha provisória</span>
             <span className="form-input-wrap">
-              <span className="form-prefix"><Lock size={15} strokeWidth={2} /></span>
+              <span className="form-prefix"><Lock size={16} strokeWidth={2} /></span>
               <input
                 className="form-control" type="password" autoComplete="current-password" required
                 value={atual} onChange={e => setAtual(e.target.value)}
@@ -50,20 +50,21 @@ export default function TrocarSenha() {
           </label>
 
           <label className="form-group">
-            <span className="form-label">Nova senha</span>
+            <span className="form-label"><KeyRound size={16} />Nova senha</span>
             <span className="form-input-wrap">
-              <span className="form-prefix"><Lock size={15} strokeWidth={2} /></span>
+              <span className="form-prefix"><Lock size={16} strokeWidth={2} /></span>
               <input
                 className="form-control" type="password" autoComplete="new-password" required minLength={8}
                 value={nova} onChange={e => setNova(e.target.value)}
               />
             </span>
-            <span className="form-dica">Pelo menos 8 caracteres.</span>
+            <span className="form-dica"><Info size={14} />Pelo menos 8 caracteres.</span>
           </label>
 
           <button className="btn btn-primary btn-full" type="submit" disabled={enviando}>
             <Check size={16} strokeWidth={2.5} />
             {enviando ? 'Salvando...' : 'Salvar e continuar'}
+            <ArrowRight size={16} strokeWidth={2.5} />
           </button>
 
           <p className="entrar-troca">
