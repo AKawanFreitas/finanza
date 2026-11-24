@@ -4,14 +4,15 @@ const API = '/api/auth';
 const AuthContext = createContext(null);
 
 // A sessão vive num cookie httpOnly: o front nunca lê nem guarda o token.
-async function pedir(caminho, { method = 'GET', body } = {}) {
+async function pedir(caminho, { method = 'GET', body, arquivo } = {}) {
   let res;
   try {
     res = await fetch(`${API}${caminho}`, {
       method,
       credentials: 'same-origin',
-      headers: body ? { 'Content-Type': 'application/json' } : undefined,
-      body: body ? JSON.stringify(body) : undefined,
+      // `arquivo` é um Blob enviado como veio (foto de perfil); o resto vai como JSON.
+      headers: arquivo ? { 'Content-Type': arquivo.type } : body ? { 'Content-Type': 'application/json' } : undefined,
+      body: arquivo ?? (body ? JSON.stringify(body) : undefined),
     });
   } catch {
     throw new Error('Não consegui falar com o servidor. Confira se a API está rodando.');
@@ -78,6 +79,16 @@ export function AuthProvider({ children }) {
     setUser(user);
   }, []);
 
+  const salvarFoto = useCallback(async (arquivo) => {
+    const { user } = await pedir('/foto', { method: 'PUT', arquivo });
+    setUser(user);
+  }, []);
+
+  const removerFoto = useCallback(async () => {
+    const { user } = await pedir('/foto', { method: 'DELETE' });
+    setUser(user);
+  }, []);
+
   const salvarPreferencias = useCallback(async (notificacoes_email) => {
     const { user } = await pedir('/preferencias', { method: 'PATCH', body: { notificacoes_email } });
     setUser(user);
@@ -103,7 +114,7 @@ export function AuthProvider({ children }) {
       user, carregando, ehAdmin: user?.papel === 'superadmin',
       recarregar, fimSuporte, limparFimSuporte: () => setFimSuporte(null), suporteExpirou,
       entrar, criarConta, sair, salvarPerfil, trocarSenha, excluirConta,
-      salvarPreferencias, esqueciSenha, redefinirSenha, verificarEmail, reenviarVerificacao,
+      salvarPreferencias, salvarFoto, removerFoto, esqueciSenha, redefinirSenha, verificarEmail, reenviarVerificacao,
     }}>
       {children}
     </AuthContext.Provider>
