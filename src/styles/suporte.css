@@ -19,8 +19,8 @@
 .suporte-contador small { font-size: 11px; opacity: .85; align-self: start; white-space: nowrap }
 .suporte-barra.critico .suporte-tempo { animation: suporte-pulso 1s ease-in-out infinite }
 @keyframes suporte-pulso { 50% { opacity: .55 } }
-.suporte-encerrar { background: rgba(255,255,255,.95); color: var(--navy); border-color: transparent; flex-shrink: 0 }
-.suporte-encerrar:hover { background: var(--white); color: var(--red); border-color: transparent }
+.suporte-encerrar { background: rgba(255,255,255,.95); color: var(--navy-950); border-color: transparent; flex-shrink: 0 }
+.suporte-encerrar:hover { background: var(--white); color: var(--red-strong); border-color: transparent }
 
 /* Com a barra, o resto da tela desce */
 .shell.com-suporte { padding-top: var(--suporte-h) }
