@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react';
+import { Pencil, Trash2, Archive, ArchiveRestore, CreditCard } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import { fmt, fmtDate } from '../../utils/formatters';
+import InfoBanner from '../../components/InfoBanner';
+import PageHeader from '../../components/PageHeader';
 import BarraOrcamento from '../../components/BarraOrcamento';
 import CartaoForm from './CartaoForm';
 import FaturaDetalhe from './FaturaDetalhe';
@@ -46,26 +48,23 @@ export default function Cartoes() {
 
   return (
     <div className="section-enter">
-      <div className="page-header">
-        <div>
-          <div className="page-title">Cartões</div>
-          <div className="page-subtitle">Limite, faturas e parcelas dos seus cartões de crédito</div>
-        </div>
-      </div>
+      <PageHeader Icon={CreditCard} titulo="Cartões" subtitulo="Limite, faturas e parcelas dos seus cartões de crédito" />
+
+      {cartoes?.length === 0 && <InfoBanner>Configure seu cartão de crédito para controlar seus gastos e acompanhar suas faturas.</InfoBanner>}
 
       <CartaoForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={c => { setEditando(null); setSelecionado(c.id); invalidar(); }} />
 
       <div className="hist-wrap">
         <div className="card-head">
-          <div className="card-title">Seus cartões</div>
-          <div className="card-sub">{cartoes?.length ?? 0} {cartoes?.length === 1 ? 'cartão' : 'cartões'}</div>
+          <div className="card-title"><CreditCard size={20} />Seus cartões</div>
+          <div className="card-sub pill">{cartoes?.length ?? 0} {cartoes?.length === 1 ? 'cartão' : 'cartões'}</div>
         </div>
         {!cartoes ? <div className="empty">Carregando...</div> : cartoes.length === 0 ? (
           <div className="empty">Nenhum cartão ainda. Cadastre o primeiro acima para acompanhar limite e faturas.</div>
-        ) : cartoes.map(c => {
+        ) : <div className="cartoes-grid">{cartoes.map(c => {
           const f = c.fatura_atual;
           return (
-            <div key={c.id} className={`cartao-linha${c.id === ativoId ? ' ativo' : ''}${c.arquivada ? ' arquivada' : ''}`}>
+            <div key={c.id} style={{ '--cor': c.cor }} className={`cartao-linha${c.id === ativoId ? ' ativo' : ''}${c.arquivada ? ' arquivada' : ''}`}>
               <button className="cartao-corpo" onClick={() => setSelecionado(c.id)} aria-pressed={c.id === ativoId}>
                 <div className="orc-topo">
                   <span className="dot" style={{ background: c.cor }} />
@@ -89,7 +88,7 @@ export default function Cartoes() {
               </div>
             </div>
           );
-        })}
+        })}</div>}
       </div>
 
       {ativo && <FaturaDetalhe cartao={ativo} />}

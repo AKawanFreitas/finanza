@@ -59,7 +59,7 @@ export default function FaturaDetalhe({ cartao }) {
     <div className="hist-wrap">
       <div className="card-head">
         <div>
-          <div className="card-title">Fatura de {rotuloMes(detalhe.mes)} · {cartao.nome}</div>
+          <div className="card-title"><IconeCartao size={20} />Fatura de {rotuloMes(detalhe.mes)} · {cartao.nome}</div>
           <div className="card-sub">Fecha em {fmtDate(detalhe.fechamento)} · vence em {fmtDate(detalhe.vencimento)}</div>
         </div>
         <select className="form-control fatura-mes" aria-label="Escolher fatura" value={mes} onChange={e => setMes(e.target.value)}>
