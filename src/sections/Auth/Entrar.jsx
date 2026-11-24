@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, User, UserPlus, Eye, EyeOff, Send, ArrowLeft, KeyRound, ArrowRight, Info } from 'lucide-react';
+import { Mail, User, UserPlus, Eye, EyeOff, Send, ArrowLeft, Lock, ArrowRight, Info } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import EntrarMarca from '../../components/EntrarMarca';
 
@@ -48,7 +48,7 @@ export default function Entrar() {
       <EntrarMarca />
 
       <section className="entrar-painel">
-        <form className="entrar-form" onSubmit={enviar}>
+        <form className="entrar-form" data-modo={modo} onSubmit={enviar}>
           <span className="entrar-selo" aria-hidden="true"><img src="/logo sem texto - finanza.png" alt="" /></span>
           <h2>{recuperar ? 'Recuperar senha' : novaConta ? 'Criar conta' : 'Entrar na sua conta'}</h2>
           <p className="entrar-sub">
@@ -86,7 +86,7 @@ export default function Entrar() {
           {!recuperar && <label className="form-group">
             <span className="sr-only">Senha</span>
             <span className="form-input-wrap">
-              <span className="form-prefix"><KeyRound size={18} strokeWidth={2} /></span>
+              <span className="form-prefix"><Lock size={18} strokeWidth={2} /></span>
               <input
                 className="form-control" type={verSenha ? 'text' : 'password'} required placeholder="Senha"
                 autoComplete={novaConta ? 'new-password' : 'current-password'}
@@ -99,7 +99,7 @@ export default function Entrar() {
                 aria-label={verSenha ? 'Ocultar senha' : 'Mostrar senha'}
                 title={verSenha ? 'Ocultar senha' : 'Mostrar senha'}
               >
-                {verSenha ? <EyeOff size={16} strokeWidth={2} /> : <Eye size={16} strokeWidth={2} />}
+                {verSenha ? <Eye size={17} strokeWidth={2} /> : <EyeOff size={17} strokeWidth={2} />}
               </button>
             </span>
             {novaConta && <span className="form-dica"><Info size={14} />Pelo menos 8 caracteres.</span>}
