@@ -1,9 +1,11 @@
 import { useEffect, useState, useId } from 'react';
-import { Plus, Trash2, Check, Target } from 'lucide-react';
+import { Plus, Trash2, Check, Target, DollarSign, Tag, ArrowRight, Info, ListChecks } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import { fmt } from '../../utils/formatters';
 import { MONTH_NAMES } from '../../utils/period';
+import PageHeader from '../../components/PageHeader';
+import FormHeader from '../../components/FormHeader';
 import MonthStepper from '../../components/MonthStepper';
 import Select from '../../components/Select';
 import BarraOrcamento from '../../components/BarraOrcamento';
@@ -18,7 +20,7 @@ function Linha({ item, onSalvar, onRemover }) {
   const mudou = Number(limite) !== item.limite;
 
   return (
-    <div className="orc-linha">
+    <div className="orc-linha" style={{ '--cor': item.cor }}>
       <div className="orc-topo">
         <span className="dot" style={{ background: item.cor }} />
         <strong>{item.cat}</strong>
@@ -98,36 +100,27 @@ export default function Orcamentos({ ym, onYmChange }) {
 
   return (
     <div className="section-enter">
-      <header className="page-bar">
-        <div>
-          <h1 className="page-title">Orçamentos</h1>
-          <p className="page-subtitle">Limite de gastos por categoria · {MONTH_NAMES[Number(mes) - 1]} de {ano}</p>
-        </div>
+      <PageHeader Icon={Target} titulo="Orçamentos" subtitulo={`Limite de gastos por categoria · ${MONTH_NAMES[Number(mes) - 1]} de ${ano}`}>
         <MonthStepper ym={ym} onChange={onYmChange} />
-      </header>
+      </PageHeader>
 
       <div className="form-wrap">
-        <div className="form-header">
-          <div className="form-header-text">
-            <div className="form-header-title">Novo orçamento</div>
-            <div className="form-header-sub">O limite vale para todos os meses. Avisamos por e-mail aos 80% e aos 100%.</div>
-          </div>
-        </div>
+        <FormHeader Icon={Target} titulo="Novo orçamento" subtitulo="O limite vale para todos os meses. Avisamos por e-mail aos 80% e aos 100%." />
         {livres.length === 0 ? (
           <div className="empty">Todas as suas categorias já têm orçamento.</div>
         ) : (
           <>
             <div className="form-grid">
               <div className="form-group">
-                <label className="form-label" htmlFor={`${uid}-1`}>Categoria</label>
+                <label className="form-label" htmlFor={`${uid}-1`}><Tag size={16} />Categoria</label>
                 <Select id={`${uid}-1`}
                   value={escolhida} onChange={v => setNovo(n => ({ ...n, categoria_id: v }))}
                   options={livres.map(c => ({ value: c.id, label: c.nome, color: c.cor }))}
-                  prefix={<Target size={14} strokeWidth={2} />}
+                  prefix={<Tag size={16} strokeWidth={2} />}
                 />
               </div>
               <div className="form-group">
-                <label className="form-label" htmlFor={`${uid}-2`}>Limite mensal</label>
+                <label className="form-label" htmlFor={`${uid}-2`}><DollarSign size={16} />Limite mensal</label>
                 <div className="form-input-wrap has-text-prefix">
                   <span className="form-prefix-text">R$</span>
                   <input id={`${uid}-2`}
@@ -140,7 +133,7 @@ export default function Orcamentos({ ym, onYmChange }) {
             </div>
             <div className="form-actions">
               <button className="btn btn-primary btn-full" onClick={adicionar}>
-                <Plus size={15} strokeWidth={2.5} /> Criar orçamento
+                <Plus size={15} strokeWidth={2.5} /> Criar orçamento <ArrowRight size={15} strokeWidth={2.5} />
               </button>
             </div>
           </>
@@ -149,17 +142,19 @@ export default function Orcamentos({ ym, onYmChange }) {
 
       <div className="hist-wrap">
         <div className="card-head">
-          <div className="card-title">Acompanhamento do mês</div>
+          <div className="card-title"><ListChecks size={20} />Acompanhamento do mês</div>
           {dados?.itens.length > 0 && (
-            <div className="card-sub">{fmt(dados.totais.gasto)} de {fmt(dados.totais.limite)}</div>
+            <div className="card-sub pill">{fmt(dados.totais.gasto)} de {fmt(dados.totais.limite)}</div>
           )}
         </div>
         {!dados ? (
           <div className="empty">Carregando...</div>
         ) : dados.itens.length === 0 ? (
-          <div className="empty">Nenhum orçamento ainda. Crie o primeiro acima para acompanhar seus gastos.</div>
+          <div className="empty form-dica"><Info size={14} />Nenhum orçamento ainda. Crie o primeiro acima para acompanhar seus gastos.</div>
         ) : (
-          dados.itens.map(item => <Linha key={item.categoria_id} item={item} onSalvar={salvar} onRemover={remover} />)
+          <div className="orc-grid">
+            {dados.itens.map(item => <Linha key={item.categoria_id} item={item} onSalvar={salvar} onRemover={remover} />)}
+          </div>
         )}
       </div>
     </div>
