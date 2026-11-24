@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const db = require('../db');
+const suporte = require('./suporte');
 
 const COOKIE       = 'finanza_sess';
 const SESSION_DIAS = 30;
@@ -82,17 +83,40 @@ function apagarCookie(res) {
 
 const SELECT_USER = `
   SELECT u.id, u.nome, u.email, u.papel, u.status, u.trocar_senha, u.criado_em, u.ultimo_acesso,
-         u.email_verificado_em, u.notificacoes_email
+         u.email_verificado_em, u.notificacoes_email, s.chamado_id
   FROM sessions s JOIN users u ON u.id = s.user_id
   WHERE s.token_hash = ? AND s.expira_em > ?
 `;
 
+const SELECT_CLIENTE = `
+  SELECT id, nome, email, papel, status, trocar_senha, criado_em, ultimo_acesso, email_verificado_em, notificacoes_email
+  FROM users WHERE id = ?
+`;
+
+// Vincula a sessão do administrador a um chamado de suporte aberto (ou desvincula, com null).
+const vincularSessao = (token, chamadoId) =>
+  db.prepare('UPDATE sessions SET chamado_id = ? WHERE token_hash = ?').run(chamadoId, hashToken(token));
+
+// Quem está agindo. Em um chamado de suporte aberto, é a conta do CLIENTE (com `suporte` preenchido):
+// toda rota enxerga os dados dele, e as áreas de administrador ficam fechadas até o chamado acabar.
 function usuarioDaRequisicao(req) {
   const token = lerCookie(req);
   if (!token) return null;
-  const user = db.prepare(SELECT_USER).get(hashToken(token), new Date().toISOString());
-  if (!user || user.status !== 'ativo') return null;
-  return { ...user, trocar_senha: !!user.trocar_senha, token };
+  const real = db.prepare(SELECT_USER).get(hashToken(token), new Date().toISOString());
+  if (!real || real.status !== 'ativo') return null;
+
+  const { chamado_id: chamadoId, ...resto } = real;
+  const admin = { ...resto, trocar_senha: !!resto.trocar_senha, token };
+  if (!chamadoId) return admin;
+
+  const chamado = suporte.chamadoAberto(chamadoId);
+  if (!chamado) { vincularSessao(token, null); return admin; }
+  if (suporte.vencido(chamado)) { suporte.encerrar(chamado.id, 'tempo'); return admin; }
+
+  const cliente = db.prepare(SELECT_CLIENTE).get(chamado.user_id);
+  if (!cliente || cliente.status !== 'ativo') { suporte.encerrar(chamado.id, 'sistema'); return admin; }
+  // A troca de senha pendente do cliente não trava o suporte: o administrador não usa a senha dele.
+  return { ...cliente, trocar_senha: false, token, suporte: { chamado, admin: { id: admin.id, nome: admin.nome } } };
 }
 
 // Exige sessão válida. Com a senha marcada para troca, só libera o que é preciso para trocá-la.
@@ -103,6 +127,16 @@ function exigirLogin(req, res, next) {
   const liberado = req.method === 'GET' || req.path === '/senha' || req.path === '/logout';
   if (user.trocar_senha && !liberado) {
     return res.status(403).json({ error: 'Defina uma nova senha para continuar.', trocar_senha: true });
+  }
+
+  if (user.suporte) {
+    const caminho = req.originalUrl.split('?')[0];
+    if (suporte.bloqueada(req.method, caminho)) return res.status(403).json({ error: suporte.MENSAGEM_BLOQUEIO });
+    // Agir (alterar dados) conta como atividade e fica registrado no chamado. As rotas /api/suporte cuidam de si.
+    if (req.method !== 'GET' && !caminho.startsWith('/api/suporte')) {
+      suporte.renovar(user.suporte.chamado.id);
+      res.on('finish', () => suporte.registrarAcao(user.suporte.chamado.id, req.method, caminho, res.statusCode));
+    }
   }
 
   req.user = user;
@@ -139,7 +173,7 @@ const limparTentativas = email => limite.limpar(`login:${email}`);
 
 module.exports = {
   hashSenha, conferirSenha, senhaProvisoria,
-  criarSessao, encerrarSessao, encerrarSessoesDe, limparExpiradas,
+  criarSessao, encerrarSessao, encerrarSessoesDe, limparExpiradas, vincularSessao,
   gravarCookie, apagarCookie,
   usuarioDaRequisicao, exigirLogin, exigirAdmin,
   bloqueado, registrarFalha, limparTentativas,

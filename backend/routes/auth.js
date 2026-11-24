@@ -7,6 +7,7 @@ const templates = require('../lib/templates');
 const { enviarEmail } = require('../lib/email');
 const { permitir }    = require('../lib/limite');
 const logger  = require('../lib/logger');
+const suporte = require('../lib/suporte');
 
 const EMAIL_RE  = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const SENHA_MIN = 8;
@@ -15,6 +16,8 @@ const publico = u => ({
   id: u.id, nome: u.nome, email: u.email, papel: u.papel,
   trocar_senha: !!u.trocar_senha, criado_em: u.criado_em,
   email_verificado: !!u.email_verificado_em, notificacoes_email: !!u.notificacoes_email,
+  // Preenchido quando o administrador está dentro desta conta por um chamado de suporte.
+  suporte: u.suporte ? suporte.descrever(u) : null,
 });
 
 // E-mails são disparados sem esperar: a resposta da API não depende do provedor de e-mail.
@@ -110,6 +113,11 @@ router.post('/login', (req, res) => {
 /* ── Sair ───────────────────────────────────────────── */
 router.post('/logout', (req, res) => {
   const user = auth.usuarioDaRequisicao(req);
+  // Sair durante um chamado só encerra o chamado: o administrador continua logado na conta dele.
+  if (user?.suporte) {
+    suporte.encerrar(user.suporte.chamado.id, 'admin');
+    return res.json({ ok: true, suporte_encerrado: true });
+  }
   if (user) auth.encerrarSessao(user.token);
   auth.apagarCookie(res);
   res.json({ ok: true });
@@ -214,6 +222,7 @@ router.post('/redefinir-senha', (req, res) => {
 router.post('/senha', (req, res) => {
   const user = auth.usuarioDaRequisicao(req);
   if (!user) return res.status(401).json({ error: 'Entre na sua conta para continuar.' });
+  if (user.suporte) return res.status(403).json({ error: suporte.MENSAGEM_BLOQUEIO });
 
   const nova = validarSenha(req.body?.nova);
   if (nova.error) return res.status(400).json({ error: nova.error });
