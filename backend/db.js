@@ -25,6 +25,8 @@ function copiaDeSeguranca(deVersao) {
 
 migrar(db, { antes: copiaDeSeguranca });
 
+const { ICONE_PADRAO } = require('./lib/icones');
+
 const DEFAULT_CATEGORIAS = [
   ['Alimentação', '#ff6b6b'],
   ['Moradia',     '#4d9fff'],
@@ -36,13 +38,13 @@ const DEFAULT_CATEGORIAS = [
   ['Outros',      '#8b90a0'],
 ];
 
-const insertCategoria = db.prepare('INSERT INTO categorias (user_id, nome, cor) VALUES (?, ?, ?)');
+const insertCategoria = db.prepare('INSERT INTO categorias (user_id, nome, cor, icone) VALUES (?, ?, ?, ?)');
 
 // Categorias iniciais de uma conta nova (ou de uma conta que ainda não tem nenhuma).
 function seedCategorias(userId) {
   const { n } = db.prepare('SELECT COUNT(*) AS n FROM categorias WHERE user_id = ?').get(userId);
   if (n > 0) return;
-  for (const [nome, cor] of DEFAULT_CATEGORIAS) insertCategoria.run(userId, nome, cor);
+  for (const [nome, cor] of DEFAULT_CATEGORIAS) insertCategoria.run(userId, nome, cor, ICONE_PADRAO[nome] ?? 'tag');
 }
 
 // Conta inicial de um usuário novo (se ainda não tiver nenhuma).

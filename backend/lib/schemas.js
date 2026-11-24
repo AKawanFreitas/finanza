@@ -1,5 +1,6 @@
 const { z } = require('zod');
 const { paraCentavos, paraCentavosComSinal } = require('./money');
+const { ICONES } = require('./icones');
 
 const texto = (rotulo, max = 120) =>
   z.string({ error: `Informe ${rotulo}.` }).trim().min(1, `Informe ${rotulo}.`).max(max, `Máximo de ${max} caracteres.`);
@@ -160,6 +161,8 @@ const aporte = z.object({
 const categoriaInput = z.object({
   nome: texto('o nome da categoria', 40),
   cor: COR,
+  // Opcional: quem não manda (clientes antigos) mantém o ícone atual ao editar e recebe o genérico ao criar.
+  icone: z.enum(ICONES, { error: 'Escolha um ícone da lista.' }).optional(),
 });
 
 const orcamento = z.object({
