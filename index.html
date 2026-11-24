@@ -3,6 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Aplica o tema antes da primeira pintura, para a tela não piscar clara no modo escuro.
+      try {
+        var t = localStorage.getItem('finanza.tema');
+        if (t === 'escuro' || (t !== 'claro' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.tema = 'escuro';
+      } catch (e) {}
+    </script>
     <title>Finanza — Gestão Financeira</title>
     <link rel="icon" type="image/png" href="/logo sem texto - finanza.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
