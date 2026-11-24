@@ -9,7 +9,7 @@ const limparUrl = () => window.history.replaceState({}, '', window.location.path
 
 function Moldura({ titulo, children }) {
   return (
-    <div className="entrar">
+    <div className="entrar tema-claro">
       <EntrarMarca />
       <section className="entrar-painel">
         <div className="entrar-form">
