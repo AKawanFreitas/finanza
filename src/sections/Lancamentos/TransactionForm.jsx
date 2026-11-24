@@ -10,9 +10,12 @@ const EMPTY = (cats, contas) => ({
   conta_id: contas.find(c => !c.arquivada)?.id ?? null, data: today(), obs: '',
 });
 
-export default function TransactionForm() {
+// Sem `editar`, é o formulário de novo lançamento (na página). Com `editar`, edita aquele lançamento
+// (dentro do modal) e chama `onConcluir` ao salvar ou cancelar.
+export default function TransactionForm({ editar = null, onConcluir }) {
+  const editing = editar;
   const uid = useId();
-  const { categorias, contas, addTransaction, updateTransaction, editing, setEditing } = useFinance();
+  const { categorias, contas, addTransaction, updateTransaction } = useFinance();
   const [form, setForm] = useState(EMPTY(categorias, contas));
 
   useEffect(() => {
@@ -37,7 +40,7 @@ export default function TransactionForm() {
       ? await updateTransaction(editing.id, data)
       : await addTransaction(data);
     if (!ok) return;
-    if (editing) setEditing(null);
+    if (editing) onConcluir?.();
     else setForm(EMPTY(categorias, contas));
   }
 
@@ -53,8 +56,8 @@ export default function TransactionForm() {
   const valorParcela = parseFloat(form.valor) > 0 ? parseFloat(form.valor) / nParcelas : 0;
 
   return (
-    <div className="form-wrap">
-      <FormHeader Icon={ArrowLeftRight} titulo={editing ? 'Editar lançamento' : 'Novo lançamento'} subtitulo={editing ? 'Altere os dados e salve' : 'Registre uma entrada ou saída financeira'} />
+    <div className={editing ? 'form-modal' : 'form-wrap'}>
+      {!editing && <FormHeader Icon={ArrowLeftRight} titulo="Novo lançamento" subtitulo="Registre uma entrada ou saída financeira" />}
 
       <div className="form-grid">
 
@@ -180,7 +183,7 @@ export default function TransactionForm() {
         <ArrowRight size={15} strokeWidth={2.5} />
         </button>
         {editing ? (
-          <button className="btn btn-ghost" onClick={() => setEditing(null)}>
+          <button className="btn btn-ghost" onClick={() => onConcluir?.()}>
             <X size={14} strokeWidth={2} />
             Cancelar
           </button>

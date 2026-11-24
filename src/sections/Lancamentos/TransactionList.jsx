@@ -157,7 +157,7 @@ export default function TransactionList() {
               {isIn ? '+' : '−'} {fmt(t.valor)}
             </div>
             <div className="hist-actions">
-              <IconButton label="Editar" onClick={() => { setEditing(t); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+              <IconButton label="Editar" onClick={() => setEditing(t)}>
                 <Pencil size={13} strokeWidth={2} />
               </IconButton>
               <IconButton label="Excluir" danger onClick={() => (t.parcela ? setExcluindo(t) : delTransaction(t.id))}>
