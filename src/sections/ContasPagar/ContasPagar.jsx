@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Pencil, Trash2, CheckCircle2, Undo2 } from 'lucide-react';
+import { Pencil, Trash2, CheckCircle2, Undo2, CalendarCheck, CalendarClock, AlertTriangle, ListChecks } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { api, query } from '../../utils/api';
 import { fmt, fmtDate } from '../../utils/formatters';
+import PageHeader from '../../components/PageHeader';
 import PagarConta from '../../components/PagarConta';
 import ContaPagarForm from './ContaPagarForm';
 import { ROTULO, CLASSE, descreverPrazo } from './status';
@@ -54,24 +55,20 @@ export default function ContasPagar() {
 
   return (
     <div className="section-enter">
-      <div className="page-header">
-        <div>
-          <div className="page-title">Contas a pagar</div>
-          <div className="page-subtitle">Boletos e contas com vencimento, e o que já foi pago</div>
-        </div>
+      <PageHeader Icon={CalendarCheck} titulo="Contas a pagar" subtitulo="Boletos e contas com vencimento, e o que já foi pago">
         {t && (
           <div className="saldo-total">
             <small>Em aberto{t.qtd_atrasadas > 0 ? ` · ${t.qtd_atrasadas} atrasada${t.qtd_atrasadas > 1 ? 's' : ''}` : ''}</small>
             <strong className={t.atrasado > 0 ? 'neg' : ''}>{fmt(t.pendente + t.atrasado)}</strong>
           </div>
         )}
-      </div>
+      </PageHeader>
 
       <ContaPagarForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={() => { setEditando(null); atualizar(); }} />
 
       <div className="hist-wrap">
         <div className="card-head">
-          <div className="card-title">Suas contas</div>
+          <div className="card-title"><ListChecks size={20} />Suas contas</div>
           <div className="abas" role="tablist">
             {ABAS.map(([id, rotulo]) => (
               <button key={id} role="tab" aria-selected={aba === id} className={`aba${aba === id ? ' ativa' : ''}`} onClick={() => setAba(id)}>{rotulo}</button>
@@ -84,6 +81,9 @@ export default function ContasPagar() {
         ) : dados.itens.map(c => (
           <div key={c.id} className={`rec-card${editando?.id === c.id ? ' editing' : ''}`}>
             <div className="rec-left">
+              <span className={`pagar-icone ${CLASSE[c.status]}`} aria-hidden="true">
+                {c.status === 'paga' ? <CheckCircle2 size={18} /> : c.status === 'atrasada' ? <AlertTriangle size={18} /> : <CalendarClock size={18} />}
+              </span>
               <div>
                 <div className="rec-name-text">{c.descricao}</div>
                 <div className="rec-detail-text">
