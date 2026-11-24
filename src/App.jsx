@@ -8,6 +8,7 @@ import Entrar from './sections/Auth/Entrar';
 import AcaoPorLink from './sections/Auth/AcaoPorLink';
 import { lerAcaoDaUrl } from './utils/acaoDaUrl';
 import AvisoEmail from './components/AvisoEmail';
+import SuporteBarra from './components/SuporteBarra';
 import TrocarSenha from './sections/Auth/TrocarSenha';
 import Dashboard from './sections/Dashboard/Dashboard';
 import Lancamentos from './sections/Lancamentos/Lancamentos';
@@ -43,7 +44,7 @@ const lerMenuRecolhido = () => {
 };
 
 function AppLogado() {
-  const { ehAdmin } = useAuth();
+  const { ehAdmin, user } = useAuth();
   const [section, setSection] = useState('dashboard');
   const [ym, setYm] = useState(currentYM());
   const [recolhida, setRecolhida] = useState(lerMenuRecolhido);
@@ -58,7 +59,8 @@ function AppLogado() {
   return (
     <FinanceProvider>
       <ConfirmProvider>
-      <div className={`shell${recolhida ? ' recolhida' : ''}`}>
+      {user.suporte && <SuporteBarra />}
+      <div className={`shell${recolhida ? ' recolhida' : ''}${user.suporte ? ' com-suporte' : ''}`}>
         <Sidebar active={section} onNavigate={setSection} recolhida={recolhida} onAlternar={alternarMenu} />
         <main className="page">
           <AvisoEmail />
