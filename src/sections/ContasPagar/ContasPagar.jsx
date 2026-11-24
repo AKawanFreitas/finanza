@@ -4,6 +4,7 @@ import { useFinance } from '../../context/FinanceContext';
 import { api, query } from '../../utils/api';
 import { fmt, fmtDate } from '../../utils/formatters';
 import PageHeader from '../../components/PageHeader';
+import Modal from '../../components/Modal';
 import PagarConta from '../../components/PagarConta';
 import ContaPagarForm from './ContaPagarForm';
 import { ROTULO, CLASSE, descreverPrazo } from './status';
@@ -64,7 +65,7 @@ export default function ContasPagar() {
         )}
       </PageHeader>
 
-      <ContaPagarForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={() => { setEditando(null); atualizar(); }} />
+      <ContaPagarForm onSalvo={atualizar} />
 
       <div className="hist-wrap">
         <div className="card-head">
@@ -103,7 +104,7 @@ export default function ContasPagar() {
               )}
               <div className="hist-actions">
                 {c.status !== 'paga' && (
-                  <IconButton label="Editar" onClick={() => { setEditando(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={13} strokeWidth={2} /></IconButton>
+                  <IconButton label="Editar" onClick={() => setEditando(c)}><Pencil size={13} strokeWidth={2} /></IconButton>
                 )}
                 <IconButton label="Excluir" danger onClick={() => excluir(c)}><Trash2 size={13} strokeWidth={2} /></IconButton>
               </div>
@@ -111,6 +112,13 @@ export default function ContasPagar() {
           </div>
         ))}
       </div>
+
+      {editando && (
+        <Modal titulo="Editar conta a pagar" larga onFechar={() => setEditando(null)}>
+          <p className="modal-sub">Altere os dados e salve.</p>
+          <ContaPagarForm editando={editando} onCancelar={() => setEditando(null)} onSalvo={() => { setEditando(null); atualizar(); }} />
+        </Modal>
+      )}
 
       {pagando && <PagarConta conta={pagando} onConfirmar={confirmarPagamento} onCancelar={() => setPagando(null)} />}
     </div>

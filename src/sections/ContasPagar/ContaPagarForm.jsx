@@ -45,8 +45,8 @@ export default function ContaPagarForm({ editando, onCancelar, onSalvo }) {
   }
 
   return (
-    <div className="form-wrap">
-      <FormHeader Icon={CalendarCheck} titulo={editando ? 'Editar conta a pagar' : 'Nova conta a pagar'} subtitulo={editando ? 'Altere os dados e salve' : 'Boletos e contas com data de vencimento. Avisamos por e-mail antes de vencer'} />
+    <div className={editando ? 'form-modal' : 'form-wrap'}>
+      {!editando && <FormHeader Icon={CalendarCheck} titulo={editando ? 'Editar conta a pagar' : 'Nova conta a pagar'} subtitulo={editando ? 'Altere os dados e salve' : 'Boletos e contas com data de vencimento. Avisamos por e-mail antes de vencer'} />}
       <div className="form-grid">
         <div className="form-group">
           <label className="form-label" htmlFor={`${uid}-1`}><AlignLeft size={16} />Descrição</label>
