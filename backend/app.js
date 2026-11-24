@@ -10,6 +10,7 @@ const logger       = require('./lib/logger');
 const { protegerCsrf } = require('./lib/csrf');
 const authRoutes   = require('./routes/auth');
 const adminRoutes  = require('./routes/admin');
+const suporteRoutes = require('./routes/suporte');
 const transactions = require('./routes/transactions');
 const recorrentes  = require('./routes/recorrentes');
 const categorias   = require('./routes/categorias');
@@ -68,6 +69,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 app.use('/api/auth',         authRoutes);
 app.use('/api/admin',        adminRoutes);
+app.use('/api/suporte',      suporteRoutes);
 app.use('/api/transactions', transactions);
 app.use('/api/recorrentes',  recorrentes);
 app.use('/api/categorias',   categorias);
