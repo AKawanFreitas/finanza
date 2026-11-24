@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Search, KeyRound, Ban, CheckCircle2, Trash2, Copy } from 'lucide-react';
+import { Search, KeyRound, Ban, CheckCircle2, Trash2, Copy, Shield, Users, UserPlus, Activity, ArrowLeftRight } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { fmtDate } from '../../utils/formatters';
+import PageHeader from '../../components/PageHeader';
+import Kpi from '../Dashboard/Kpi';
 import IconButton from '../../components/IconButton';
 
 const API = '/api/admin';
@@ -84,45 +86,22 @@ export default function Admin() {
 
   return (
     <div className="section-enter">
-      <header className="page-bar">
-        <div>
-          <h1 className="page-title">Administração</h1>
-          <p className="page-subtitle">Contas e uso do sistema</p>
-        </div>
-      </header>
+      <PageHeader Icon={Shield} titulo="Administração" subtitulo="Contas e uso do sistema" />
 
       {erro && <p className="aviso-erro" role="alert">{erro}</p>}
 
       {metricas && (
         <section className="kpis" aria-label="Números do sistema">
-          <div className="kpi kpi-brand">
-            <div className="kpi-top"><span className="kpi-label">Usuários</span></div>
-            <div className="kpi-value">{metricas.usuarios}</div>
-            <div className="kpi-bottom">
-              <span className="kpi-note">{metricas.ativos} ativos, {metricas.suspensos} suspensos</span>
-            </div>
-          </div>
-          <div className="kpi">
-            <div className="kpi-top"><span className="kpi-label">Novos no mês</span></div>
-            <div className="kpi-value">{metricas.novosNoMes}</div>
-            <div className="kpi-bottom"><span className="kpi-note">contas criadas</span></div>
-          </div>
-          <div className="kpi">
-            <div className="kpi-top"><span className="kpi-label">Acessaram em 30 dias</span></div>
-            <div className="kpi-value">{metricas.acessaram30d}</div>
-            <div className="kpi-bottom"><span className="kpi-note">{metricas.sessoesAbertas} sessões abertas</span></div>
-          </div>
-          <div className="kpi">
-            <div className="kpi-top"><span className="kpi-label">Lançamentos</span></div>
-            <div className="kpi-value">{metricas.lancamentos}</div>
-            <div className="kpi-bottom"><span className="kpi-note">em todas as contas</span></div>
-          </div>
+          <Kpi tone="brand" Icon={Users} label="Usuários" value={metricas.usuarios} note={`${metricas.ativos} ativos, ${metricas.suspensos} suspensos`} />
+          <Kpi Icon={UserPlus} kind="in" label="Novos no mês" value={metricas.novosNoMes} note="contas criadas" />
+          <Kpi Icon={Activity} kind="fix" label="Acessaram em 30 dias" value={metricas.acessaram30d} note={`${metricas.sessoesAbertas} sessões abertas`} />
+          <Kpi Icon={ArrowLeftRight} kind="fix" label="Lançamentos" value={metricas.lancamentos} note="em todas as contas" />
         </section>
       )}
 
       {provisoria && (
         <section className="panel panel-destaque">
-          <div className="panel-head"><h2>Senha provisória de {provisoria.email}</h2></div>
+          <div className="panel-head"><h2><KeyRound size={20} />Senha provisória de {provisoria.email}</h2></div>
           <div className="panel-body form-stack">
             <p className="form-dica">
               Ela aparece uma única vez. Entregue à pessoa por um canal seguro: no próximo acesso
@@ -147,13 +126,13 @@ export default function Admin() {
 
       <section className="panel">
         <div className="panel-head">
-          <h2>Usuários</h2>
-          <span className="card-sub">{usuarios.length} {usuarios.length === 1 ? 'conta' : 'contas'}</span>
+          <h2><Users size={20} />Usuários</h2>
+          <span className="card-sub pill">{usuarios.length} {usuarios.length === 1 ? 'conta' : 'contas'}</span>
         </div>
 
         <div className="filters">
           <div className="form-input-wrap filters-search">
-            <span className="form-prefix"><Search size={15} strokeWidth={2} /></span>
+            <span className="form-prefix"><Search size={16} strokeWidth={2} /></span>
             <input
               className="form-control" placeholder="Buscar por nome ou e-mail"
               aria-label="Buscar usuários"
@@ -183,7 +162,7 @@ export default function Admin() {
             <tbody>
               {usuarios.map(u => (
                 <tr key={u.id}>
-                  <td className="strong">{u.nome}</td>
+                  <td className="strong"><span className="admin-nome"><span className="conta-avatar admin-avatar" aria-hidden="true">{u.nome.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase()}</span>{u.nome}</span></td>
                   <td className="muted">{u.email}</td>
                   <td className="muted">{quando(u.criado_em)}</td>
                   <td className="muted">{quando(u.ultimo_acesso)}</td>
