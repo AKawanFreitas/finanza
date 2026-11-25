@@ -31,7 +31,8 @@ test('a janela expira e libera de novo', async () => {
   const u = await novoUsuario();
   for (let i = 0; i < 8; i++) await falhar(u.email);
   assert.equal((await falhar(u.email)).status, 429);
-  db.prepare('UPDATE limites SET ate = ? WHERE chave = ?').run(Date.now() - 1, `login:${u.email}`);
+  // Expira todas as chaves da conta (a do e-mail e a do par e-mail + IP).
+  db.prepare("UPDATE limites SET ate = ? WHERE chave = ? OR chave LIKE ?").run(Date.now() - 1, `login:${u.email}`, `login:${u.email}|%`);
   assert.equal((await falhar(u.email)).status, 401, 'voltou a responder normalmente');
 });
 
