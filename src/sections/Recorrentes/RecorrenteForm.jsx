@@ -16,7 +16,7 @@ const EMPTY = (cats) => ({ nome: '', valor: '', tipo: 'fixo', movimento: 'saida'
 export default function RecorrenteForm({ editar = null, onConcluir }) {
   const editingRec = editar;
   const uid = useId();
-  const { categorias, contas, addRecorrente, updateRecorrente } = useFinance();
+  const { categorias, contas, addRecorrente, updateRecorrente, showToast } = useFinance();
   const [form, setForm] = useState(EMPTY(categorias));
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function RecorrenteForm({ editar = null, onConcluir }) {
   function set(field, value) { setForm(f => ({ ...f, [field]: value })); }
 
   async function handleSubmit() {
-    if (!form.nome || !form.valor || !form.dia) return;
+    if (!form.nome.trim() || !form.valor || !form.dia) return showToast('Preencha o nome, o valor e o dia do vencimento para salvar.', 'err');
     const { conta_id, ...resto } = form;
     // Sem conta escolhida, o lançamento automático usa a conta principal.
     const data = { ...resto, valor: lerValor(form.valor), dia: parseInt(form.dia), ...(conta_id ? { conta_id } : {}) };
