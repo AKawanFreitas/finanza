@@ -16,7 +16,7 @@ const VAZIO = () => ({ origem_id: null, destino_id: null, valor: '', data: today
 
 export default function Transferencias() {
   const uid = useId();
-  const { contas, versao, addTransferencia, delTransferencia } = useFinance();
+  const { contas, versao, addTransferencia, delTransferencia, showToast } = useFinance();
   const confirmar = useConfirm();
   const excluir = async t => {
     if (await confirmar({ titulo: 'Excluir transferência?', mensagem: `${t.origem} → ${t.destino}. Os saldos das duas contas voltam ao que eram antes.`, rotulo: 'Excluir' })) delTransferencia(t.id);
@@ -40,7 +40,7 @@ export default function Transferencias() {
     : ativas.find(c => c.id !== origem)?.id;
 
   async function enviar() {
-    if (!form.valor) return;
+    if (!form.valor) return showToast('Preencha o valor para salvar.', 'err');
     const ok = await addTransferencia({ ...form, origem_id: origem, destino_id: destino, valor: lerValor(form.valor) });
     if (ok) setForm(VAZIO());
   }
