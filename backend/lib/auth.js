@@ -24,6 +24,16 @@ function conferirSenha(senha, guardado) {
   return crypto.timingSafeEqual(esperado, obtido);
 }
 
+// Para quem não tem conta, confere contra um hash de mentira: a resposta leva o mesmo tempo do que
+// uma senha errada, e o tempo não revela se o e-mail está cadastrado.
+let hashFalso;
+function conferirSenhaDoLogin(senha, guardado) {
+  if (guardado) return conferirSenha(senha, guardado);
+  hashFalso ??= hashSenha(crypto.randomBytes(16).toString('hex'));
+  conferirSenha(senha, hashFalso);
+  return false;
+}
+
 // Sem caracteres ambíguos (0/O, 1/l), para poder ser ditada.
 function senhaProvisoria() {
   const alfabeto = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
@@ -182,7 +192,7 @@ function registrarFalha(email, ip) {
 const limparTentativas = email => limite.limparPrefixo(`login:${email}`);
 
 module.exports = {
-  hashSenha, conferirSenha, senhaProvisoria,
+  hashSenha, conferirSenha, conferirSenhaDoLogin, senhaProvisoria,
   criarSessao, encerrarSessao, encerrarSessoesDe, limparExpiradas, vincularSessao,
   gravarCookie, apagarCookie,
   usuarioDaRequisicao, exigirLogin, exigirAdmin,
