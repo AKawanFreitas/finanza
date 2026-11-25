@@ -1,5 +1,22 @@
 const { z } = require('zod');
-const { paraCentavos, paraCentavosComSinal } = require('./money');
+const { validarValor } = require('./money');
+const { dataNaFaixa, mensagemFaixa } = require('./datas');
+
+// Mensagens de tipo do zod em português ("esperava um número, recebeu um texto").
+z.config(z.locales.ptBR ? z.locales.ptBR() : z.locales.pt());
+
+// Converte e valida dinheiro (número ou texto com ponto, até 2 casas, até R$ 1 bilhão) para centavos.
+// `msgPositivo` troca a mensagem de "maior que zero" pela do campo; `naoNegativo` recusa só os negativos.
+function converter(v, ctx, { sinal = false, msgPositivo, naoNegativo } = {}) {
+  const r = validarValor(v, { sinal });
+  let erro = r.erro;
+  if (erro === 'O valor deve ser maior que zero.' && msgPositivo) erro = msgPositivo;
+  // "O limite deve ser maior que zero." -> "O limite deve ser um número, ...": a mensagem cita o campo.
+  if (erro?.startsWith('Valor inválido') && msgPositivo) erro = `${msgPositivo.split(' deve ')[0]} deve ser um número, com ponto antes dos centavos (ex.: 1234.56).`;
+  if (!erro && naoNegativo && r.centavos < 0) erro = naoNegativo;
+  if (erro) { ctx.addIssue({ code: 'custom', message: erro }); return z.NEVER; }
+  return r.centavos;
+}
 const { ICONES } = require('./icones');
 
 const texto = (rotulo, max = 120) =>
@@ -7,9 +24,7 @@ const texto = (rotulo, max = 120) =>
 
 const valor = z.union([z.number(), z.string()], { error: 'O valor deve ser maior que zero.' })
   .transform((v, ctx) => {
-    const centavos = paraCentavos(v);
-    if (centavos === null) ctx.addIssue({ code: 'custom', message: 'O valor deve ser maior que zero.' });
-    return centavos;
+    return converter(v, ctx);
   });
 
 const obs = z.string().max(500, 'A observação deve ter até 500 caracteres.').optional().default('');
@@ -62,9 +77,7 @@ const conta = z.object({
   cor: COR.optional().default('#4d9fff'),
   saldo_inicial: z.union([z.number(), z.string()]).optional().default(0)
     .transform((v, ctx) => {
-      const c = paraCentavosComSinal(v);
-      if (c === null) ctx.addIssue({ code: 'custom', message: 'Saldo inicial inválido.' });
-      return c;
+      return converter(v, ctx, { sinal: true });
     }),
   arquivada: z.boolean().optional(),
 });
@@ -84,9 +97,7 @@ const cartao = z.object({
   nome: texto('o nome do cartão', 40),
   limite: z.union([z.number(), z.string()], { error: 'O limite deve ser maior que zero.' })
     .transform((v, ctx) => {
-      const c = paraCentavos(v);
-      if (c === null) ctx.addIssue({ code: 'custom', message: 'O limite deve ser maior que zero.' });
-      return c;
+      return converter(v, ctx, { msgPositivo: 'O limite deve ser maior que zero.' });
     }),
   dia_fechamento: dia('fechamento'),
   dia_vencimento: dia('vencimento'),
@@ -94,9 +105,7 @@ const cartao = z.object({
   conta_pagamento_id: z.number().int().positive().nullable().optional(),
   divida_inicial: z.union([z.number(), z.string()]).optional().default(0)
     .transform((v, ctx) => {
-      const c = paraCentavosComSinal(v);
-      if (c === null || c < 0) ctx.addIssue({ code: 'custom', message: 'A dívida inicial deve ser zero ou maior.' });
-      return c;
+      return converter(v, ctx, { sinal: true, naoNegativo: 'A dívida inicial deve ser zero ou maior.' });
     }),
   arquivada: z.boolean().optional(),
 });
@@ -106,9 +115,7 @@ const pagamentoFatura = z.object({
   valor: z.union([z.number(), z.string()]).optional()
     .transform((v, ctx) => {
       if (v === undefined) return undefined;
-      const c = paraCentavos(v);
-      if (c === null) ctx.addIssue({ code: 'custom', message: 'O valor deve ser maior que zero.' });
-      return c;
+      return converter(v, ctx, { msgPositivo: 'O valor deve ser maior que zero.' });
     }),
   data: dataISO.optional(),
 });
@@ -117,18 +124,14 @@ const meta = z.object({
   nome: texto('o nome da meta', 60),
   valor_alvo: z.union([z.number(), z.string()], { error: 'O valor da meta deve ser maior que zero.' })
     .transform((v, ctx) => {
-      const c = paraCentavos(v);
-      if (c === null) ctx.addIssue({ code: 'custom', message: 'O valor da meta deve ser maior que zero.' });
-      return c;
+      return converter(v, ctx, { msgPositivo: 'O valor da meta deve ser maior que zero.' });
     }),
   prazo: dataISO.nullable().optional(),
   cor: COR.optional().default('#22a84a'),
   valor_inicial: z.union([z.number(), z.string()]).optional()
     .transform((v, ctx) => {
       if (v === undefined || v === '') return undefined;
-      const c = paraCentavos(v);
-      if (c === null) ctx.addIssue({ code: 'custom', message: 'O valor inicial deve ser maior que zero.' });
-      return c;
+      return converter(v, ctx, { msgPositivo: 'O valor inicial deve ser maior que zero.' });
     }),
   arquivada: z.boolean().optional(),
 });
@@ -149,9 +152,7 @@ const pagarConta = z.object({
 const aporte = z.object({
   valor: z.union([z.number(), z.string()], { error: 'O valor deve ser maior que zero.' })
     .transform((v, ctx) => {
-      const c = paraCentavos(v);
-      if (c === null) ctx.addIssue({ code: 'custom', message: 'O valor deve ser maior que zero.' });
-      return c;
+      return converter(v, ctx, { msgPositivo: 'O valor deve ser maior que zero.' });
     }),
   tipo: z.enum(['aporte', 'retirada'], { error: 'O tipo deve ser "aporte" ou "retirada".' }).optional().default('aporte'),
   data: dataISO.optional(),
@@ -168,9 +169,7 @@ const categoriaInput = z.object({
 const orcamento = z.object({
   limite: z.union([z.number(), z.string()], { error: 'O limite deve ser maior que zero.' })
     .transform((v, ctx) => {
-      const c = paraCentavos(v);
-      if (c === null) ctx.addIssue({ code: 'custom', message: 'O limite deve ser maior que zero.' });
-      return c;
+      return converter(v, ctx, { msgPositivo: 'O limite deve ser maior que zero.' });
     }),
 });
 

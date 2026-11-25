@@ -36,7 +36,7 @@ test('validações', async () => {
     [{ desc: '  ' },            /descrição/i],
     [{ valor: 0 },              /maior que zero/],
     [{ valor: -5 },             /maior que zero/],
-    [{ valor: 'abc' },          /maior que zero/],
+    [{ valor: 'abc' },          /Valor inválido/],
     [{ tipo: 'outro' },         /entrada.*saida/],
     [{ data: '10/03/2026' },    /AAAA-MM-DD/],
     [{ data: '2026-02-31' },    /inexistente/i],

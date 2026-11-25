@@ -141,7 +141,7 @@ test('ordenação: ativas por prazo mais próximo, sem prazo depois, arquivadas 
 test('validações', async () => {
   const u = await novoUsuario();
   const casos = [
-    [{ nome: '' }, /nome/i], [{ valor_alvo: 0 }, /maior que zero/], [{ valor_alvo: 'x' }, /maior que zero/],
+    [{ nome: '' }, /nome/i], [{ valor_alvo: 0 }, /maior que zero/], [{ valor_alvo: 'x' }, /deve ser um número/],
     [{ prazo: '31/12/2027' }, /AAAA-MM-DD/], [{ prazo: '2027-02-30' }, /inexistente/i], [{ cor: 'verde' }, /cor/i], [{ valor_inicial: -1 }, /inicial/],
   ];
   for (const [extra, regex] of casos) {
