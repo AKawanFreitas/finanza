@@ -6,6 +6,7 @@ import { fmt, fmtDate } from '../../utils/formatters';
 import BarraOrcamento from '../../components/BarraOrcamento';
 import IconButton from '../../components/IconButton';
 import { useConfirm } from '../../components/Confirm';
+import { lerValor } from '../../utils/valor';
 
 const STATUS = {
   em_andamento: { rotulo: 'Em andamento', classe: '' },
@@ -29,8 +30,8 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
   }, [aberto, meta.id, meta.atual]);
 
   async function movimentar(tipo) {
-    if (!(Number(valor) > 0)) return;
-    const { ok, data } = await api(`/metas/${meta.id}/aportes`, { method: 'POST', body: { valor: Number(valor), tipo } });
+    if (!(lerValor(valor) > 0)) return;
+    const { ok, data } = await api(`/metas/${meta.id}/aportes`, { method: 'POST', body: { valor: lerValor(valor), tipo } });
     if (!ok) return showToast(data?.error || 'Não foi possível registrar.', 'err');
     showToast(tipo === 'aporte' ? 'Valor guardado' : 'Retirada registrada');
     setValor('');
@@ -84,11 +85,11 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
       <div className="meta-acoes">
         <span className="form-input-wrap has-text-prefix meta-valor">
           <span className="form-prefix-text">R$</span>
-          <input className="form-control" type="number" min="0" step="0.01" placeholder="0,00" aria-label={`Valor para ${meta.nome}`}
+          <input className="form-control" type="text" inputMode="decimal" autoComplete="off" placeholder="0,00" aria-label={`Valor para ${meta.nome}`}
             value={valor} onChange={e => setValor(e.target.value)} onKeyDown={e => e.key === 'Enter' && movimentar('aporte')} />
         </span>
-        <button className="btn btn-sm btn-primary" disabled={!(Number(valor) > 0)} onClick={() => movimentar('aporte')}><ArrowDownToLine size={13} strokeWidth={2.5} /> Guardar</button>
-        <button className="btn btn-sm" disabled={!(Number(valor) > 0) || meta.atual <= 0} onClick={() => movimentar('retirada')}><ArrowUpFromLine size={13} strokeWidth={2.5} /> Retirar</button>
+        <button className="btn btn-sm btn-primary" disabled={!(lerValor(valor) > 0)} onClick={() => movimentar('aporte')}><ArrowDownToLine size={13} strokeWidth={2.5} /> Guardar</button>
+        <button className="btn btn-sm" disabled={!(lerValor(valor) > 0) || meta.atual <= 0} onClick={() => movimentar('retirada')}><ArrowUpFromLine size={13} strokeWidth={2.5} /> Retirar</button>
         <span className="meta-icones">
           <IconButton label="Histórico" aria-expanded={aberto} onClick={() => setAberto(a => !a)}><History size={13} strokeWidth={2} /></IconButton>
           <IconButton label="Editar" onClick={() => onEditar(meta)}><Pencil size={13} strokeWidth={2} /></IconButton>
