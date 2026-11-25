@@ -2,8 +2,8 @@ const express = require('express');
 const router  = express.Router();
 const db      = require('../db');
 const { exigirLogin } = require('../lib/auth');
-const { paraReais, paraCentavos } = require('../lib/money');
-const { dataValida } = require('../lib/datas');
+const { paraReais, validarValor } = require('../lib/money');
+const { dataValida, dataNaFaixa, mensagemFaixa } = require('../lib/datas');
 const { resolverConta } = require('../lib/contas');
 const { aposLancamentos } = require('../lib/orcamentos');
 const { lerArquivo, atribuirIds, sugerirCategorias, marcarDuplicadas, MAX_LINHAS } = require('../lib/importacao');
@@ -64,12 +64,13 @@ router.post('/confirmar', (req, res) => {
   const itens = [];
   for (const [n, b] of brutos.entries()) {
     const linha = `Linha ${n + 1}`;
-    const valor_centavos = paraCentavos(b?.valor);
+    const { centavos: valor_centavos, erro: erroValor } = validarValor(b?.valor);
     const desc = typeof b?.desc === 'string' ? b.desc.trim().slice(0, 120) : '';
     if (!desc)                                   return res.status(400).json({ error: `${linha}: informe a descrição.` });
-    if (valor_centavos === null)                 return res.status(400).json({ error: `${linha}: valor inválido.` });
+    if (erroValor)                               return res.status(400).json({ error: `${linha}: ${erroValor}` });
     if (b.tipo !== 'entrada' && b.tipo !== 'saida') return res.status(400).json({ error: `${linha}: tipo inválido.` });
     if (!dataValida(b.data))                     return res.status(400).json({ error: `${linha}: data inválida.` });
+    if (!dataNaFaixa(b.data))                    return res.status(400).json({ error: `${linha}: ${mensagemFaixa()}` });
     if (!categoriasDoUsuario.has(b.categoria_id)) return res.status(400).json({ error: `${linha}: categoria não encontrada.` });
     const externo = typeof b.externo === 'string' && b.externo ? b.externo.slice(0, 80) : null;
     itens.push({ desc, valor_centavos, tipo: b.tipo, data: b.data, categoria_id: b.categoria_id, externo, obs: typeof b.obs === 'string' ? b.obs.slice(0, 500) : '' });
