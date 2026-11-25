@@ -16,7 +16,7 @@ const VAZIO = { nome: '', tipo: 'corrente', saldo_inicial: '', cor: '#4d9fff' };
 export default function ContaForm({ editar = null, onConcluir }) {
   const editingConta = editar;
   const uid = useId();
-  const { addConta, updateConta } = useFinance();
+  const { addConta, updateConta, showToast } = useFinance();
   const [form, setForm] = useState(VAZIO);
   const set = (campo, valor) => setForm(f => ({ ...f, [campo]: valor }));
 
@@ -27,7 +27,7 @@ export default function ContaForm({ editar = null, onConcluir }) {
   }, [editingConta]);
 
   async function enviar() {
-    if (!form.nome.trim()) return;
+    if (!form.nome.trim()) return showToast('Preencha o nome da conta para salvar.', 'err');
     const dados = {
       nome: form.nome.trim(), tipo: form.tipo, cor: form.cor,
       saldo_inicial: form.saldo_inicial.trim() === '' ? 0 : lerValor(form.saldo_inicial),
