@@ -151,15 +151,28 @@ router.patch('/perfil', auth.exigirLogin, semSuporte, (req, res) => {
   const erro  = nome.error || email.error;
   if (erro) return res.status(400).json({ error: erro });
 
+  // Trocar de e-mail exige a senha atual: com só a sessão (um computador esquecido aberto, um cookie roubado)
+  // daria para mudar o e-mail e, depois, a senha pelo "esqueci a senha". A senha vem antes da checagem de
+  // e-mail em uso, para que ela não sirva de consulta de quem tem conta.
+  const mudouEmail = email.value !== req.user.email.toLowerCase();
+  if (mudouEmail) {
+    const { senha_hash } = db.prepare('SELECT senha_hash FROM users WHERE id = ?').get(req.user.id);
+    if (!auth.conferirSenha(String(req.body?.senha || ''), senha_hash)) {
+      return res.status(400).json({ error: 'Para trocar o e-mail, confirme sua senha atual.' });
+    }
+  }
+
   if (db.prepare('SELECT 1 FROM users WHERE email = ? AND id != ?').get(email.value, req.user.id)) {
     return res.status(409).json({ error: 'Já existe uma conta com esse e-mail.' });
   }
 
-  // Trocar de e-mail exige confirmar o novo endereço.
-  const mudouEmail = email.value !== req.user.email.toLowerCase();
+  // O novo endereço precisa ser confirmado; o antigo recebe um aviso da troca.
   db.prepare('UPDATE users SET nome = ?, email = ?, email_verificado_em = CASE WHEN ? THEN NULL ELSE email_verificado_em END WHERE id = ?')
     .run(nome.value, email.value, mudouEmail ? 1 : 0, req.user.id);
-  if (mudouEmail) enviarVerificacao(buscarUser(req.user.id));
+  if (mudouEmail) {
+    enviarVerificacao(buscarUser(req.user.id));
+    semEsperar(enviarEmail({ para: req.user.email, ...templates.emailAlterado({ nome: nome.value, novo: email.value }) }), 'aviso de e-mail alterado');
+  }
   res.json({ user: publico(buscarUser(req.user.id)) });
 });
 
