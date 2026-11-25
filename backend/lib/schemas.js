@@ -179,10 +179,20 @@ const orcamento = z.object({
 });
 
 // Devolve { value } ou { error } com a primeira mensagem, no formato que as rotas já usavam.
+// Nome do campo para as mensagens automáticas do zod, que não sabem de qual campo falam.
+const NOMES = {
+  conta_id: 'Conta', categoria_id: 'Categoria', cat: 'Categoria', origem_id: 'Conta de origem', destino_id: 'Conta de destino',
+  conta_pagamento_id: 'Conta de pagamento', parcelas: 'Parcelas', dia: 'Dia', obs: 'Observação', automatico: 'Lançamento automático',
+  arquivada: 'Arquivada', descricao: 'Descrição', desc: 'Descrição', nome: 'Nome', prazo: 'Prazo', data: 'Data', vencimento: 'Vencimento',
+};
+
 function validar(schema, body) {
   const r = schema.safeParse(body ?? {});
   if (r.success) return { value: r.data };
-  return { error: r.error.issues[0]?.message || 'Dados inválidos.' };
+  const issue = r.error.issues[0];
+  if (!issue) return { error: 'Dados inválidos.' };
+  const nome = issue.code !== 'custom' && NOMES[issue.path?.[0]];
+  return { error: nome && !issue.message.startsWith('Informe') ? `${nome}: ${issue.message.replace(/^Entrada inválida: /, '')}.` : issue.message };
 }
 
 module.exports = { transacao, recorrente, categoriaInput, conta, cartao, pagamentoFatura, meta, aporte, contaPagar, pagarConta, transferencia, orcamento, dataISO, validar };
