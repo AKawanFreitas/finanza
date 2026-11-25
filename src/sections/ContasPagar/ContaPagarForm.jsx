@@ -4,6 +4,7 @@ import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import FormHeader from '../../components/FormHeader';
 import Select from '../../components/Select';
+import { lerValor, valorParaCampo } from '../../utils/valor';
 
 const vazio = cats => ({ descricao: '', valor: '', vencimento: '', cat: cats[0]?.nome || '', conta_id: 0, obs: '' });
 
@@ -16,7 +17,7 @@ export default function ContaPagarForm({ editando, onCancelar, onSalvo }) {
 
   useEffect(() => {
     setForm(editando
-      ? { descricao: editando.descricao, valor: String(editando.valor), vencimento: editando.vencimento, cat: editando.cat, conta_id: editando.conta_id ?? 0, obs: editando.obs || '' }
+      ? { descricao: editando.descricao, valor: valorParaCampo(editando.valor), vencimento: editando.vencimento, cat: editando.cat, conta_id: editando.conta_id ?? 0, obs: editando.obs || '' }
       : vazio(categorias));
   }, [editando, categorias]);
 
@@ -29,7 +30,7 @@ export default function ContaPagarForm({ editando, onCancelar, onSalvo }) {
   async function enviar() {
     if (!form.descricao.trim() || !form.valor || !form.vencimento) return;
     const corpo = {
-      descricao: form.descricao.trim(), valor: Number(form.valor), vencimento: form.vencimento, cat: form.cat, obs: form.obs,
+      descricao: form.descricao.trim(), valor: lerValor(form.valor), vencimento: form.vencimento, cat: form.cat, obs: form.obs,
       ...(form.conta_id ? { conta_id: form.conta_id } : {}),
     };
     setEnviando(true);
@@ -59,7 +60,7 @@ export default function ContaPagarForm({ editando, onCancelar, onSalvo }) {
           <label className="form-label" htmlFor={`${uid}-2`}><DollarSign size={16} />Valor</label>
           <div className="form-input-wrap has-text-prefix">
             <span className="form-prefix-text">R$</span>
-            <input id={`${uid}-2`} className="form-control" type="number" min="0" step="0.01" placeholder="0,00" value={form.valor} onChange={e => set('valor', e.target.value)} />
+            <input id={`${uid}-2`} className="form-control" type="text" inputMode="decimal" autoComplete="off" placeholder="0,00" value={form.valor} onChange={e => set('valor', e.target.value)} />
           </div>
         </div>
         <div className="form-group">
