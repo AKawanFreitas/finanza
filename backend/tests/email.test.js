@@ -267,3 +267,20 @@ test('nome com HTML é escapado no e-mail', async () => {
   const e = resumos(u)[0];
   assert.doesNotMatch(e.html, /<script>/);
 });
+
+test('em produção sem SMTP_URL, o e-mail (e o link de senha) não vai para o log', async () => {
+  const { enviarEmail } = require('../lib/email');
+  const logger = require('../lib/logger');
+  const antes = { env: process.env.NODE_ENV, log: console.log, warn: logger.warn };
+  const saida = [];
+  console.log = (...a) => saida.push(a.join(' '));
+  logger.warn = (obj, msg) => saida.push(JSON.stringify(obj) + ' ' + msg);
+  process.env.NODE_ENV = 'production';
+  try {
+    await enviarEmail({ para: 'alguem@teste.com', assunto: 'Redefinir sua senha', texto: 'link: http://app/?redefinir=SEGREDO123', html: '' });
+  } finally {
+    process.env.NODE_ENV = antes.env; console.log = antes.log; logger.warn = antes.warn;
+  }
+  assert.ok(saida.length > 0, 'avisa que o e-mail não saiu');
+  assert.ok(!saida.join('\n').includes('SEGREDO123'), 'o link não aparece');
+});
