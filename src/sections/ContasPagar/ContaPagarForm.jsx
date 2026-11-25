@@ -28,7 +28,7 @@ export default function ContaPagarForm({ editando, onCancelar, onSalvo }) {
   ];
 
   async function enviar() {
-    if (!form.descricao.trim() || !form.valor || !form.vencimento) return;
+    if (!form.descricao.trim() || !form.valor || !form.vencimento) return showToast('Preencha a descrição, o valor e o vencimento para salvar.', 'err');
     const corpo = {
       descricao: form.descricao.trim(), valor: lerValor(form.valor), vencimento: form.vencimento, cat: form.cat, obs: form.obs,
       ...(form.conta_id ? { conta_id: form.conta_id } : {}),
