@@ -3,6 +3,7 @@ import { PiggyBank, Calendar, Plus, Check, X, Type, DollarSign, Wallet, Info, Ar
 import { useFinance } from '../../context/FinanceContext';
 import { api } from '../../utils/api';
 import FormHeader from '../../components/FormHeader';
+import { lerValor, valorParaCampo } from '../../utils/valor';
 
 const VAZIO = { nome: '', valor_alvo: '', prazo: '', valor_inicial: '', cor: '#22a84a' };
 
@@ -15,15 +16,15 @@ export default function MetaForm({ editando, onCancelar, onSalvo }) {
 
   useEffect(() => {
     setForm(editando
-      ? { nome: editando.nome, valor_alvo: String(editando.valor_alvo), prazo: editando.prazo ?? '', valor_inicial: '', cor: editando.cor }
+      ? { nome: editando.nome, valor_alvo: valorParaCampo(editando.valor_alvo), prazo: editando.prazo ?? '', valor_inicial: '', cor: editando.cor }
       : VAZIO);
   }, [editando]);
 
   async function enviar() {
     if (!form.nome.trim() || !form.valor_alvo) return;
     const corpo = {
-      nome: form.nome.trim(), valor_alvo: Number(form.valor_alvo), prazo: form.prazo || null, cor: form.cor,
-      ...(editando ? { arquivada: editando.arquivada } : form.valor_inicial ? { valor_inicial: Number(form.valor_inicial) } : {}),
+      nome: form.nome.trim(), valor_alvo: lerValor(form.valor_alvo), prazo: form.prazo || null, cor: form.cor,
+      ...(editando ? { arquivada: editando.arquivada } : form.valor_inicial ? { valor_inicial: lerValor(form.valor_inicial) } : {}),
     };
     setEnviando(true);
     try {
@@ -56,7 +57,7 @@ export default function MetaForm({ editando, onCancelar, onSalvo }) {
           <label className="form-label" htmlFor={`${uid}-2`}><DollarSign size={16} />Valor da meta</label>
           <div className="form-input-wrap has-text-prefix">
             <span className="form-prefix-text">R$</span>
-            <input id={`${uid}-2`} className="form-control" type="number" min="0" step="0.01" placeholder="0,00" value={form.valor_alvo} onChange={e => set('valor_alvo', e.target.value)} />
+            <input id={`${uid}-2`} className="form-control" type="text" inputMode="decimal" autoComplete="off" placeholder="0,00" value={form.valor_alvo} onChange={e => set('valor_alvo', e.target.value)} />
           </div>
         </div>
         <div className="form-group">
@@ -72,7 +73,7 @@ export default function MetaForm({ editando, onCancelar, onSalvo }) {
             <label className="form-label" htmlFor={`${uid}-4`}><Wallet size={16} />Já guardado <span className="form-label-opt">(opcional)</span></label>
             <div className="form-input-wrap has-text-prefix">
               <span className="form-prefix-text">R$</span>
-              <input id={`${uid}-4`} className="form-control" type="number" min="0" step="0.01" placeholder="0,00" value={form.valor_inicial} onChange={e => set('valor_inicial', e.target.value)} />
+              <input id={`${uid}-4`} className="form-control" type="text" inputMode="decimal" autoComplete="off" placeholder="0,00" value={form.valor_inicial} onChange={e => set('valor_inicial', e.target.value)} />
             </div>
           </div>
         )}
