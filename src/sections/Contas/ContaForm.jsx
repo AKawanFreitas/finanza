@@ -6,6 +6,7 @@ import CampoCor from '../../components/CampoCor';
 import Select from '../../components/Select';
 import { TIPOS_CONTA } from './tipos';
 import { lerValor, valorParaCampo } from '../../utils/valor';
+import useEnvioUnico from '../../utils/useEnvioUnico';
 
 const PRESET_COLORS = ['#4d9fff', '#22a84a', '#e84057', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#65a30d'];
 const VAZIO = { nome: '', tipo: 'corrente', saldo_inicial: '', cor: '#4d9fff' };
@@ -39,6 +40,8 @@ export default function ContaForm({ editar = null, onConcluir }) {
     else setForm(VAZIO);
   }
 
+  const [enviarUmaVez, enviando] = useEnvioUnico(enviar);
+
   return (
     <div className={editingConta ? 'form-modal' : 'form-wrap'}>
       {!editingConta && <FormHeader Icon={Wallet} titulo={editingConta ? 'Editar conta' : 'Nova conta'} subtitulo={editingConta ? 'Altere os dados e salve' : 'Cadastre um banco, carteira ou investimento'} />}
@@ -51,7 +54,7 @@ export default function ContaForm({ editar = null, onConcluir }) {
             <input id={`${uid}-1`}
               className="form-control" placeholder="Ex: Nubank" value={form.nome} maxLength={40}
               onChange={e => set('nome', e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && enviar()}
+              onKeyDown={e => e.key === 'Enter' && enviarUmaVez()}
             />
           </div>
         </div>
@@ -75,7 +78,7 @@ export default function ContaForm({ editar = null, onConcluir }) {
       </div>
 
       <div className="form-actions" style={{ marginTop: '1.1rem' }}>
-        <button className="btn btn-primary btn-full" onClick={enviar}>
+        <button className="btn btn-primary btn-full" onClick={enviarUmaVez} disabled={enviando}>
           {editingConta ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
           {editingConta ? 'Salvar alterações' : 'Criar conta'}
         <ArrowRight size={15} strokeWidth={2.5} />
