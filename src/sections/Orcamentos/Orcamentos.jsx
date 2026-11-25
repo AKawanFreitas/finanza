@@ -11,13 +11,14 @@ import Select from '../../components/Select';
 import BarraOrcamento from '../../components/BarraOrcamento';
 import IconButton from '../../components/IconButton';
 import { useConfirm } from '../../components/Confirm';
+import { lerValor, valorParaCampo } from '../../utils/valor';
 
 const ROTULO_STATUS = { ok: 'Dentro do limite', atencao: 'Perto do limite', estourado: 'Limite estourado' };
 
 function Linha({ item, onSalvar, onRemover }) {
-  const [limite, setLimite] = useState(String(item.limite));
-  useEffect(() => { setLimite(String(item.limite)); }, [item.limite]);
-  const mudou = Number(limite) !== item.limite;
+  const [limite, setLimite] = useState(valorParaCampo(item.limite));
+  useEffect(() => { setLimite(valorParaCampo(item.limite)); }, [item.limite]);
+  const mudou = lerValor(limite) !== item.limite;
 
   return (
     <div className="orc-linha" style={{ '--cor': item.cor }}>
@@ -40,12 +41,12 @@ function Linha({ item, onSalvar, onRemover }) {
           <span className="form-input-wrap has-text-prefix">
             <span className="form-prefix-text">R$</span>
             <input
-              className="form-control" type="number" min="0" step="0.01" aria-label={`Limite de ${item.cat}`}
+              className="form-control" type="text" inputMode="decimal" autoComplete="off" aria-label={`Limite de ${item.cat}`}
               value={limite} onChange={e => setLimite(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && mudou && onSalvar(item.categoria_id, Number(limite))}
+              onKeyDown={e => e.key === 'Enter' && mudou && onSalvar(item.categoria_id, lerValor(limite))}
             />
           </span>
-          <button className="btn btn-sm" disabled={!mudou || !(Number(limite) > 0)} onClick={() => onSalvar(item.categoria_id, Number(limite))}>
+          <button className="btn btn-sm" disabled={!mudou || !(lerValor(limite) > 0)} onClick={() => onSalvar(item.categoria_id, lerValor(limite))}>
             <Check size={13} strokeWidth={2.5} /> Salvar
           </button>
           <IconButton label="Excluir orçamento" danger onClick={() => onRemover(item)}>
@@ -84,8 +85,8 @@ export default function Orcamentos({ ym, onYmChange }) {
   }
 
   async function adicionar() {
-    if (!escolhida || !(Number(novo.limite) > 0)) return;
-    if (await salvar(escolhida, Number(novo.limite), 'Orçamento criado')) setNovo({ categoria_id: null, limite: '' });
+    if (!escolhida || !(lerValor(novo.limite) > 0)) return;
+    if (await salvar(escolhida, lerValor(novo.limite), 'Orçamento criado')) setNovo({ categoria_id: null, limite: '' });
   }
 
   async function remover(item) {
@@ -124,7 +125,7 @@ export default function Orcamentos({ ym, onYmChange }) {
                 <div className="form-input-wrap has-text-prefix">
                   <span className="form-prefix-text">R$</span>
                   <input id={`${uid}-2`}
-                    className="form-control" type="number" min="0" step="0.01" placeholder="0,00"
+                    className="form-control" type="text" inputMode="decimal" autoComplete="off" placeholder="0,00"
                     value={novo.limite} onChange={e => setNovo(n => ({ ...n, limite: e.target.value }))}
                     onKeyDown={e => e.key === 'Enter' && adicionar()}
                   />
