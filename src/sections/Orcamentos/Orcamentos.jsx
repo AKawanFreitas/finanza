@@ -85,7 +85,7 @@ export default function Orcamentos({ ym, onYmChange }) {
   }
 
   async function adicionar() {
-    if (!escolhida || !(lerValor(novo.limite) > 0)) return;
+    if (!escolhida || !(lerValor(novo.limite) > 0)) return showToast('Escolha a categoria e um limite maior que zero.', 'err');
     if (await salvar(escolhida, lerValor(novo.limite), 'Orçamento criado')) setNovo({ categoria_id: null, limite: '' });
   }
 
