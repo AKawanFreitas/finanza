@@ -2,7 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const db      = require('../db');
 const { exigirLogin } = require('../lib/auth');
-const { mesValido, hojeBR } = require('../lib/datas');
+const { mesValido, hojeBR, mesNaFaixa, mensagemFaixa } = require('../lib/datas');
 const { cartao: cartaoSchema, pagamentoFatura, validar } = require('../lib/schemas');
 const { FATURA_SQL, buscarCartao, listarFaturas, buscarFatura, resumoDoCartao } = require('../lib/cartoes');
 const { SELECT, paraApi: txParaApi } = require('../lib/transacoes');
@@ -109,6 +109,7 @@ router.post('/:id/faturas/:mes/pagar', (req, res) => {
   const cartao = doRequest(req, res);
   if (!cartao) return;
   if (!mesValido(req.params.mes)) return res.status(400).json({ error: 'O mês deve estar no formato AAAA-MM.' });
+  if (!mesNaFaixa(req.params.mes)) return res.status(400).json({ error: mensagemFaixa() });
   const { value, error } = validar(pagamentoFatura, req.body);
   if (error) return res.status(400).json({ error });
   if (!contaDePagamento(req.user.id, value.origem_id)) {

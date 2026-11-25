@@ -3,7 +3,7 @@ const router  = express.Router();
 const db      = require('../db');
 const { exigirLogin } = require('../lib/auth');
 const { paraReais }   = require('../lib/money');
-const { mesValido, mesAtual, dataVencimento } = require('../lib/datas');
+const { mesValido, mesAtual, dataVencimento, mesNaFaixa, mensagemFaixa } = require('../lib/datas');
 const { recorrente, validar } = require('../lib/schemas');
 const { resolverCategoria }   = require('../lib/categorias');
 const { resolverConta }       = require('../lib/contas');
@@ -49,6 +49,9 @@ const lerMes = req => {
   const mes = req.query?.mes ?? req.body?.mes ?? mesAtual();
   return mesValido(mes) ? mes : null;
 };
+
+// Lançar grava lançamentos: o mês precisa estar na faixa aceita (2000 até daqui a 10 anos).
+const erroDoMesParaLancar = mes => (mesNaFaixa(mes) ? null : mensagemFaixa());
 
 // GET /api/recorrentes?mes=AAAA-MM  (o campo `lancado` vale para esse mês)
 router.get('/', (req, res) => {
@@ -98,6 +101,7 @@ function contaDaRequisicao(req) {
 router.post('/lancar-pendentes', (req, res) => {
   const mes = lerMes(req);
   if (!mes) return res.status(400).json({ error: 'O mês deve estar no formato AAAA-MM.' });
+  if (erroDoMesParaLancar(mes)) return res.status(400).json({ error: erroDoMesParaLancar(mes) });
   const { contaId, error } = contaDaRequisicao(req);
   if (error) return res.status(400).json({ error });
 
@@ -115,6 +119,7 @@ router.post('/lancar-pendentes', (req, res) => {
 router.post('/:id/lancar', (req, res) => {
   const mes = lerMes(req);
   if (!mes) return res.status(400).json({ error: 'O mês deve estar no formato AAAA-MM.' });
+  if (erroDoMesParaLancar(mes)) return res.status(400).json({ error: erroDoMesParaLancar(mes) });
   const { contaId, error } = contaDaRequisicao(req);
   if (error) return res.status(400).json({ error });
 
