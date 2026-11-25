@@ -75,12 +75,20 @@ export default function FaturaDetalhe({ cartao }) {
         <span className={`chip ${CLASSE_FATURA[detalhe.status]}`}>{ROTULO_FATURA[detalhe.status]}</span>
       </div>
 
-      {detalhe.lancamentos.length === 0 ? (
+      {detalhe.lancamentos.length === 0 && !(detalhe.saldo_anterior > 0) ? (
         <div className="empty">Nenhuma compra nesta fatura.</div>
       ) : (
         <table className="table">
           <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th className="num">Valor</th></tr></thead>
           <tbody>
+            {detalhe.saldo_anterior > 0 && (
+              <tr>
+                <td className="muted">—</td>
+                <td className="strong">Saldo anterior</td>
+                <td className="muted">Dívida informada no cadastro do cartão</td>
+                <td className="num strong">− {fmt(detalhe.saldo_anterior)}</td>
+              </tr>
+            )}
             {detalhe.lancamentos.map(t => (
               <tr key={t.id}>
                 <td className="muted">{fmtDate(t.data).slice(0, 5)}</td>

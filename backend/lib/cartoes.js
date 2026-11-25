@@ -31,27 +31,45 @@ function statusDaFatura(total, pago, datas, hoje) {
 // O cartão do usuário (conta + configuração), ou null.
 function buscarCartao(userId, contaId) {
   return db.prepare(`
-    SELECT c.id, c.nome, c.cor, c.arquivada, k.limite_centavos, k.dia_fechamento, k.dia_vencimento, k.conta_pagamento_id
+    SELECT c.id, c.nome, c.cor, c.arquivada, c.saldo_inicial_centavos, c.criado_em, k.limite_centavos, k.dia_fechamento, k.dia_vencimento, k.conta_pagamento_id
     FROM contas c JOIN cartoes k ON k.conta_id = c.id
     WHERE c.id = ? AND c.user_id = ? AND c.tipo = 'cartao'
   `).get(contaId, userId) || null;
 }
 
-function montarFatura(mes, cfg, total, pago, itens, hoje) {
+function montarFatura(mes, cfg, total, pago, itens, hoje, saldoAnterior = 0) {
   const datas = datasDaFatura(mes, cfg);
   return {
-    mes, ...datas, itens,
+    mes, ...datas, itens, saldo_anterior: paraReais(saldoAnterior),
     total: paraReais(total), pago: paraReais(pago), restante: paraReais(Math.max(0, total - pago)),
     status: statusDaFatura(total, pago, datas, hoje),
   };
 }
 
-const totaisPorFatura = contaId => db.prepare(`
-  SELECT ${FATURA_SQL} AS mes, COUNT(*) AS itens,
-         SUM(CASE t.tipo WHEN 'saida' THEN t.valor_centavos ELSE -t.valor_centavos END) AS total
-  FROM transactions t JOIN cartoes k ON k.conta_id = t.conta_id
-  WHERE t.conta_id = ? GROUP BY mes
-`).all(contaId);
+// A dívida que já havia quando o cartão foi cadastrado entra como "saldo anterior" na fatura do mês do
+// cadastro: assim ela aparece numa fatura e é paga como as outras (antes ficava só no saldo, sem fatura).
+function aberturaDoCartao(cartao) {
+  const centavos = Math.max(0, -(cartao.saldo_inicial_centavos ?? 0));
+  if (!centavos || !cartao.criado_em) return null;
+  return { mes: mesDaFatura(hojeBR(new Date(cartao.criado_em)), cartao.dia_fechamento), centavos };
+}
+
+// Mapa mês -> { total, itens, saldo_anterior } (em centavos), com o saldo anterior já somado ao seu mês.
+function totaisPorFatura(cartao) {
+  const linhas = db.prepare(`
+    SELECT ${FATURA_SQL} AS mes, COUNT(*) AS itens,
+           SUM(CASE t.tipo WHEN 'saida' THEN t.valor_centavos ELSE -t.valor_centavos END) AS total
+    FROM transactions t JOIN cartoes k ON k.conta_id = t.conta_id
+    WHERE t.conta_id = ? GROUP BY mes
+  `).all(cartao.id);
+  const mapa = new Map(linhas.map(r => [r.mes, { ...r, saldo_anterior: 0 }]));
+  const abertura = aberturaDoCartao(cartao);
+  if (abertura) {
+    const r = mapa.get(abertura.mes) ?? { mes: abertura.mes, itens: 0, total: 0 };
+    mapa.set(abertura.mes, { ...r, total: r.total + abertura.centavos, saldo_anterior: abertura.centavos });
+  }
+  return mapa;
+}
 
 const pagoPorFatura = contaId => new Map(db.prepare(`
   SELECT fatura_ref AS mes, SUM(valor_centavos) AS pago FROM transferencias
@@ -60,16 +78,19 @@ const pagoPorFatura = contaId => new Map(db.prepare(`
 
 // Todas as faturas do cartão (meses com compras ou pagamentos), da mais recente para a mais antiga.
 function listarFaturas(cartao, hoje = hojeBR()) {
-  const totais = new Map(totaisPorFatura(cartao.id).map(r => [r.mes, r]));
+  const totais = totaisPorFatura(cartao);
   const pagos = pagoPorFatura(cartao.id);
   const meses = [...new Set([...totais.keys(), ...pagos.keys()])].sort().reverse();
-  return meses.map(m => montarFatura(m, cartao, totais.get(m)?.total ?? 0, pagos.get(m) ?? 0, totais.get(m)?.itens ?? 0, hoje));
+  return meses.map(m => {
+    const t = totais.get(m);
+    return montarFatura(m, cartao, t?.total ?? 0, pagos.get(m) ?? 0, t?.itens ?? 0, hoje, t?.saldo_anterior ?? 0);
+  });
 }
 
 function buscarFatura(cartao, mes, hoje = hojeBR()) {
-  const t = totaisPorFatura(cartao.id).find(r => r.mes === mes);
+  const t = totaisPorFatura(cartao).get(mes);
   const pago = pagoPorFatura(cartao.id).get(mes) ?? 0;
-  return montarFatura(mes, cartao, t?.total ?? 0, pago, t?.itens ?? 0, hoje);
+  return montarFatura(mes, cartao, t?.total ?? 0, pago, t?.itens ?? 0, hoje, t?.saldo_anterior ?? 0);
 }
 
 // Cartão com limite, uso e fatura em curso, para a listagem. A dívida é o saldo negativo da conta.
