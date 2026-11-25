@@ -52,7 +52,8 @@ router.delete('/:id', (req, res) => {
 
   const emUso =
     db.prepare('SELECT COUNT(*) AS n FROM transactions WHERE categoria_id = ?').get(id).n +
-    db.prepare('SELECT COUNT(*) AS n FROM recorrentes  WHERE categoria_id = ?').get(id).n;
+    db.prepare('SELECT COUNT(*) AS n FROM recorrentes  WHERE categoria_id = ?').get(id).n +
+    db.prepare('SELECT COUNT(*) AS n FROM contas_pagar WHERE categoria_id = ?').get(id).n;
   if (emUso > 0) {
     return res.status(409).json({ error: `"${cat.nome}" está em uso por ${emUso} registro(s). Mude a categoria deles antes de excluir.` });
   }
