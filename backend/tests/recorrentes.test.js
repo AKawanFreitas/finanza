@@ -85,3 +85,28 @@ test('excluir o recorrente mantém os lançamentos que ele gerou', async () => {
   assert.equal(r.total, 1);
   assert.equal(r.itens[0].recorrente_id, null);
 });
+
+test('recorrente de entrada (salário): lança como receita; sem informar, continua saída', async () => {
+  const u = await novoUsuario();
+  const salario = (await u.agente.post('/api/recorrentes').send({ nome: 'Salário', valor: 3000, tipo: 'fixo', movimento: 'entrada', dia: 5, cat: 'Renda' })).body;
+  assert.equal(salario.movimento, 'entrada');
+  const aluguel = (await u.agente.post('/api/recorrentes').send({ nome: 'Aluguel', valor: 1500, tipo: 'fixo', dia: 10, cat: 'Moradia' })).body;
+  assert.equal(aluguel.movimento, 'saida', 'quem não informa continua como gasto');
+
+  const lancado = (await u.agente.post(`/api/recorrentes/${salario.id}/lancar`).send({ mes: '2026-03' })).body;
+  assert.equal(lancado.tipo, 'entrada');
+  assert.equal((await u.agente.post(`/api/recorrentes/${aluguel.id}/lancar`).send({ mes: '2026-03' })).body.tipo, 'saida');
+
+  const editado = (await u.agente.put(`/api/recorrentes/${aluguel.id}`).send({ nome: 'Aluguel recebido', valor: 1500, tipo: 'fixo', movimento: 'entrada', dia: 10, cat: 'Renda' })).body;
+  assert.equal(editado.movimento, 'entrada');
+  assert.equal((await u.agente.post('/api/recorrentes').send({ nome: 'X', valor: 1, tipo: 'fixo', movimento: 'talvez', dia: 1, cat: 'Renda' })).status, 400);
+});
+
+test('recorrente automático de entrada é lançado como receita pelo agendador', async () => {
+  const { executarAutomaticos } = require('../lib/recorrentes');
+  const { db } = require('./helpers');
+  const u = await novoUsuario();
+  const rec = (await u.agente.post('/api/recorrentes').send({ nome: 'Aluguel recebido', valor: 900, tipo: 'fixo', movimento: 'entrada', dia: 1, cat: 'Renda', automatico: true })).body;
+  executarAutomaticos(new Date());
+  assert.equal(db.prepare('SELECT tipo FROM transactions WHERE recorrente_id = ?').get(rec.id).tipo, 'entrada');
+});

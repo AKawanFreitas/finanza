@@ -65,6 +65,8 @@ const recorrente = z.object({
   nome: texto('o nome', 80),
   valor,
   tipo: z.enum(['fixo', 'recorrente'], { error: 'O tipo deve ser "fixo" ou "recorrente".' }),
+  // Se o lançamento gerado é receita (salário) ou gasto. Clientes antigos não mandam: continua gasto.
+  movimento: z.enum(['entrada', 'saida'], { error: 'O movimento deve ser "entrada" ou "saida".' }).optional().default('saida'),
   dia: z.number({ error: 'O dia do vencimento deve estar entre 1 e 31.' })
     .int('O dia do vencimento deve estar entre 1 e 31.')
     .min(1, 'O dia do vencimento deve estar entre 1 e 31.')

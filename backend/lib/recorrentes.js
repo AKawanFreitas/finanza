@@ -10,8 +10,8 @@ const lancarUm = db.transaction((userId, rec, mes, contaId) => {
   if (ja) return null;
   return Number(db.prepare(`
     INSERT INTO transactions (user_id, conta_id, recorrente_id, descricao, valor_centavos, tipo, categoria_id, data, obs)
-    VALUES (?, ?, ?, ?, ?, 'saida', ?, ?, ?)
-  `).run(userId, contaId, rec.id, rec.nome, rec.valor_centavos, rec.categoria_id, dataVencimento(mes, rec.dia), rec.obs).lastInsertRowid);
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(userId, contaId, rec.id, rec.nome, rec.valor_centavos, rec.movimento ?? 'saida', rec.categoria_id, dataVencimento(mes, rec.dia), rec.obs).lastInsertRowid);
 });
 
 // Conta onde o recorrente automático lança: a escolhida, se ainda existir e estiver ativa; senão a principal.
@@ -40,7 +40,7 @@ function executarAutomaticos(agora = new Date()) {
     const id = lancarUm(rec.user_id, rec, mes, contaDoRecorrente(rec));
     if (!id) continue;
     lancados++;
-    aposLancamentos(rec.user_id, [{ tipo: 'saida', data: dataVencimento(mes, rec.dia), categoria_id: rec.categoria_id }]);
+    aposLancamentos(rec.user_id, [{ tipo: rec.movimento ?? 'saida', data: dataVencimento(mes, rec.dia), categoria_id: rec.categoria_id }]);
   }
   return lancados;
 }

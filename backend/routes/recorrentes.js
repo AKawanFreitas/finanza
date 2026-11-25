@@ -15,13 +15,13 @@ router.use(exigirLogin);
 
 // `lancado`: já existe um lançamento gerado por este recorrente no mês pedido.
 const SELECT = `
-  SELECT r.id, r.nome, r.valor_centavos, r.tipo, r.categoria_id, c.nome AS cat, r.dia, r.obs, r.automatico, r.conta_id,
+  SELECT r.id, r.nome, r.valor_centavos, r.tipo, r.movimento, r.categoria_id, c.nome AS cat, r.dia, r.obs, r.automatico, r.conta_id,
          EXISTS (SELECT 1 FROM transactions t WHERE t.recorrente_id = r.id AND substr(t.data, 1, 7) = :mes) AS lancado
   FROM recorrentes r JOIN categorias c ON c.id = r.categoria_id
 `;
 
 const paraApi = r => ({
-  id: r.id, nome: r.nome, valor: paraReais(r.valor_centavos), tipo: r.tipo,
+  id: r.id, nome: r.nome, valor: paraReais(r.valor_centavos), tipo: r.tipo, movimento: r.movimento,
   cat: r.cat, categoria_id: r.categoria_id, dia: r.dia, obs: r.obs, lancado: !!r.lancado,
   automatico: !!r.automatico, conta_id: r.conta_id,
 });
@@ -66,8 +66,8 @@ router.post('/', (req, res) => {
   if (error) return res.status(status).json({ error });
 
   const r = db.prepare(
-    'INSERT INTO recorrentes (user_id, nome, valor_centavos, tipo, categoria_id, dia, obs, automatico, conta_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-  ).run(req.user.id, dados.nome, dados.valor, dados.tipo, dados.categoria_id, dados.dia, dados.obs, dados.automatico ? 1 : 0, dados.conta_id);
+    'INSERT INTO recorrentes (user_id, nome, valor_centavos, tipo, movimento, categoria_id, dia, obs, automatico, conta_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).run(req.user.id, dados.nome, dados.valor, dados.tipo, dados.movimento, dados.categoria_id, dados.dia, dados.obs, dados.automatico ? 1 : 0, dados.conta_id);
   res.status(201).json(buscar(Number(r.lastInsertRowid), req.user.id));
 });
 
@@ -77,8 +77,8 @@ router.put('/:id', (req, res) => {
   if (error) return res.status(status).json({ error });
 
   const r = db.prepare(
-    'UPDATE recorrentes SET nome = ?, valor_centavos = ?, tipo = ?, categoria_id = ?, dia = ?, obs = ?, automatico = ?, conta_id = ? WHERE id = ? AND user_id = ?'
-  ).run(dados.nome, dados.valor, dados.tipo, dados.categoria_id, dados.dia, dados.obs, dados.automatico ? 1 : 0, dados.conta_id, id, req.user.id);
+    'UPDATE recorrentes SET nome = ?, valor_centavos = ?, tipo = ?, movimento = ?, categoria_id = ?, dia = ?, obs = ?, automatico = ?, conta_id = ? WHERE id = ? AND user_id = ?'
+  ).run(dados.nome, dados.valor, dados.tipo, dados.movimento, dados.categoria_id, dados.dia, dados.obs, dados.automatico ? 1 : 0, dados.conta_id, id, req.user.id);
   if (r.changes === 0) return res.status(404).json({ error: 'Recorrente não encontrado.' });
   res.json(buscar(id, req.user.id));
 });
