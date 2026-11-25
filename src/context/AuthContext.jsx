@@ -69,8 +69,9 @@ export function AuthProvider({ children }) {
     await recarregar();
   }, [recarregar]);
 
-  const salvarPerfil = useCallback(async (nome, email) => {
-    const { user } = await pedir('/perfil', { method: 'PATCH', body: { nome, email } });
+  // `senha` só é exigida pela API quando o e-mail muda.
+  const salvarPerfil = useCallback(async (nome, email, senha) => {
+    const { user } = await pedir('/perfil', { method: 'PATCH', body: { nome, email, ...(senha ? { senha } : {}) } });
     setUser(user);
   }, []);
 
