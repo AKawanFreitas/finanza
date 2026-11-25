@@ -151,25 +151,35 @@ function exigirAdmin(req, res, next) {
 }
 
 /* ── Limite de tentativas de login ──────────────────── */
-// Guardado no banco (lib/limite): não zera quando a API reinicia. Duas chaves:
-// o e-mail (8 falhas / 15 min) e o IP (30 falhas / 15 min, para quem tenta muitos e-mails).
+// Guardado no banco (lib/limite): não zera quando a API reinicia. Três chaves, numa janela de 15 min:
+//   e-mail + IP   8 falhas   quem erra a senha de uma conta trava só a si mesmo, não o dono, que entra de outro IP;
+//   IP           30 falhas   quem tenta muitos e-mails a partir da mesma máquina;
+//   e-mail       50 falhas   teto por conta contra ataque distribuído (muitos IPs). Redefinir a senha libera.
 
 const limite = require('./limite');
 
 const JANELA = 15 * 60e3;
-const MAX_EMAIL = 8;
+const MAX_PAR = 8;
 const MAX_IP = 30;
+const MAX_EMAIL = 50;
 
-const bloqueado = (email, ip) =>
-  Math.max(limite.minutosBloqueado(`login:${email}`, MAX_EMAIL), ip ? limite.minutosBloqueado(`login-ip:${ip}`, MAX_IP) : 0);
+const chavePar = (email, ip) => `login:${email}|${ip || '-'}`;
+
+const bloqueado = (email, ip) => Math.max(
+  limite.minutosBloqueado(chavePar(email, ip), MAX_PAR),
+  limite.minutosBloqueado(`login:${email}`, MAX_EMAIL),
+  ip ? limite.minutosBloqueado(`login-ip:${ip}`, MAX_IP) : 0,
+);
 
 function registrarFalha(email, ip) {
+  limite.registrar(chavePar(email, ip), JANELA);
   limite.registrar(`login:${email}`, JANELA);
   if (ip) limite.registrar(`login-ip:${ip}`, JANELA);
 }
 
-// Login certo zera só o contador do e-mail; o do IP continua (um IP não "se limpa" acertando uma conta).
-const limparTentativas = email => limite.limpar(`login:${email}`);
+// Login certo (ou senha redefinida pelo e-mail) zera os contadores da conta; o do IP continua
+// (um IP não "se limpa" acertando uma conta).
+const limparTentativas = email => limite.limparPrefixo(`login:${email}`);
 
 module.exports = {
   hashSenha, conferirSenha, senhaProvisoria,
