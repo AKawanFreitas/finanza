@@ -93,4 +93,15 @@ function resumoMensal({ nome, mes, resumo }) {
   };
 }
 
-module.exports = { redefinirSenha, verificarEmail, alertaOrcamento, metaAtingida, lembreteVencimentos, resumoMensal };
+// Vai para o endereço ANTIGO: se não foi a pessoa, ela fica sabendo enquanto ainda recebe e-mails ali.
+function emailAlterado({ nome, novo }) {
+  const url = urlApp('');
+  return {
+    assunto: 'O e-mail da sua conta no Finanza foi alterado',
+    texto: `Olá, ${primeiroNome(nome)}!\n\nO e-mail de acesso da sua conta foi trocado para ${novo}. Daqui em diante, os avisos vão para lá.\n\nSe não foi você, responda a este e-mail ou fale com o suporte o quanto antes.\n\n${url}`,
+    html: moldura('Seu e-mail de acesso foi alterado',
+      `<p>Olá, ${esc(primeiroNome(nome))}! O e-mail de acesso da sua conta foi trocado para <strong>${esc(novo)}</strong>. Daqui em diante, os avisos vão para lá.</p><p>Se não foi você, fale com o suporte o quanto antes.</p>`),
+  };
+}
+
+module.exports = { redefinirSenha, verificarEmail, emailAlterado, alertaOrcamento, metaAtingida, lembreteVencimentos, resumoMensal };
