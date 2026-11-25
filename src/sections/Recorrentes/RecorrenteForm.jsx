@@ -6,6 +6,7 @@ import {
   AlignLeft, Tag, CalendarClock, MessageSquare,
   RefreshCw, Zap, Plus, Check, X, Wallet, Repeat, ArrowLeftRight, DollarSign, ArrowRight
 } from 'lucide-react';
+import { lerValor, valorParaCampo } from '../../utils/valor';
 
 const EMPTY = (cats) => ({ nome: '', valor: '', tipo: 'fixo', cat: cats[0]?.nome || '', dia: '', obs: '', automatico: false, conta_id: null });
 
@@ -20,7 +21,7 @@ export default function RecorrenteForm({ editar = null, onConcluir }) {
   useEffect(() => {
     if (editingRec) {
       const { nome, valor, tipo, cat, dia, obs, automatico, conta_id } = editingRec;
-      setForm({ nome, valor: String(valor), tipo, cat, dia: String(dia), obs: obs || '', automatico: !!automatico, conta_id: conta_id ?? null });
+      setForm({ nome, valor: valorParaCampo(valor), tipo, cat, dia: String(dia), obs: obs || '', automatico: !!automatico, conta_id: conta_id ?? null });
     } else {
       setForm(EMPTY(categorias));
     }
@@ -32,7 +33,7 @@ export default function RecorrenteForm({ editar = null, onConcluir }) {
     if (!form.nome || !form.valor || !form.dia) return;
     const { conta_id, ...resto } = form;
     // Sem conta escolhida, o lançamento automático usa a conta principal.
-    const data = { ...resto, valor: parseFloat(form.valor), dia: parseInt(form.dia), ...(conta_id ? { conta_id } : {}) };
+    const data = { ...resto, valor: lerValor(form.valor), dia: parseInt(form.dia), ...(conta_id ? { conta_id } : {}) };
     const ok = editingRec
       ? await updateRecorrente(editingRec.id, data)
       : await addRecorrente(data);
@@ -100,10 +101,8 @@ export default function RecorrenteForm({ editar = null, onConcluir }) {
             <span className="form-prefix-text">R$</span>
             <input id={`${uid}-2`}
               className="form-control"
-              type="number"
+              type="text" inputMode="decimal" autoComplete="off"
               placeholder="0,00"
-              min="0"
-              step="0.01"
               value={form.valor}
               onChange={e => set('valor', e.target.value)}
             />
