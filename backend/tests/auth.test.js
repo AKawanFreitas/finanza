@@ -98,3 +98,25 @@ test('excluir a conta apaga todos os dados dela', async () => {
     assert.equal(db.prepare(`SELECT COUNT(*) AS n FROM ${t} WHERE user_id = ?`).get(u.id).n, 0, t);
   }
 });
+
+test('senhas fracas são recusadas no cadastro, na troca e na redefinição', async () => {
+  for (const senha of ['        ', '12345678', 'aaaaaaaa', 'Senha123', 'fraca@teste.com']) {
+    const r = await request(app).post('/api/auth/registrar').send({ nome: 'Fulana', email: 'fraca@teste.com', senha });
+    assert.equal(r.status, 400, JSON.stringify(senha));
+    assert.match(r.body.error, /senha/i);
+  }
+  const u = await novoUsuario();
+  const r = await u.agente.post('/api/auth/senha').send({ atual: u.senha, nova: '12345678' });
+  assert.equal(r.status, 400);
+});
+
+test('a senha atual tem limite de tentativas (trocar senha, excluir conta, trocar e-mail)', async () => {
+  const u = await novoUsuario();
+  for (let i = 0; i < 5; i++) {
+    assert.equal((await u.agente.post('/api/auth/senha').send({ atual: `chute-${i}-errado`, nova: 'nova-senha-forte-1' })).status, 400);
+  }
+  const bloqueada = await u.agente.delete('/api/auth/conta').send({ senha: u.senha });
+  assert.equal(bloqueada.status, 429, 'nem a senha certa passa durante o bloqueio');
+  assert.match(bloqueada.body.error, /tentativas/);
+  assert.equal((await u.agente.patch('/api/auth/perfil').send({ nome: 'Fulana', email: `x-${u.email}`, senha: u.senha })).status, 429);
+});

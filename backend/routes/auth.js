@@ -98,7 +98,7 @@ const buscarUser = id => db.prepare('SELECT * FROM users WHERE id = ?').get(id);
 router.post('/registrar', (req, res) => {
   const nome  = validarNome(req.body?.nome);
   const email = validarEmail(req.body?.email);
-  const senha = validarSenha(req.body?.senha);
+  const senha = validarSenha(req.body?.senha, req.body?.email);
   const erro  = nome.error || email.error || senha.error;
   if (erro) return res.status(400).json({ error: erro });
 
@@ -184,10 +184,8 @@ router.patch('/perfil', auth.exigirLogin, semSuporte, (req, res) => {
   // e-mail em uso, para que ela não sirva de consulta de quem tem conta.
   const mudouEmail = email.value !== req.user.email.toLowerCase();
   if (mudouEmail) {
-    const { senha_hash } = db.prepare('SELECT senha_hash FROM users WHERE id = ?').get(req.user.id);
-    if (!auth.conferirSenha(String(req.body?.senha || ''), senha_hash)) {
-      return res.status(400).json({ error: 'Para trocar o e-mail, confirme sua senha atual.' });
-    }
+    const conf = conferirSenhaAtual(req.user.id, req.body?.senha);
+    if (!conf.ok) return res.status(conf.status).json({ error: conf.error || 'Para trocar o e-mail, confirme sua senha atual.' });
   }
 
   if (db.prepare('SELECT 1 FROM users WHERE email = ? AND id != ?').get(email.value, req.user.id)) {
@@ -301,7 +299,7 @@ router.post('/redefinir-senha', (req, res) => {
   const user = buscarUser(t.user_id);
   if (!user || user.status !== 'ativo') return res.status(400).json(invalido);
 
-  const nova = validarSenha(req.body?.nova);
+  const nova = validarSenha(req.body?.nova, user.email);
   if (nova.error) return res.status(400).json({ error: nova.error });
 
   db.transaction(() => {
@@ -322,13 +320,12 @@ router.post('/senha', (req, res) => {
   if (!user) return res.status(401).json({ error: 'Entre na sua conta para continuar.' });
   if (user.suporte) return res.status(403).json({ error: suporte.MENSAGEM_BLOQUEIO });
 
-  const nova = validarSenha(req.body?.nova);
+  const nova = validarSenha(req.body?.nova, user.email);
   if (nova.error) return res.status(400).json({ error: nova.error });
 
-  const { senha_hash } = db.prepare('SELECT senha_hash FROM users WHERE id = ?').get(user.id);
-  if (!auth.conferirSenha(String(req.body?.atual || ''), senha_hash)) {
-    return res.status(400).json({ error: 'A senha atual está incorreta.' });
-  }
+  const conf = conferirSenhaAtual(user.id, req.body?.atual);
+  if (!conf.ok) return res.status(conf.status).json({ error: conf.error || 'A senha atual está incorreta.' });
+  const { senha_hash } = conf;
   if (auth.conferirSenha(nova.value, senha_hash)) {
     return res.status(400).json({ error: 'A nova senha deve ser diferente da atual.' });
   }
@@ -346,10 +343,8 @@ router.post('/senha', (req, res) => {
 
 /* ── Excluir a própria conta ────────────────────────── */
 router.delete('/conta', auth.exigirLogin, semSuporte, (req, res) => {
-  const { senha_hash } = db.prepare('SELECT senha_hash FROM users WHERE id = ?').get(req.user.id);
-  if (!auth.conferirSenha(String(req.body?.senha || ''), senha_hash)) {
-    return res.status(400).json({ error: 'A senha está incorreta.' });
-  }
+  const conf = conferirSenhaAtual(req.user.id, req.body?.senha);
+  if (!conf.ok) return res.status(conf.status).json({ error: conf.error || 'A senha está incorreta.' });
   if (req.user.papel === 'superadmin') {
     return res.status(400).json({ error: 'A conta do administrador não pode ser excluída por aqui.' });
   }
