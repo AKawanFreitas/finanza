@@ -33,7 +33,7 @@ export default function CartaoForm({ editando, onCancelar, onSalvo }) {
   ];
 
   async function enviar() {
-    if (!form.nome.trim() || !form.limite || !form.dia_fechamento || !form.dia_vencimento) return;
+    if (!form.nome.trim() || !form.limite || !form.dia_fechamento || !form.dia_vencimento) return showToast('Preencha o nome, o limite e os dias de fechamento e vencimento para salvar.', 'err');
     const corpo = {
       nome: form.nome.trim(), limite: lerValor(form.limite), cor: form.cor,
       dia_fechamento: Number(form.dia_fechamento), dia_vencimento: Number(form.dia_vencimento),
