@@ -5,6 +5,7 @@ import { api } from '../../utils/api';
 import { fmt, fmtDate, today } from '../../utils/formatters';
 import { MONTH_ABBR } from '../../utils/period';
 import { ROTULO_FATURA, CLASSE_FATURA } from './status';
+import { lerValor, valorParaCampo } from '../../utils/valor';
 
 const rotuloMes = ym => `${MONTH_ABBR[Number(ym.slice(5)) - 1]}/${ym.slice(0, 4)}`;
 
@@ -37,7 +38,7 @@ export default function FaturaDetalhe({ cartao }) {
   const meses = [...new Set([cartao.fatura_atual.mes, ...faturas.map(f => f.mes)])].sort().reverse();
 
   async function pagar() {
-    const valor = pagamento.valor === '' ? undefined : Number(pagamento.valor);
+    const valor = pagamento.valor.trim() === '' ? undefined : lerValor(pagamento.valor);
     setPagando(true);
     try {
       const { ok, data } = await api(`/cartoes/${cartao.id}/faturas/${mes}/pagar`, {
@@ -111,7 +112,7 @@ export default function FaturaDetalhe({ cartao }) {
             <label className="form-label" htmlFor={`${uid}-2`}>Valor</label>
             <div className="form-input-wrap has-text-prefix">
               <span className="form-prefix-text">R$</span>
-              <input id={`${uid}-2`} className="form-control" type="number" min="0" step="0.01" placeholder={String(detalhe.restante)} value={pagamento.valor}
+              <input id={`${uid}-2`} className="form-control" type="text" inputMode="decimal" autoComplete="off" placeholder={valorParaCampo(detalhe.restante)} value={pagamento.valor}
                 onChange={e => setPagamento(p => ({ ...p, valor: e.target.value }))} />
             </div>
           </div>
