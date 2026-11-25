@@ -7,6 +7,7 @@ import FormHeader from '../../components/FormHeader';
 import Select from '../../components/Select';
 import IconButton from '../../components/IconButton';
 import { useConfirm } from '../../components/Confirm';
+import { lerValor } from '../../utils/valor';
 
 // origem_id e destino_id ficam nulos até a pessoa escolher; o padrão é calculado a cada render,
 // porque as contas podem mudar (criar uma nova) depois que o formulário já foi montado.
@@ -39,7 +40,7 @@ export default function Transferencias() {
 
   async function enviar() {
     if (!form.valor) return;
-    const ok = await addTransferencia({ ...form, origem_id: origem, destino_id: destino, valor: Number(form.valor) });
+    const ok = await addTransferencia({ ...form, origem_id: origem, destino_id: destino, valor: lerValor(form.valor) });
     if (ok) setForm(VAZIO());
   }
 
@@ -70,7 +71,7 @@ export default function Transferencias() {
             <label className="form-label" htmlFor={`${uid}-3`}><DollarSign size={16} />Valor</label>
             <div className="form-input-wrap has-text-prefix">
               <span className="form-prefix-text">R$</span>
-              <input id={`${uid}-3`} className="form-control" type="number" min="0" step="0.01" placeholder="0,00"
+              <input id={`${uid}-3`} className="form-control" type="text" inputMode="decimal" autoComplete="off" placeholder="0,00"
                 value={form.valor} onChange={e => set('valor', e.target.value)} />
             </div>
           </div>
