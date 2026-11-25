@@ -36,6 +36,19 @@ test('login com senha errada e e-mail inexistente dão a mesma resposta', async 
   assert.deepEqual(errada.body, inexistente.body);
 });
 
+test('e-mail inexistente leva o mesmo tempo que senha errada (o tempo não revela quem tem conta)', async () => {
+  const u = await novoUsuario();
+  const medir = async email => {
+    const t = process.hrtime.bigint();
+    await request(app).post('/api/auth/login').send({ email, senha: 'errada-errada' });
+    return Number(process.hrtime.bigint() - t) / 1e6;
+  };
+  let errada = 0, inexistente = 0;
+  for (let i = 0; i < 3; i++) { errada += await medir(u.email); inexistente += await medir(`fantasma${i}@teste.com`); }
+  // Sem a conferência de mentira, o e-mail inexistente responde em ~1 ms contra ~25 ms do scrypt.
+  assert.ok(inexistente > errada * 0.5, `inexistente ${inexistente.toFixed(1)} ms x errada ${errada.toFixed(1)} ms`);
+});
+
 test('logout encerra a sessão', async () => {
   const u = await novoUsuario();
   await u.agente.post('/api/auth/logout');
