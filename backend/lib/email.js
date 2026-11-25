@@ -19,6 +19,10 @@ async function enviarEmail({ para, assunto, texto, html }) {
   const t = obterTransporte();
   if (t) {
     await t.sendMail({ from: remetente(), to: para, subject: assunto, text: texto, html });
+  } else if (process.env.NODE_ENV === 'production') {
+    // Em produção o corpo nunca vai para o log: ele traz links de redefinir senha, e quem lê os logs
+    // poderia entrar na conta de qualquer pessoa. Só avisa que o e-mail não saiu.
+    require('./logger').warn({ para, assunto }, 'e-mail não enviado: configure SMTP_URL');
   } else if (process.env.NODE_ENV !== 'test') {
     console.log(`\n[e-mail] para: ${para}\n[e-mail] assunto: ${assunto}\n${texto}\n`);
   }
