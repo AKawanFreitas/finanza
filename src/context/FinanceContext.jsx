@@ -95,17 +95,21 @@ export function FinanceProvider({ children }) {
   }
 
   /* ── Lançamentos ─────────────────────────────────── */
+  // Compra acima do limite do cartão é salva, mas a API devolve `aviso`: ele aparece no lugar do "ok".
   async function addTransaction(data, { silent = false } = {}) {
-    if (!await enviar('/transactions', 'POST', data)) return false;
+    const salvo = await enviar('/transactions', 'POST', data);
+    if (!salvo) return false;
     invalidar();
-    if (!silent) showToast(data.tipo === 'entrada' ? 'Receita adicionada' : 'Gasto adicionado');
+    if (salvo.aviso) showToast(salvo.aviso, 'err');
+    else if (!silent) showToast(data.tipo === 'entrada' ? 'Receita adicionada' : 'Gasto adicionado');
     return true;
   }
 
   async function updateTransaction(id, data) {
-    if (!await enviar(`/transactions/${id}`, 'PUT', data)) return false;
+    const salvo = await enviar(`/transactions/${id}`, 'PUT', data);
+    if (!salvo) return false;
     invalidar();
-    showToast('Lançamento atualizado');
+    showToast(salvo.aviso || 'Lançamento atualizado', salvo.aviso ? 'err' : 'ok');
     return true;
   }
 

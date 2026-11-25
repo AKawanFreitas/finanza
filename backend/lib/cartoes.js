@@ -84,8 +84,20 @@ function resumoDoCartao(userId, cartao, hoje = hojeBR()) {
     limite: paraReais(cartao.limite_centavos), usado: paraReais(usado),
     disponivel: paraReais(cartao.limite_centavos - usado),
     percentual_usado: Math.min(100, Math.round((usado / cartao.limite_centavos) * 1000) / 10),
+    limite_estourado: usado > cartao.limite_centavos,
     fatura_atual: atual,
   };
 }
 
-module.exports = { FATURA_SQL, mesDaFatura, datasDaFatura, statusDaFatura, buscarCartao, listarFaturas, buscarFatura, resumoDoCartao };
+// A compra acima do limite é salva (o banco pode ter aprovado de verdade), mas a resposta avisa.
+// Devolve o texto do aviso, ou undefined se a conta não é cartão ou ainda há limite.
+function avisoDeLimite(userId, contaId) {
+  const cartao = buscarCartao(userId, contaId);
+  if (!cartao) return undefined;
+  const r = resumoDoCartao(userId, cartao);
+  if (!r.limite_estourado) return undefined;
+  const excesso = (-r.disponivel).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  return `Lançamento salvo, mas o limite do cartão ${cartao.nome} foi ultrapassado em ${excesso}.`;
+}
+
+module.exports = { avisoDeLimite, FATURA_SQL, mesDaFatura, datasDaFatura, statusDaFatura, buscarCartao, listarFaturas, buscarFatura, resumoDoCartao };

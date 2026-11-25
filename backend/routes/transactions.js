@@ -10,6 +10,13 @@ const { resolverConta }      = require('../lib/contas');
 const { aposLancamentos }    = require('../lib/orcamentos');
 const { dividirParcelas, dataDaParcela } = require('../lib/parcelas');
 const crypto = require('crypto');
+const { avisoDeLimite } = require('../lib/cartoes');
+
+// Junta o aviso de limite estourado à resposta, quando houver (a compra é salva do mesmo jeito).
+const comAviso = (userId, contaId, corpo) => {
+  const aviso = avisoDeLimite(userId, contaId);
+  return aviso ? { ...corpo, aviso } : corpo;
+};
 
 router.use(exigirLogin);
 
@@ -88,7 +95,7 @@ router.post('/', (req, res) => {
     }
     const criadas = inserirParcelas(req.user.id, dados);
     aposLancamentos(req.user.id, criadas.map(c => ({ tipo: 'saida', data: c.data, categoria_id: dados.categoria_id })));
-    return res.status(201).json({ ...buscar(criadas[0].id, req.user.id), parcelas_criadas: criadas.length });
+    return res.status(201).json(comAviso(req.user.id, dados.conta_id, { ...buscar(criadas[0].id, req.user.id), parcelas_criadas: criadas.length }));
   }
 
   const r = db.prepare(`
@@ -96,7 +103,7 @@ router.post('/', (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `).run(req.user.id, dados.conta_id, dados.desc, dados.valor, dados.tipo, dados.categoria_id, dados.data, dados.obs);
   aposLancamentos(req.user.id, [dados]);
-  res.status(201).json(buscar(Number(r.lastInsertRowid), req.user.id));
+  res.status(201).json(comAviso(req.user.id, dados.conta_id, buscar(Number(r.lastInsertRowid), req.user.id)));
 });
 
 router.put('/:id', (req, res) => {
@@ -111,7 +118,7 @@ router.put('/:id', (req, res) => {
   `).run(dados.conta_id, dados.desc, dados.valor, dados.tipo, dados.categoria_id, dados.data, dados.obs, id, req.user.id);
   if (r.changes === 0) return res.status(404).json({ error: 'Lançamento não encontrado.' });
   aposLancamentos(req.user.id, [dados]);
-  res.json(buscar(id, req.user.id));
+  res.json(comAviso(req.user.id, dados.conta_id, buscar(id, req.user.id)));
 });
 
 // DELETE /api/transactions/:id            apaga só este lançamento

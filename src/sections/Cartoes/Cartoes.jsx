@@ -71,6 +71,7 @@ export default function Cartoes() {
                   <span className="dot" style={{ background: c.cor }} />
                   <strong>{c.nome}</strong>
                   {c.arquivada && <span className="tag">arquivado</span>}
+                  {c.limite_estourado && <span className="chip bad">Limite estourado</span>}
                   <span className={`chip ${CLASSE_FATURA[f.status]}`}>Fatura {ROTULO_FATURA[f.status].toLowerCase()}</span>
                   <span className="orc-pct">{fmt(f.total)}</span>
                 </div>
