@@ -8,6 +8,7 @@ import Select from '../../components/Select';
 import IconButton from '../../components/IconButton';
 import { useConfirm } from '../../components/Confirm';
 import { lerValor } from '../../utils/valor';
+import useEnvioUnico from '../../utils/useEnvioUnico';
 
 // origem_id e destino_id ficam nulos até a pessoa escolher; o padrão é calculado a cada render,
 // porque as contas podem mudar (criar uma nova) depois que o formulário já foi montado.
@@ -43,6 +44,7 @@ export default function Transferencias() {
     const ok = await addTransferencia({ ...form, origem_id: origem, destino_id: destino, valor: lerValor(form.valor) });
     if (ok) setForm(VAZIO());
   }
+  const [enviarUmaVez, enviando] = useEnvioUnico(enviar);
 
   if (ativas.length < 2) {
     return (
@@ -93,7 +95,7 @@ export default function Transferencias() {
         </div>
 
         <div className="form-actions">
-          <button className="btn btn-primary btn-full" onClick={enviar}>
+          <button className="btn btn-primary btn-full" onClick={enviarUmaVez} disabled={enviando}>
             <ArrowLeftRight size={15} strokeWidth={2.5} /> Transferir
           <ArrowRight size={15} strokeWidth={2.5} />
         </button>
