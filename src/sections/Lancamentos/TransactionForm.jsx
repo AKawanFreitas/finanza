@@ -17,7 +17,7 @@ const EMPTY = (cats, contas) => ({
 export default function TransactionForm({ editar = null, onConcluir }) {
   const editing = editar;
   const uid = useId();
-  const { categorias, contas, addTransaction, updateTransaction } = useFinance();
+  const { categorias, contas, addTransaction, updateTransaction, showToast } = useFinance();
   const [form, setForm] = useState(EMPTY(categorias, contas));
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function TransactionForm({ editar = null, onConcluir }) {
   function set(field, value) { setForm(f => ({ ...f, [field]: value })); }
 
   async function handleSubmit() {
-    if (!form.desc || !form.valor || !form.data) return;
+    if (!form.desc.trim() || !form.valor || !form.data) return showToast('Preencha a descrição, o valor e a data para salvar.', 'err');
     // Parcelamento só existe ao criar uma compra no cartão; ao editar, cada parcela é um lançamento independente.
     const parcelas = Number(form.parcelas) || 1;
     const data = { ...form, valor: lerValor(form.valor) };
