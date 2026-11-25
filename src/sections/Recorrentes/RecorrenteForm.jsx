@@ -4,12 +4,12 @@ import Select from '../../components/Select';
 import FormHeader from '../../components/FormHeader';
 import {
   AlignLeft, Tag, CalendarClock, MessageSquare,
-  RefreshCw, Zap, Plus, Check, X, Wallet, Repeat, ArrowLeftRight, DollarSign, ArrowRight
+  RefreshCw, Zap, Plus, Check, X, Wallet, Repeat, ArrowLeftRight, DollarSign, ArrowRight, ArrowDownLeft, ArrowUpRight
 } from 'lucide-react';
 import { lerValor, valorParaCampo } from '../../utils/valor';
 import useEnvioUnico from '../../utils/useEnvioUnico';
 
-const EMPTY = (cats) => ({ nome: '', valor: '', tipo: 'fixo', cat: cats[0]?.nome || '', dia: '', obs: '', automatico: false, conta_id: null });
+const EMPTY = (cats) => ({ nome: '', valor: '', tipo: 'fixo', movimento: 'saida', cat: cats[0]?.nome || '', dia: '', obs: '', automatico: false, conta_id: null });
 
 // Sem `editar`, cria um novo registro (na página). Com `editar`, edita aquele registro dentro do modal
 // e chama `onConcluir` ao salvar ou cancelar.
@@ -21,8 +21,8 @@ export default function RecorrenteForm({ editar = null, onConcluir }) {
 
   useEffect(() => {
     if (editingRec) {
-      const { nome, valor, tipo, cat, dia, obs, automatico, conta_id } = editingRec;
-      setForm({ nome, valor: valorParaCampo(valor), tipo, cat, dia: String(dia), obs: obs || '', automatico: !!automatico, conta_id: conta_id ?? null });
+      const { nome, valor, tipo, movimento, cat, dia, obs, automatico, conta_id } = editingRec;
+      setForm({ nome, valor: valorParaCampo(valor), tipo, movimento: movimento ?? 'saida', cat, dia: String(dia), obs: obs || '', automatico: !!automatico, conta_id: conta_id ?? null });
     } else {
       setForm(EMPTY(categorias));
     }
@@ -56,10 +56,26 @@ export default function RecorrenteForm({ editar = null, onConcluir }) {
       {!editingRec && <FormHeader
         Icon={Repeat}
         titulo={editingRec ? 'Editar recorrente' : 'Adicionar recorrente'}
-        subtitulo={editingRec ? 'Altere os dados e salve' : 'Despesas que se repetem todo mês'}
+        subtitulo={editingRec ? 'Altere os dados e salve' : 'Gastos e receitas que se repetem todo mês'}
       />}
 
       <div className="form-grid">
+
+        <div className="form-group form-span-2" role="group" aria-labelledby={`${uid}-mov`}>
+          <span className="form-label" id={`${uid}-mov`}><ArrowLeftRight size={16} />Movimento</span>
+          <div className="tipo-toggle">
+            <button type="button" className={`tipo-btn ${form.movimento !== 'entrada' ? 'active-saida' : ''}`}
+              aria-pressed={form.movimento !== 'entrada'} onClick={() => set('movimento', 'saida')}>
+              <ArrowUpRight size={14} strokeWidth={2.5} />
+              Saída (conta, assinatura)
+            </button>
+            <button type="button" className={`tipo-btn ${form.movimento === 'entrada' ? 'active-entrada' : ''}`}
+              aria-pressed={form.movimento === 'entrada'} onClick={() => set('movimento', 'entrada')}>
+              <ArrowDownLeft size={14} strokeWidth={2.5} />
+              Entrada (salário, aluguel)
+            </button>
+          </div>
+        </div>
 
         <div className="form-group form-span-2" role="group" aria-labelledby={`${uid}-tipo`}>
           <span className="form-label" id={`${uid}-tipo`}><ArrowLeftRight size={16} />Tipo</span>

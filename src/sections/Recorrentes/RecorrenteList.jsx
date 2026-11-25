@@ -13,7 +13,9 @@ export default function RecorrenteList() {
   const excluir = async r => {
     if (await confirmar({ titulo: `Excluir “${r.nome}”?`, mensagem: 'Os lançamentos que ele já gerou continuam no histórico. Esta ação não pode ser desfeita.', rotulo: 'Excluir' })) delRecorrente(r.id);
   };
-  const total = recorrentes.reduce((a, r) => a + r.valor, 0);
+  // O total do mês é o que sai; o que entra (salário) aparece à parte.
+  const total    = recorrentes.filter(r => r.movimento !== 'entrada').reduce((a, r) => a + r.valor, 0);
+  const entradas = recorrentes.filter(r => r.movimento === 'entrada').reduce((a, r) => a + r.valor, 0);
 
   // `lancado` vem do servidor: o recorrente já gerou um lançamento neste mês.
   const pending = recorrentes.filter(r => !r.lancado);
@@ -22,7 +24,7 @@ export default function RecorrenteList() {
     <div className="hist-wrap">
       <div className="card-head">
         <div className="card-title"><Repeat size={20} />Recorrentes cadastrados</div>
-        <div className="card-sub pill">Total: {fmt(total)}/mês</div>
+        <div className="card-sub pill">Gastos: {fmt(total)}/mês{entradas > 0 && ` · Entradas: ${fmt(entradas)}/mês`}</div>
       </div>
 
       {recorrentes.length > 0 && (
@@ -76,7 +78,9 @@ export default function RecorrenteList() {
                 <span className={`tag ${r.tipo === 'fixo' ? 'tag-fixo' : 'tag-rec'}`}>
                   {r.tipo === 'fixo' ? 'Fixo' : 'Variável'}
                 </span>
-                <div className="rec-amount">{fmt(r.valor)}</div>
+                <div className={`rec-amount ${r.movimento === 'entrada' ? 'pos' : ''}`}>
+                  {r.movimento === 'entrada' ? '+ ' : ''}{fmt(r.valor)}
+                </div>
                 <div className="hist-actions">
                   <IconButton label="Editar" onClick={() => setEditingRec(r)}>
                     <Pencil size={13} strokeWidth={2} />

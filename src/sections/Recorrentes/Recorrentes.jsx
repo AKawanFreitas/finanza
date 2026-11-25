@@ -10,7 +10,7 @@ export default function Recorrentes() {
 
   return (
     <div className="section-enter">
-      <PageHeader Icon={Repeat} titulo="Recorrentes" subtitulo="Gastos fixos e recorrentes mensais" />
+      <PageHeader Icon={Repeat} titulo="Recorrentes" subtitulo="Gastos e receitas que se repetem todo mês" />
       <RecorrenteForm />
       <RecorrenteList />
       {editingRec && (
