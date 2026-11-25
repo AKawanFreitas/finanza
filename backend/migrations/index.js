@@ -13,6 +13,7 @@ const migrations = [
   require('./009_icone_da_categoria'),
   require('./010_chamados_suporte'),
   require('./011_foto_de_perfil'),
+  require('./012_recorrente_de_entrada'),
 ].sort((a, b) => a.version - b.version);
 
 const ultimaVersao = migrations[migrations.length - 1].version;
