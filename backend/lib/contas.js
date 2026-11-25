@@ -36,4 +36,12 @@ function resolverConta(userId, contaId) {
   return c ? c.id : null;
 }
 
-module.exports = { listarContas, contaPadrao, resolverConta };
+// Apaga uma conta (ou cartão) já conferida como sem movimentações. Recorrentes e contas a pagar que só a
+// tinham como conta planejada ficam sem conta (e passam a usar a principal), em vez de travar a exclusão na FK.
+const excluirConta = db.transaction((id) => {
+  db.prepare('UPDATE recorrentes  SET conta_id = NULL WHERE conta_id = ?').run(id);
+  db.prepare('UPDATE contas_pagar SET conta_id = NULL WHERE conta_id = ?').run(id);
+  db.prepare('DELETE FROM contas WHERE id = ?').run(id);
+});
+
+module.exports = { listarContas, contaPadrao, resolverConta, excluirConta };
