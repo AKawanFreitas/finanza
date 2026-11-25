@@ -28,6 +28,13 @@ function minutosBloqueado(chave, max) {
 }
 
 const limpar = chave => db.prepare('DELETE FROM limites WHERE chave = ?').run(chave);
+
+// Apaga a chave e as derivadas dela ("chave|qualquer-coisa"). Compara por prefixo exato, sem LIKE,
+// porque e-mails podem ter "_" e "%".
+function limparPrefixo(chave) {
+  const derivada = `${chave}|`;
+  return db.prepare('DELETE FROM limites WHERE chave = ? OR substr(chave, 1, ?) = ?').run(chave, derivada.length, derivada);
+}
 const limparExpirados = () => db.prepare('DELETE FROM limites WHERE ate < ?').run(agora()).changes;
 
-module.exports = { permitir, registrar, minutosBloqueado, limpar, limparExpirados };
+module.exports = { permitir, registrar, minutosBloqueado, limpar, limparPrefixo, limparExpirados };
