@@ -110,8 +110,8 @@ router.post('/login', (req, res) => {
   if (minutos) return res.status(429).json({ error: `Muitas tentativas. Tente de novo em ${minutos} min.` });
 
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-  // Mesma mensagem para e-mail inexistente e senha errada: não revela quem tem conta.
-  if (!user || !auth.conferirSenha(senha, user.senha_hash)) {
+  // Mesma mensagem e o mesmo tempo para e-mail inexistente e senha errada: não revela quem tem conta.
+  if (!auth.conferirSenhaDoLogin(senha, user?.senha_hash) || !user) {
     auth.registrarFalha(email, req.ip);
     return res.status(401).json({ error: 'E-mail ou senha incorretos.' });
   }
