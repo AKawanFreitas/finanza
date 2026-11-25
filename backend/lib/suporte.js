@@ -44,7 +44,17 @@ const BLOQUEADAS = [
   ['PATCH', '/api/auth/preferencias'], ['POST', '/api/auth/reenviar-verificacao'],
   ['PUT', '/api/auth/foto'], ['DELETE', '/api/auth/foto'],
 ];
-const bloqueada = (metodo, caminho) => BLOQUEADAS.some(([m, c]) => m === metodo && c === caminho);
+// O Express ignora maiúsculas, barras repetidas e a barra no fim ao escolher a rota; a comparação faz o mesmo,
+// senão "/api/auth/perfil/" chegaria na rota sem cair no bloqueio.
+function normalizarCaminho(caminho) {
+  let c = String(caminho);
+  try { c = decodeURIComponent(c); } catch { /* mantém como veio */ }
+  return c.toLowerCase().replace(/\/{2,}/g, '/').replace(/(.)\/+$/, '$1');
+}
+const bloqueada = (metodo, caminho) => {
+  const c = normalizarCaminho(caminho);
+  return BLOQUEADAS.some(([m, b]) => m === metodo && b === c);
+};
 const MENSAGEM_BLOQUEIO = 'Durante o acesso de suporte não é possível alterar a senha, o e-mail, o perfil, a foto nem excluir a conta do cliente.';
 
 const caminhoLimpo = url => String(url).split('?')[0];
