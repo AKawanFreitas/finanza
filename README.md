@@ -74,7 +74,10 @@ Na raiz:
 
 | Comando           | O que faz                        |
 | ----------------- | -------------------------------- |
-| `npm run dev`     | Front em modo desenvolvimento    |
+| `npm run setup`   | Instala as dependências do front e do backend |
+| `npm run dev`     | API + front juntos, em modo desenvolvimento |
+| `npm run dev:web` | Só o front                       |
+| `npm run dev:api` | Só a API                         |
 | `npm run build`   | Build de produção em `dist/`     |
 | `npm run preview` | Serve o build localmente         |
 | `npm run lint`    | ESLint (o `backend/` é ignorado) |
