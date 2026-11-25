@@ -164,6 +164,26 @@ test('trocar o e-mail do perfil volta a pedir confirmação, no endereço novo',
   assert.equal(emailsPara(novo).length, 1, 'mudar só o nome não reenvia');
 });
 
+test('trocar o e-mail exige a senha atual e avisa o endereço antigo', async () => {
+  const u = await novoUsuario();
+  const novo = `trocado-${u.email}`;
+  const semSenha = await u.agente.patch('/api/auth/perfil').send({ nome: 'Fulana', email: novo });
+  assert.equal(semSenha.status, 400);
+  assert.match(semSenha.body.error, /senha/i);
+  const errada = await u.agente.patch('/api/auth/perfil').send({ nome: 'Fulana', email: novo, senha: 'nao-e-essa' });
+  assert.equal(errada.status, 400);
+  assert.equal(db.prepare('SELECT email FROM users WHERE id = ?').get(u.id).email, u.email, 'nada mudou');
+
+  const ok = await u.agente.patch('/api/auth/perfil').send({ nome: 'Fulana', email: novo, senha: u.senha });
+  assert.equal(ok.status, 200);
+  const aviso = ultimoEmail(u.email);
+  assert.match(aviso.assunto, /e-mail .*alterado/i);
+  assert.ok(aviso.texto.includes(novo));
+
+  const soNome = await u.agente.patch('/api/auth/perfil').send({ nome: 'Fulana Nova', email: novo });
+  assert.equal(soNome.status, 200, 'mudar só o nome não pede senha');
+});
+
 test('redefinir a senha pelo e-mail também confirma o endereço', async () => {
   const u = await novoUsuario();
   await pedirReset(u.email);
