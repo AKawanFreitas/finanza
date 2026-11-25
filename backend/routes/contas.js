@@ -4,7 +4,7 @@ const db      = require('../db');
 const { exigirLogin } = require('../lib/auth');
 const { paraReais }   = require('../lib/money');
 const { conta: contaSchema, validar } = require('../lib/schemas');
-const { listarContas, contaPadrao }   = require('../lib/contas');
+const { listarContas, contaPadrao, excluirConta } = require('../lib/contas');
 
 router.use(exigirLogin);
 
@@ -75,7 +75,7 @@ router.delete('/:id', (req, res) => {
     return res.status(409).json({ error: 'Você precisa manter ao menos uma conta ativa.' });
   }
 
-  db.prepare('DELETE FROM contas WHERE id = ? AND user_id = ?').run(id, req.user.id);
+  excluirConta(id);
   res.json({ ok: true });
 });
 
