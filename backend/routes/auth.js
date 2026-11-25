@@ -5,7 +5,7 @@ const auth    = require('../lib/auth');
 const tokens  = require('../lib/tokens');
 const templates = require('../lib/templates');
 const { enviarEmail } = require('../lib/email');
-const { permitir }    = require('../lib/limite');
+const { permitir, minutosBloqueado, registrar: registrarTentativa, limpar: limparTentativas } = require('../lib/limite');
 const logger  = require('../lib/logger');
 const suporte = require('../lib/suporte');
 
@@ -44,11 +44,39 @@ function validarEmail(valor) {
   return { value: email };
 }
 
-function validarSenha(valor) {
+// Senhas que aparecem no topo de todo vazamento: tamanho certo, mas adivinhadas em segundos.
+const SENHAS_COMUNS = new Set([
+  '12345678', '123456789', '1234567890', '87654321', '12341234', '11223344', 'password', 'password1', 'senha123',
+  'senha1234', 'senhasenha', 'qwerty123', 'qwertyui', 'abc12345', 'abcd1234', 'abcdefgh', 'iloveyou', 'admin123',
+  'mudar123', 'trocar123', 'finanza1', 'finanza123',
+]);
+
+// `email`, quando informado, impede usar o próprio e-mail como senha.
+function validarSenha(valor, email) {
   const senha = typeof valor === 'string' ? valor : '';
   if (senha.length < SENHA_MIN) return { error: `A senha deve ter pelo menos ${SENHA_MIN} caracteres.` };
   if (senha.length > 200)       return { error: 'A senha deve ter até 200 caracteres.' };
+  if (!senha.trim())            return { error: 'A senha não pode ser só de espaços.' };
+  if (/^(.)\1+$/.test(senha))   return { error: 'A senha não pode ser um mesmo caractere repetido.' };
+  if (SENHAS_COMUNS.has(senha.toLowerCase())) return { error: 'Essa senha é comum demais. Escolha outra.' };
+  if (email && senha.trim().toLowerCase() === String(email).toLowerCase()) return { error: 'A senha não pode ser igual ao e-mail.' };
   return { value: senha };
+}
+
+// Confere a senha atual de quem já está logado (trocar senha, trocar e-mail, excluir a conta).
+// Com uma sessão aberta e sem limite, daria para testar senhas à vontade: 5 erros travam por 15 minutos.
+const MAX_SENHA_ATUAL = 5;
+function conferirSenhaAtual(userId, senha) {
+  const chave = `senha-atual:${userId}`;
+  const minutos = minutosBloqueado(chave, MAX_SENHA_ATUAL);
+  if (minutos) return { status: 429, error: `Muitas tentativas com a senha errada. Tente de novo em ${minutos} min.` };
+  const { senha_hash } = db.prepare('SELECT senha_hash FROM users WHERE id = ?').get(userId);
+  if (!auth.conferirSenha(String(senha || ''), senha_hash)) {
+    registrarTentativa(chave, 15 * 60e3);
+    return { status: 400 };
+  }
+  limparTentativas(chave);
+  return { ok: true, senha_hash };
 }
 
 function abrirSessao(res, userId) {
