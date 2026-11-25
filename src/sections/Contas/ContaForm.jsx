@@ -5,6 +5,7 @@ import FormHeader from '../../components/FormHeader';
 import CampoCor from '../../components/CampoCor';
 import Select from '../../components/Select';
 import { TIPOS_CONTA } from './tipos';
+import { lerValor, valorParaCampo } from '../../utils/valor';
 
 const PRESET_COLORS = ['#4d9fff', '#22a84a', '#e84057', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#65a30d'];
 const VAZIO = { nome: '', tipo: 'corrente', saldo_inicial: '', cor: '#4d9fff' };
@@ -20,7 +21,7 @@ export default function ContaForm({ editar = null, onConcluir }) {
 
   useEffect(() => {
     setForm(editingConta
-      ? { nome: editingConta.nome, tipo: editingConta.tipo, cor: editingConta.cor, saldo_inicial: String(editingConta.saldo_inicial) }
+      ? { nome: editingConta.nome, tipo: editingConta.tipo, cor: editingConta.cor, saldo_inicial: valorParaCampo(editingConta.saldo_inicial) }
       : VAZIO);
   }, [editingConta]);
 
@@ -28,7 +29,7 @@ export default function ContaForm({ editar = null, onConcluir }) {
     if (!form.nome.trim()) return;
     const dados = {
       nome: form.nome.trim(), tipo: form.tipo, cor: form.cor,
-      saldo_inicial: form.saldo_inicial === '' ? 0 : Number(form.saldo_inicial),
+      saldo_inicial: form.saldo_inicial.trim() === '' ? 0 : lerValor(form.saldo_inicial),
     };
     const ok = editingConta
       ? await updateConta(editingConta.id, { ...dados, arquivada: editingConta.arquivada })
@@ -65,7 +66,7 @@ export default function ContaForm({ editar = null, onConcluir }) {
           <div className="form-input-wrap has-text-prefix">
             <span className="form-prefix-text">R$</span>
             <input id={`${uid}-3`}
-              className="form-control" type="number" step="0.01" placeholder="0,00"
+              className="form-control" type="text" inputMode="decimal" autoComplete="off" placeholder="0,00"
               value={form.saldo_inicial} onChange={e => set('saldo_inicial', e.target.value)}
             />
           </div>
