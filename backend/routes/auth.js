@@ -74,6 +74,12 @@ router.post('/registrar', (req, res) => {
   const erro  = nome.error || email.error || senha.error;
   if (erro) return res.status(400).json({ error: erro });
 
+  // Cada cadastro manda um e-mail para o endereço informado: sem limite, daria para lotar a caixa de alguém
+  // ou criar contas em massa. Conta toda tentativa válida, então também freia quem testa e-mails um a um.
+  if (!permitir(`registrar-ip:${req.ip}`, Number(process.env.LIMITE_CADASTROS_POR_HORA) || 5, 60 * 60e3)) {
+    return res.status(429).json({ error: 'Muitas contas criadas a partir desta rede. Tente de novo em uma hora.' });
+  }
+
   if (db.prepare('SELECT 1 FROM users WHERE email = ?').get(email.value)) {
     return res.status(409).json({ error: 'Já existe uma conta com esse e-mail.' });
   }
