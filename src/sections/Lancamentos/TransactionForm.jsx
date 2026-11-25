@@ -5,6 +5,7 @@ import FormHeader from '../../components/FormHeader';
 import Select from '../../components/Select';
 import { AlignLeft, Tag, Calendar, MessageSquare, Wallet, ArrowDownLeft, ArrowUpRight, Plus, RotateCcw, Check, X, ArrowLeftRight, DollarSign, Layers, Info, ArrowRight } from 'lucide-react';
 import { lerValor, valorParaCampo } from '../../utils/valor';
+import useEnvioUnico from '../../utils/useEnvioUnico';
 
 const EMPTY = (cats, contas) => ({
   desc: '', valor: '', tipo: 'saida', cat: cats[0]?.nome || '', parcelas: '1',
@@ -55,6 +56,8 @@ export default function TransactionForm({ editar = null, onConcluir }) {
   const permiteParcelas = contaEscolhida?.tipo === 'cartao' && !isEntrada;
   const nParcelas = Math.max(1, Math.min(48, Number(form.parcelas) || 1));
   const valorParcela = lerValor(form.valor) > 0 ? lerValor(form.valor) / nParcelas : 0;
+
+  const [enviarUmaVez, enviando] = useEnvioUnico(handleSubmit);
 
   return (
     <div className={editing ? 'form-modal' : 'form-wrap'}>
@@ -176,7 +179,7 @@ export default function TransactionForm({ editar = null, onConcluir }) {
       </div>
 
       <div className="form-actions">
-        <button className="btn btn-primary btn-full" onClick={handleSubmit}>
+        <button className="btn btn-primary btn-full" onClick={enviarUmaVez} disabled={enviando}>
           {editing ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
           {editing ? 'Salvar alterações' : 'Adicionar lançamento'}
         <ArrowRight size={15} strokeWidth={2.5} />
