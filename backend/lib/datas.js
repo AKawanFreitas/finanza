@@ -35,4 +35,18 @@ const diasEntre = (a, b) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.pars
 
 const mesAtual = (agora = new Date()) => hojeBR(agora).slice(0, 7);
 
-module.exports = { mesValido, diasNoMes, deslocarMes, dataVencimento, dataValida, hojeBR, diasEntre, mesAtual };
+// Faixa aceita para datas gravadas: de 01/01/2000 até hoje + `anos` (10 por padrão). Pega erro de digitação
+// (0026, 2205) sem barrar parcelas e recorrentes futuros. Comparação de texto: AAAA-MM-DD ordena certo.
+const DATA_MINIMA = '2000-01-01';
+const dataMaxima = (anos = 10, agora = new Date()) => {
+  const hoje = hojeBR(agora);
+  return `${Number(hoje.slice(0, 4)) + anos}${hoje.slice(4)}`;
+};
+const dataNaFaixa = (s, anos = 10) => s >= DATA_MINIMA && s <= dataMaxima(anos);
+const mesNaFaixa  = ym => ym >= DATA_MINIMA.slice(0, 7) && ym <= dataMaxima().slice(0, 7);
+const mensagemFaixa = (anos = 10) => `A data deve estar entre 01/01/2000 e ${dataMaxima(anos).split('-').reverse().join('/')}.`;
+
+module.exports = {
+  mesValido, diasNoMes, deslocarMes, dataVencimento, dataValida, hojeBR, diasEntre, mesAtual,
+  dataNaFaixa, mesNaFaixa, mensagemFaixa,
+};
