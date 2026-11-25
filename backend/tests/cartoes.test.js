@@ -354,3 +354,44 @@ test('excluir o usuário com cartão, compras parceladas e pagamentos não esbar
   }
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM cartoes WHERE conta_id = ?').get(cartao.id).n, 0);
 });
+
+test('compra acima do limite é salva, mas volta com aviso; o cartão diz que estourou', async () => {
+  const { u, cartao } = await comCartao({ limite: 1000 });
+  const dentro = await compra(u, cartao, { valor: 600 });
+  assert.equal(dentro.status, 201);
+  assert.equal(dentro.body.aviso, undefined, 'dentro do limite, sem aviso');
+
+  const fora = await compra(u, cartao, { valor: 900 });
+  assert.equal(fora.status, 201, 'a compra é salva mesmo assim');
+  assert.match(fora.body.aviso, /limite do cartão Nubank/);
+  assert.match(fora.body.aviso, /R\$\s?500,00/);
+
+  const resumo = (await u.agente.get('/api/cartoes')).body.find(c => c.id === cartao.id);
+  assert.equal(resumo.limite_estourado, true);
+  assert.equal(resumo.disponivel, -500);
+});
+
+test('dívida inicial vira o "saldo anterior" da fatura do mês de cadastro e pode ser paga na fatura', async () => {
+  const { hojeBR } = require('../lib/datas');
+  const { u, cartao } = await comCartao({ divida_inicial: 300, dia_fechamento: 31, dia_vencimento: 10 });
+  const mes = hojeBR().slice(0, 7); // fecha dia 31: o dia de hoje cai na fatura deste mês
+  const f = await fatura(u, cartao, mes);
+  assert.equal(f.saldo_anterior, 300);
+  assert.equal(f.total, 300);
+
+  const conta = (await u.agente.get('/api/contas')).body.find(c => c.tipo === 'corrente');
+  const pago = await u.agente.post(`/api/cartoes/${cartao.id}/faturas/${mes}/pagar`).send({ origem_id: conta.id });
+  assert.equal(pago.status, 201, JSON.stringify(pago.body));
+  assert.equal(pago.body.fatura.status, 'paga');
+  assert.equal(pago.body.cartao.usado, 0, 'a dívida zerou');
+});
+
+test('transferência comum não entra nem sai de cartão: o pagamento é pela fatura', async () => {
+  const { u, cartao } = await comCartao();
+  const conta = (await u.agente.get('/api/contas')).body.find(c => c.tipo === 'corrente');
+  for (const [origem_id, destino_id] of [[conta.id, cartao.id], [cartao.id, conta.id]]) {
+    const r = await u.agente.post('/api/transferencias').send({ origem_id, destino_id, valor: 50, data: '2026-03-05' });
+    assert.equal(r.status, 400);
+    assert.match(r.body.error, /Pagar fatura/);
+  }
+});
