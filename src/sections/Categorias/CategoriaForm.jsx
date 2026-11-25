@@ -17,7 +17,7 @@ const PRESET_COLORS = [
 export default function CategoriaForm({ editar = null, onConcluir }) {
   const editingCat = editar;
   const uid = useId();
-  const { addCategoria, updateCategoria } = useFinance();
+  const { addCategoria, updateCategoria, showToast } = useFinance();
   const [nome, setNome] = useState('');
   const [cor, setCor]   = useState('#22a84a');
   const [icone, setIcone] = useState('tag');
@@ -29,7 +29,7 @@ export default function CategoriaForm({ editar = null, onConcluir }) {
   }, [editingCat]);
 
   async function handleSubmit() {
-    if (!nome.trim()) return;
+    if (!nome.trim()) return showToast('Preencha o nome da categoria para salvar.', 'err');
     const data = { nome: nome.trim(), cor, icone };
     const ok = editingCat ? await updateCategoria(editingCat.id, data) : await addCategoria(data);
     if (!ok) return;
