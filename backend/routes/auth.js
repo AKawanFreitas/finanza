@@ -263,6 +263,8 @@ router.post('/redefinir-senha', (req, res) => {
       .run(auth.hashSenha(nova.value), new Date().toISOString(), user.id);
     tokens.consumirToken(t.id);
     auth.encerrarSessoesDe(user.id);
+    // Quem tem o e-mail é o dono: libera um bloqueio de login causado por tentativas de terceiros.
+    auth.limparTentativas(user.email);
   })();
   res.json({ ok: true });
 });
