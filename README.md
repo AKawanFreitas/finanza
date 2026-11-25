@@ -23,7 +23,7 @@ Crie um `.env` (o `.env.example` explica cada variável) com as contas que quer 
 ```bash
 cp .env.example .env
 # edite o .env: descomente as linhas BOOTSTRAP_* e escolha as senhas (8+ caracteres)
-cd backend && npm run dev     # e, na raiz, npm run dev para o front
+npm run dev
 ```
 
 As contas só são **criadas**: se o e-mail já existe, nada é alterado (reiniciar não desfaz uma senha trocada nem apaga dados). O `.env` não vai para o git, então as senhas ficam só na sua máquina. Em um servidor de verdade, não use `BOOTSTRAP_*`.
@@ -63,8 +63,7 @@ Sem `--senha`, o comando mostra uma senha provisória e pede a troca no primeiro
 Se a porta 4747 já estiver ocupada na sua máquina:
 
 ```bash
-cd backend && PORT=4800 npm run dev
-API_PORT=4800 npm run dev   # na raiz
+PORT=4800 API_PORT=4800 npm run dev
 ```
 
 Para experimentar sem mexer nos seus dados, aponte `DB_PATH` para um arquivo temporário. O banco é criado sozinho, já com as categorias padrão.
