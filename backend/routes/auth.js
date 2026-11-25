@@ -57,6 +57,13 @@ function abrirSessao(res, userId) {
   db.prepare('UPDATE users SET ultimo_acesso = ? WHERE id = ?').run(new Date().toISOString(), userId);
 }
 
+// Dados de acesso (e-mail, senha, perfil, foto, a própria conta) nunca mudam numa sessão de suporte.
+// A checagem fica na rota, e não só na lista de caminhos de lib/auth, para não depender de como o endereço foi escrito.
+function semSuporte(req, res, next) {
+  if (req.user?.suporte) return res.status(403).json({ error: suporte.MENSAGEM_BLOQUEIO });
+  next();
+}
+
 const buscarUser = id => db.prepare('SELECT * FROM users WHERE id = ?').get(id);
 
 /* ── Criar conta ────────────────────────────────────── */
@@ -132,7 +139,7 @@ router.get('/eu', (req, res) => {
 });
 
 /* ── Editar perfil ──────────────────────────────────── */
-router.patch('/perfil', auth.exigirLogin, (req, res) => {
+router.patch('/perfil', auth.exigirLogin, semSuporte, (req, res) => {
   const nome  = validarNome(req.body?.nome);
   const email = validarEmail(req.body?.email);
   const erro  = nome.error || email.error;
@@ -159,7 +166,7 @@ function tipoDaImagem(b) {
   return null;
 }
 
-router.put('/foto', auth.exigirLogin, (req, res) => {
+router.put('/foto', auth.exigirLogin, semSuporte, (req, res) => {
   const corpo = req.body;
   if (!Buffer.isBuffer(corpo) || corpo.length === 0) return res.status(400).json({ error: 'Envie uma imagem JPG, PNG ou WebP.' });
   const tipo = tipoDaImagem(corpo);
@@ -173,7 +180,7 @@ router.put('/foto', auth.exigirLogin, (req, res) => {
   res.json({ user: publico(buscarUser(req.user.id)) });
 });
 
-router.delete('/foto', auth.exigirLogin, (req, res) => {
+router.delete('/foto', auth.exigirLogin, semSuporte, (req, res) => {
   db.transaction(() => {
     db.prepare('DELETE FROM fotos_perfil WHERE user_id = ?').run(req.user.id);
     db.prepare('UPDATE users SET foto_em = NULL WHERE id = ?').run(req.user.id);
@@ -191,7 +198,7 @@ router.get('/foto', auth.exigirLogin, (req, res) => {
 });
 
 /* ── Preferências de e-mail ─────────────────────────── */
-router.patch('/preferencias', auth.exigirLogin, (req, res) => {
+router.patch('/preferencias', auth.exigirLogin, semSuporte, (req, res) => {
   const valor = req.body?.notificacoes_email;
   if (typeof valor !== 'boolean') return res.status(400).json({ error: 'Valor inválido.' });
   db.prepare('UPDATE users SET notificacoes_email = ? WHERE id = ?').run(valor ? 1 : 0, req.user.id);
@@ -210,7 +217,7 @@ router.post('/verificar-email', (req, res) => {
   res.json({ ok: true });
 });
 
-router.post('/reenviar-verificacao', auth.exigirLogin, (req, res) => {
+router.post('/reenviar-verificacao', auth.exigirLogin, semSuporte, (req, res) => {
   if (req.user.email_verificado_em) return res.json({ ok: true, ja_verificado: true });
   if (!permitir(`reenviar:${req.user.id}`, 3, 60 * 60e3)) {
     return res.status(429).json({ error: 'Você já pediu vários e-mails. Tente de novo em uma hora.' });
@@ -289,7 +296,7 @@ router.post('/senha', (req, res) => {
 });
 
 /* ── Excluir a própria conta ────────────────────────── */
-router.delete('/conta', auth.exigirLogin, (req, res) => {
+router.delete('/conta', auth.exigirLogin, semSuporte, (req, res) => {
   const { senha_hash } = db.prepare('SELECT senha_hash FROM users WHERE id = ?').get(req.user.id);
   if (!auth.conferirSenha(String(req.body?.senha || ''), senha_hash)) {
     return res.status(400).json({ error: 'A senha está incorreta.' });
