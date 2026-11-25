@@ -4,6 +4,7 @@ import { today, fmt } from '../../utils/formatters';
 import FormHeader from '../../components/FormHeader';
 import Select from '../../components/Select';
 import { AlignLeft, Tag, Calendar, MessageSquare, Wallet, ArrowDownLeft, ArrowUpRight, Plus, RotateCcw, Check, X, ArrowLeftRight, DollarSign, Layers, Info, ArrowRight } from 'lucide-react';
+import { lerValor, valorParaCampo } from '../../utils/valor';
 
 const EMPTY = (cats, contas) => ({
   desc: '', valor: '', tipo: 'saida', cat: cats[0]?.nome || '', parcelas: '1',
@@ -21,7 +22,7 @@ export default function TransactionForm({ editar = null, onConcluir }) {
   useEffect(() => {
     if (editing) {
       const { desc, valor, tipo, cat, conta_id, data, obs } = editing;
-      setForm({ desc, valor: String(valor), tipo, cat, conta_id, data, obs: obs || '' });
+      setForm({ desc, valor: valorParaCampo(valor), tipo, cat, conta_id, data, obs: obs || '' });
     } else {
       setForm(EMPTY(categorias, contas));
     }
@@ -33,7 +34,7 @@ export default function TransactionForm({ editar = null, onConcluir }) {
     if (!form.desc || !form.valor || !form.data) return;
     // Parcelamento só existe ao criar uma compra no cartão; ao editar, cada parcela é um lançamento independente.
     const parcelas = Number(form.parcelas) || 1;
-    const data = { ...form, valor: parseFloat(form.valor) };
+    const data = { ...form, valor: lerValor(form.valor) };
     delete data.parcelas;
     if (!editing && permiteParcelas && parcelas > 1) data.parcelas = parcelas;
     const ok = editing
@@ -53,7 +54,7 @@ export default function TransactionForm({ editar = null, onConcluir }) {
   const contaEscolhida = contas.find(c => c.id === form.conta_id);
   const permiteParcelas = contaEscolhida?.tipo === 'cartao' && !isEntrada;
   const nParcelas = Math.max(1, Math.min(48, Number(form.parcelas) || 1));
-  const valorParcela = parseFloat(form.valor) > 0 ? parseFloat(form.valor) / nParcelas : 0;
+  const valorParcela = lerValor(form.valor) > 0 ? lerValor(form.valor) / nParcelas : 0;
 
   return (
     <div className={editing ? 'form-modal' : 'form-wrap'}>
@@ -104,10 +105,8 @@ export default function TransactionForm({ editar = null, onConcluir }) {
             <span className="form-prefix-text">R$</span>
             <input id={`${uid}-2`}
               className="form-control"
-              type="number"
+              type="text" inputMode="decimal" autoComplete="off"
               placeholder="0,00"
-              min="0"
-              step="0.01"
               value={form.valor}
               onChange={e => set('valor', e.target.value)}
             />
