@@ -45,13 +45,18 @@ const dataISO = z.string({ error: 'A data deve estar no formato AAAA-MM-DD.' })
     return !Number.isNaN(d.getTime()) && d.toISOString().startsWith(s);
   }, 'Data inexistente.');
 
+// Data que vai ser gravada: além do formato, fica entre 2000 e hoje + `anos` (ver lib/datas).
+const dataGravavel = (anos = 10) => dataISO.superRefine((s, ctx) => {
+  if (!dataNaFaixa(s, anos)) ctx.addIssue({ code: 'custom', message: mensagemFaixa(anos) });
+});
+
 const transacao = z.object({
   desc: texto('a descrição', 120),
   parcelas: z.number({ error: 'O número de parcelas deve ser de 1 a 48.' }).int('O número de parcelas deve ser de 1 a 48.')
     .min(1, 'O número de parcelas deve ser de 1 a 48.').max(48, 'O número de parcelas deve ser de 1 a 48.').optional().default(1),
   valor,
   tipo: z.enum(['entrada', 'saida'], { error: 'O tipo deve ser "entrada" ou "saida".' }),
-  data: dataISO,
+  data: dataGravavel(),
   obs,
   ...categoria,
 }).refine(exigeCategoria, msgCategoria);
@@ -86,7 +91,7 @@ const transferencia = z.object({
   origem_id: z.number({ error: 'Escolha a conta de origem.' }).int().positive('Escolha a conta de origem.'),
   destino_id: z.number({ error: 'Escolha a conta de destino.' }).int().positive('Escolha a conta de destino.'),
   valor,
-  data: dataISO,
+  data: dataGravavel(),
   descricao: z.string().trim().max(120, 'A descrição deve ter até 120 caracteres.').optional().default(''),
 }).refine(v => v.origem_id !== v.destino_id, { message: 'Origem e destino devem ser contas diferentes.', path: ['destino_id'] });
 
@@ -117,7 +122,7 @@ const pagamentoFatura = z.object({
       if (v === undefined) return undefined;
       return converter(v, ctx, { msgPositivo: 'O valor deve ser maior que zero.' });
     }),
-  data: dataISO.optional(),
+  data: dataGravavel().optional(),
 });
 
 const meta = z.object({
@@ -126,7 +131,7 @@ const meta = z.object({
     .transform((v, ctx) => {
       return converter(v, ctx, { msgPositivo: 'O valor da meta deve ser maior que zero.' });
     }),
-  prazo: dataISO.nullable().optional(),
+  prazo: dataGravavel(50).nullable().optional(),
   cor: COR.optional().default('#22a84a'),
   valor_inicial: z.union([z.number(), z.string()]).optional()
     .transform((v, ctx) => {
@@ -139,13 +144,13 @@ const meta = z.object({
 const contaPagar = z.object({
   descricao: texto('a descrição', 120),
   valor,
-  vencimento: dataISO,
+  vencimento: dataGravavel(),
   obs,
   ...categoria,
 }).refine(exigeCategoria, msgCategoria);
 
 const pagarConta = z.object({
-  data: dataISO.optional(),
+  data: dataGravavel().optional(),
   conta_id: z.number().int().positive().optional(),
 });
 
@@ -155,7 +160,7 @@ const aporte = z.object({
       return converter(v, ctx, { msgPositivo: 'O valor deve ser maior que zero.' });
     }),
   tipo: z.enum(['aporte', 'retirada'], { error: 'O tipo deve ser "aporte" ou "retirada".' }).optional().default('aporte'),
-  data: dataISO.optional(),
+  data: dataGravavel().optional(),
   obs: z.string().max(200, 'A observação deve ter até 200 caracteres.').optional().default(''),
 });
 
