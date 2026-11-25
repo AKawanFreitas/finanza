@@ -151,7 +151,7 @@ export default function Configuracoes() {
   const { user, salvarPerfil, trocarSenha, excluirConta, sair, salvarPreferencias } = useAuth();
   const { showToast } = useFinance();
 
-  const [perfil, setPerfil] = useState({ nome: user.nome, email: user.email });
+  const [perfil, setPerfil] = useState({ nome: user.nome, email: user.email, senha: '' });
   const [senhas, setSenhas] = useState({ atual: '', nova: '' });
   const [confirmacao, setConfirmacao] = useState('');
   const [excluindo, setExcluindo] = useState(false);
@@ -161,11 +161,16 @@ export default function Configuracoes() {
   const acaoExcluir = useAcao(showToast);
   const acaoAvisos  = useAcao(showToast);
 
+  const emailMudou  = perfil.email.trim().toLowerCase() !== user.email.toLowerCase();
   const perfilMudou = perfil.nome !== user.nome || perfil.email !== user.email;
 
   async function enviarPerfil(e) {
     e.preventDefault();
-    await acaoPerfil.executar(() => salvarPerfil(perfil.nome, perfil.email), 'Perfil atualizado');
+    const ok = await acaoPerfil.executar(
+      () => salvarPerfil(perfil.nome, perfil.email, emailMudou ? perfil.senha : undefined),
+      emailMudou ? 'E-mail alterado. Confirme o novo endereço pelo link que enviamos.' : 'Perfil atualizado',
+    );
+    if (ok) setPerfil(p => ({ ...p, senha: '' }));
   }
 
   async function enviarSenha(e) {
@@ -221,6 +226,20 @@ export default function Configuracoes() {
               </span>
             </label>
           </div>
+
+          {emailMudou && (
+            <label className="form-group">
+              <span className="form-label"><Lock size={16} />Senha atual</span>
+              <span className="form-input-wrap">
+                <span className="form-prefix"><Lock size={16} strokeWidth={2} /></span>
+                <input
+                  className="form-control" type="password" required autoComplete="current-password"
+                  value={perfil.senha} onChange={e => setPerfil(p => ({ ...p, senha: e.target.value }))}
+                />
+              </span>
+              <span className="form-dica"><Info size={14} />Para trocar o e-mail, confirme sua senha. Avisamos o endereço atual da troca.</span>
+            </label>
+          )}
 
           <p className="form-dica"><Info size={14} />Conta criada em {fmtDate(user.criado_em.slice(0, 10))}.</p>
 
