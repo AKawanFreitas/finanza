@@ -7,20 +7,14 @@ Controle financeiro pessoal em formato SaaS: cada pessoa tem a sua conta, com la
 
 ## Como rodar
 
-Precisa do Node.js (testado na versão 24). São dois processos: a API e o front.
+Precisa do Node.js (testado na versão 24). Na raiz do projeto:
 
 ```bash
-# 1. API (porta 4747)
-cd backend
-npm install
-npm run dev
-
-# 2. Front (porta 5173), em outro terminal, na raiz do projeto
-npm install
-npm run dev
+npm run setup   # só na primeira vez: instala as dependências do front e do backend
+npm run dev     # sobe a API (porta 4747) e o front (porta 5173) no mesmo terminal
 ```
 
-Abra http://localhost:5173. O Vite encaminha as chamadas `/api` para o backend.
+Abra http://localhost:5173. O Vite encaminha as chamadas `/api` para o backend. No terminal, cada linha vem marcada com `[api]` ou `[web]`, e um Ctrl+C encerra os dois. Para subir só um deles, use `npm run dev:api` ou `npm run dev:web`.
 
 ### Contas de teste (jeito rápido)
 
