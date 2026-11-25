@@ -155,7 +155,7 @@ test('trocar o e-mail do perfil volta a pedir confirmação, no endereço novo',
   const u = await novoUsuario();
   confirmarEmail(u.id);
   const novo = `novo-${u.email}`;
-  const r = await u.agente.patch('/api/auth/perfil').send({ nome: 'Fulana', email: novo });
+  const r = await u.agente.patch('/api/auth/perfil').send({ nome: 'Fulana', email: novo, senha: u.senha });
   assert.equal(r.body.user.email_verificado, false);
   assert.match(ultimoEmail(novo).assunto, /Confirme/);
 
