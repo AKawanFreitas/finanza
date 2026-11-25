@@ -30,9 +30,16 @@ router.post('/', (req, res) => {
   const { value, error } = validar(transferencia, req.body);
   if (error) return res.status(400).json({ error });
 
-  const ativa = id => db.prepare('SELECT 1 FROM contas WHERE id = ? AND user_id = ? AND arquivada = 0').get(id, req.user.id);
-  if (!ativa(value.origem_id))  return res.status(400).json({ error: 'Conta de origem não encontrada ou arquivada.' });
-  if (!ativa(value.destino_id)) return res.status(400).json({ error: 'Conta de destino não encontrada ou arquivada.' });
+  const ativa = id => db.prepare('SELECT tipo FROM contas WHERE id = ? AND user_id = ? AND arquivada = 0').get(id, req.user.id);
+  const origem = ativa(value.origem_id);
+  const destino = ativa(value.destino_id);
+  if (!origem)  return res.status(400).json({ error: 'Conta de origem não encontrada ou arquivada.' });
+  if (!destino) return res.status(400).json({ error: 'Conta de destino não encontrada ou arquivada.' });
+  // Dinheiro que entra no cartão é pagamento de fatura (fica ligado ao mês certo); por transferência comum,
+  // abateria a dívida sem a fatura saber e ela continuaria "vencida".
+  if (origem.tipo === 'cartao' || destino.tipo === 'cartao') {
+    return res.status(400).json({ error: 'Cartão de crédito não entra em transferência. Para pagar, use Pagar fatura na tela de Cartões.' });
+  }
 
   const r = db.prepare(
     'INSERT INTO transferencias (user_id, origem_id, destino_id, valor_centavos, data, descricao) VALUES (?, ?, ?, ?, ?, ?)'
