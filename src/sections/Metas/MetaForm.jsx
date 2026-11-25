@@ -21,7 +21,7 @@ export default function MetaForm({ editando, onCancelar, onSalvo }) {
   }, [editando]);
 
   async function enviar() {
-    if (!form.nome.trim() || !form.valor_alvo) return;
+    if (!form.nome.trim() || !form.valor_alvo) return showToast('Preencha o nome e o valor da meta para salvar.', 'err');
     const corpo = {
       nome: form.nome.trim(), valor_alvo: lerValor(form.valor_alvo), prazo: form.prazo || null, cor: form.cor,
       ...(editando ? { arquivada: editando.arquivada } : form.valor_inicial ? { valor_inicial: lerValor(form.valor_inicial) } : {}),
