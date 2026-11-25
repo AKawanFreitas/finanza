@@ -167,3 +167,23 @@ test('excluir o cliente apaga o chamado e a sessão do administrador volta ao no
   db.prepare('DELETE FROM users WHERE id = ?').run(cliente.id);
   assert.equal((await admin.agente.get('/api/auth/eu')).body.user.id, admin.id);
 });
+
+test('o bloqueio dos dados de acesso não é contornado com barra no fim, maiúsculas ou barras repetidas', async () => {
+  const { admin, cliente } = await cenario();
+  await abrir(admin, cliente);
+  const tentativas = [
+    () => admin.agente.patch('/api/auth/perfil/').send({ nome: 'Cliente', email: 'tomada1@teste.local' }),
+    () => admin.agente.patch('/api/AUTH/Perfil').send({ nome: 'Cliente', email: 'tomada2@teste.local' }),
+    () => admin.agente.patch('/api/auth//perfil').send({ nome: 'Cliente', email: 'tomada3@teste.local' }),
+    () => admin.agente.patch('/api/auth/preferencias/').send({ notificacoes_email: false }),
+    () => admin.agente.delete('/api/auth/foto/'),
+    () => admin.agente.post('/api/auth/reenviar-verificacao/'),
+  ];
+  for (const t of tentativas) {
+    const r = await t();
+    assert.ok(r.status === 403 || r.status === 404, `esperava bloqueio, veio ${r.status}`);
+  }
+  const atual = db.prepare('SELECT email, notificacoes_email FROM users WHERE id = ?').get(cliente.id);
+  assert.ok(!atual.email.startsWith('tomada'), 'o e-mail do cliente não muda');
+  assert.equal(atual.notificacoes_email, 1);
+});
