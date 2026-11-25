@@ -302,3 +302,15 @@ test('o lembrete de um usuário nunca mostra contas de outro', async () => {
   assert.doesNotMatch(lembretes(b)[0].texto, /Ana/);
   assert.doesNotMatch(lembretes(a)[0].texto, /Bia/);
 });
+
+test('o lançamento gerado pelo pagamento não é editado por fora: a conta paga não fica com outro valor', async () => {
+  const u = await novoUsuario();
+  const cp = (await criar(u)).body;
+  const paga = (await u.agente.post(`/api/contas-pagar/${cp.id}/pagar`).send({})).body;
+
+  const r = await u.agente.put(`/api/transactions/${paga.transacao_id}`)
+    .send({ desc: 'Conta de luz', valor: 1, tipo: 'entrada', data: hojeBR(), cat: 'Moradia' });
+  assert.equal(r.status, 409);
+  assert.match(r.body.error, /Desfaça o pagamento/);
+  assert.equal(db.prepare('SELECT valor_centavos, tipo FROM transactions WHERE id = ?').get(paga.transacao_id).tipo, 'saida');
+});

@@ -108,6 +108,11 @@ router.post('/', (req, res) => {
 
 router.put('/:id', (req, res) => {
   const id = Number(req.params.id);
+  // O pagamento de uma conta a pagar é editado pela própria conta (desfazer e pagar de novo):
+  // mudar o lançamento por fora deixaria a conta "paga" com outro valor, tipo ou data.
+  if (db.prepare('SELECT 1 FROM contas_pagar WHERE transacao_id = ? AND user_id = ?').get(id, req.user.id)) {
+    return res.status(409).json({ error: 'Este lançamento é o pagamento de uma conta a pagar. Desfaça o pagamento em Contas a pagar para editar.' });
+  }
   const { dados, error, status } = preparar(req);
   if (error) return res.status(status).json({ error });
   if (dados.parcelas > 1) return res.status(400).json({ error: 'Não é possível parcelar um lançamento que já existe. Crie a compra parcelada de novo.' });
