@@ -5,6 +5,7 @@ import { api } from '../../utils/api';
 import Select from '../../components/Select';
 import FormHeader from '../../components/FormHeader';
 import CampoCor from '../../components/CampoCor';
+import { lerValor, valorParaCampo } from '../../utils/valor';
 
 const CORES = ['#7c3aed', '#2563eb', '#e84057', '#d97706', '#22a84a', '#0891b2', '#db2777', '#14233a'];
 const VAZIO = { nome: '', limite: '', dia_fechamento: '', dia_vencimento: '', cor: '#7c3aed', conta_pagamento_id: 0, divida_inicial: '' };
@@ -19,7 +20,7 @@ export default function CartaoForm({ editando, onCancelar, onSalvo }) {
   useEffect(() => {
     setForm(editando
       ? {
-        nome: editando.nome, limite: String(editando.limite), cor: editando.cor,
+        nome: editando.nome, limite: valorParaCampo(editando.limite), cor: editando.cor,
         dia_fechamento: String(editando.dia_fechamento), dia_vencimento: String(editando.dia_vencimento),
         conta_pagamento_id: editando.conta_pagamento_id ?? 0, divida_inicial: '',
       }
@@ -34,10 +35,10 @@ export default function CartaoForm({ editando, onCancelar, onSalvo }) {
   async function enviar() {
     if (!form.nome.trim() || !form.limite || !form.dia_fechamento || !form.dia_vencimento) return;
     const corpo = {
-      nome: form.nome.trim(), limite: Number(form.limite), cor: form.cor,
+      nome: form.nome.trim(), limite: lerValor(form.limite), cor: form.cor,
       dia_fechamento: Number(form.dia_fechamento), dia_vencimento: Number(form.dia_vencimento),
       conta_pagamento_id: form.conta_pagamento_id || null,
-      ...(editando ? { arquivada: editando.arquivada } : { divida_inicial: form.divida_inicial === '' ? 0 : Number(form.divida_inicial) }),
+      ...(editando ? { arquivada: editando.arquivada } : { divida_inicial: form.divida_inicial.trim() === '' ? 0 : lerValor(form.divida_inicial) }),
     };
     setEnviando(true);
     try {
@@ -74,7 +75,7 @@ export default function CartaoForm({ editando, onCancelar, onSalvo }) {
           <label className="form-label" htmlFor={`${uid}-2`}><DollarSign size={16} />Limite</label>
           <div className="form-input-wrap has-text-prefix">
             <span className="form-prefix-text">R$</span>
-            <input id={`${uid}-2`} className="form-control" type="number" min="0" step="0.01" placeholder="0,00" value={form.limite} onChange={e => set('limite', e.target.value)} />
+            <input id={`${uid}-2`} className="form-control" type="text" inputMode="decimal" autoComplete="off" placeholder="0,00" value={form.limite} onChange={e => set('limite', e.target.value)} />
           </div>
         </div>
 
@@ -105,7 +106,7 @@ export default function CartaoForm({ editando, onCancelar, onSalvo }) {
             <label className="form-label" htmlFor={`${uid}-6`}><TrendingUp size={16} />Dívida atual <span className="form-label-opt">(opcional)</span></label>
             <div className="form-input-wrap has-text-prefix">
               <span className="form-prefix-text">R$</span>
-              <input id={`${uid}-6`} className="form-control" type="number" min="0" step="0.01" placeholder="0,00" value={form.divida_inicial} onChange={e => set('divida_inicial', e.target.value)} />
+              <input id={`${uid}-6`} className="form-control" type="text" inputMode="decimal" autoComplete="off" placeholder="0,00" value={form.divida_inicial} onChange={e => set('divida_inicial', e.target.value)} />
             </div>
             <span className="form-dica"><Info size={14} />Quanto já está usado do limite hoje.</span>
           </div>
