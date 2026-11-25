@@ -1,6 +1,8 @@
 // Cada arquivo de teste roda em processo próprio, então o banco em memória é isolado.
 process.env.DB_PATH = ':memory:';
 process.env.NODE_ENV = 'test';
+// Os testes criam dezenas de contas do mesmo IP; o limite real de cadastros é testado em cadastro.test.js.
+process.env.LIMITE_CADASTROS_POR_HORA ??= '100000';
 
 const request = require('supertest');
 const app = require('../app');
