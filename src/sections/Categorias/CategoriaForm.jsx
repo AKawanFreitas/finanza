@@ -5,6 +5,7 @@ import FormHeader from '../../components/FormHeader';
 import CampoCor from '../../components/CampoCor';
 import CategoriaIcone from '../../components/CategoriaIcone';
 import { ICONES_CATEGORIA } from '../../utils/iconesCategoria';
+import useEnvioUnico from '../../utils/useEnvioUnico';
 
 const PRESET_COLORS = [
   '#22a84a', '#2563eb', '#e84057', '#d97706',
@@ -36,6 +37,8 @@ export default function CategoriaForm({ editar = null, onConcluir }) {
     else { setNome(''); setIcone('tag'); }
   }
 
+  const [enviarUmaVez, enviando] = useEnvioUnico(handleSubmit);
+
   return (
     <div className={editingCat ? 'form-modal' : 'form-wrap'}>
       {!editingCat && <FormHeader
@@ -57,7 +60,7 @@ export default function CategoriaForm({ editar = null, onConcluir }) {
               placeholder="Ex: Lazer"
               value={nome}
               onChange={e => setNome(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              onKeyDown={e => e.key === 'Enter' && enviarUmaVez()}
             />
           </div>
         </div>
@@ -82,7 +85,7 @@ export default function CategoriaForm({ editar = null, onConcluir }) {
       </div>
 
       <div className="form-actions" style={{ marginTop: '1.1rem' }}>
-        <button className="btn btn-primary btn-full" onClick={handleSubmit}>
+        <button className="btn btn-primary btn-full" onClick={enviarUmaVez} disabled={enviando}>
           {editingCat ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
           {editingCat ? 'Salvar alterações' : 'Criar categoria'}
           <ArrowRight size={15} strokeWidth={2.5} />
