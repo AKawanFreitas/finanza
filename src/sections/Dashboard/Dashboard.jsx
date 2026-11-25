@@ -47,7 +47,8 @@ export default function Dashboard({ ym, onYmChange, onNavigate }) {
   const [anoStr, mesStr] = ym.split('-');
   const mesNome     = MONTH_NAMES[Number(mesStr) - 1];
   const mesAnterior = MONTH_NAMES[(Number(mesStr) + 10) % 12].slice(0, 3).toLowerCase();
-  const fixos       = recorrentes.filter(r => r.tipo === 'fixo');
+  // Contas fixas são gastos: recorrentes de entrada (salário) ficam fora.
+  const fixos       = recorrentes.filter(r => r.tipo === 'fixo' && r.movimento !== 'entrada');
   const fixosTotal  = fixos.reduce((a, r) => a + r.valor, 0);
   const spentPct    = rec > 0 ? Math.min(100, Math.round((gas / rec) * 100)) : null;
   const health = spentPct === null ? null
