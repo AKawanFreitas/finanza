@@ -7,6 +7,7 @@ import BarraOrcamento from '../../components/BarraOrcamento';
 import IconButton from '../../components/IconButton';
 import { useConfirm } from '../../components/Confirm';
 import { lerValor } from '../../utils/valor';
+import useEnvioUnico from '../../utils/useEnvioUnico';
 
 const STATUS = {
   em_andamento: { rotulo: 'Em andamento', classe: '' },
@@ -61,6 +62,8 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
     onMudou();
   }
 
+  const [movimentarUmaVez, enviando] = useEnvioUnico(movimentar);
+
   return (
     <div className={`orc-linha meta-card${meta.arquivada ? ' arquivada' : ''}`} style={{ '--cor': meta.cor }}>
       <div className="orc-topo">
@@ -86,10 +89,10 @@ export default function MetaCard({ meta, onEditar, onMudou }) {
         <span className="form-input-wrap has-text-prefix meta-valor">
           <span className="form-prefix-text">R$</span>
           <input className="form-control" type="text" inputMode="decimal" autoComplete="off" placeholder="0,00" aria-label={`Valor para ${meta.nome}`}
-            value={valor} onChange={e => setValor(e.target.value)} onKeyDown={e => e.key === 'Enter' && movimentar('aporte')} />
+            value={valor} onChange={e => setValor(e.target.value)} onKeyDown={e => e.key === 'Enter' && movimentarUmaVez('aporte')} />
         </span>
-        <button className="btn btn-sm btn-primary" disabled={!(lerValor(valor) > 0)} onClick={() => movimentar('aporte')}><ArrowDownToLine size={13} strokeWidth={2.5} /> Guardar</button>
-        <button className="btn btn-sm" disabled={!(lerValor(valor) > 0) || meta.atual <= 0} onClick={() => movimentar('retirada')}><ArrowUpFromLine size={13} strokeWidth={2.5} /> Retirar</button>
+        <button className="btn btn-sm btn-primary" disabled={enviando || !(lerValor(valor) > 0)} onClick={() => movimentarUmaVez('aporte')}><ArrowDownToLine size={13} strokeWidth={2.5} /> Guardar</button>
+        <button className="btn btn-sm" disabled={enviando || !(lerValor(valor) > 0) || meta.atual <= 0} onClick={() => movimentarUmaVez('retirada')}><ArrowUpFromLine size={13} strokeWidth={2.5} /> Retirar</button>
         <span className="meta-icones">
           <IconButton label="Histórico" aria-expanded={aberto} onClick={() => setAberto(a => !a)}><History size={13} strokeWidth={2} /></IconButton>
           <IconButton label="Editar" onClick={() => onEditar(meta)}><Pencil size={13} strokeWidth={2} /></IconButton>
