@@ -23,4 +23,23 @@ function paraCentavosComSinal(valor) {
 
 const paraReais = centavos => centavos / 100;
 
-module.exports = { paraCentavos, paraCentavosComSinal, paraReais, MAX_CENTAVOS };
+// Validação estrita do que chega pela API, com o motivo do erro. Diferente de paraCentavos (que arredonda,
+// e serve à leitura de extratos), aqui nada é arredondado em silêncio: "0x10", "1e3" e 10.999 são recusados.
+// Devolve { centavos } ou { erro }. Com `sinal`, aceita zero e negativos (saldo no vermelho).
+const NUMERO = /^-?\d+(\.\d+)?$/;
+function validarValor(valor, { sinal = false } = {}) {
+  const formato = { erro: 'Valor inválido: use só números, com ponto antes dos centavos (ex.: 1234.56).' };
+  let n;
+  if (typeof valor === 'number') n = valor;
+  else if (typeof valor === 'string' && NUMERO.test(valor.trim())) n = Number(valor.trim());
+  else return formato;
+  if (!Number.isFinite(n)) return formato;
+
+  const centavos = Number((n * 100).toPrecision(15));
+  if (!Number.isInteger(centavos)) return { erro: 'Use no máximo 2 casas decimais nos centavos.' };
+  if (Math.abs(centavos) > MAX_CENTAVOS) return { erro: 'O valor máximo é R$ 1 bilhão.' };
+  if (!sinal && centavos < 1) return { erro: 'O valor deve ser maior que zero.' };
+  return { centavos: centavos === 0 ? 0 : centavos }; // sem -0
+}
+
+module.exports = { paraCentavos, paraCentavosComSinal, paraReais, validarValor, MAX_CENTAVOS };
