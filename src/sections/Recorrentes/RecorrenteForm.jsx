@@ -7,6 +7,7 @@ import {
   RefreshCw, Zap, Plus, Check, X, Wallet, Repeat, ArrowLeftRight, DollarSign, ArrowRight
 } from 'lucide-react';
 import { lerValor, valorParaCampo } from '../../utils/valor';
+import useEnvioUnico from '../../utils/useEnvioUnico';
 
 const EMPTY = (cats) => ({ nome: '', valor: '', tipo: 'fixo', cat: cats[0]?.nome || '', dia: '', obs: '', automatico: false, conta_id: null });
 
@@ -47,6 +48,8 @@ export default function RecorrenteForm({ editar = null, onConcluir }) {
     { value: 0, label: 'Conta principal' },
     ...contas.filter(c => !c.arquivada || c.id === form.conta_id).map(c => ({ value: c.id, label: c.nome, color: c.cor })),
   ];
+
+  const [enviarUmaVez, enviando] = useEnvioUnico(handleSubmit);
 
   return (
     <div className={editingRec ? 'form-modal' : 'form-wrap'}>
@@ -172,7 +175,7 @@ export default function RecorrenteForm({ editar = null, onConcluir }) {
       </div>
 
       <div className="form-actions">
-        <button className="btn btn-primary btn-full" onClick={handleSubmit}>
+        <button className="btn btn-primary btn-full" onClick={enviarUmaVez} disabled={enviando}>
           {editingRec ? <Check size={15} strokeWidth={2.5} /> : <Plus size={15} strokeWidth={2.5} />}
           {editingRec ? 'Salvar alterações' : 'Adicionar recorrente'}
           <ArrowRight size={15} strokeWidth={2.5} />
