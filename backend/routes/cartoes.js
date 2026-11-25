@@ -6,6 +6,7 @@ const { mesValido, hojeBR } = require('../lib/datas');
 const { cartao: cartaoSchema, pagamentoFatura, validar } = require('../lib/schemas');
 const { FATURA_SQL, buscarCartao, listarFaturas, buscarFatura, resumoDoCartao } = require('../lib/cartoes');
 const { SELECT, paraApi: txParaApi } = require('../lib/transacoes');
+const { excluirConta } = require('../lib/contas');
 
 router.use(exigirLogin);
 
@@ -73,7 +74,7 @@ router.delete('/:id', (req, res) => {
     db.prepare('SELECT COUNT(*) AS n FROM transactions WHERE conta_id = ?').get(cartao.id).n +
     db.prepare('SELECT COUNT(*) AS n FROM transferencias WHERE origem_id = ? OR destino_id = ?').get(cartao.id, cartao.id).n;
   if (usos > 0) return res.status(409).json({ error: 'Este cartão tem movimentações. Arquive-o em vez de excluir.' });
-  db.prepare('DELETE FROM contas WHERE id = ?').run(cartao.id);
+  excluirConta(cartao.id);
   res.json({ ok: true });
 });
 
